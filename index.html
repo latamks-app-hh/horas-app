@@ -280,6 +280,8 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px}
 #printSheet.cons .ct{border-collapse:collapse;width:100%;margin:8px 0}#printSheet.cons .ct td,#printSheet.cons .ct th{border:1px solid #999;padding:4px 6px;font-size:11px;text-align:left;color:#000}#printSheet.cons .ct th{background:#eee}
 #printSheet.cons .cv{break-inside:avoid;page-break-inside:avoid;border-top:1px solid #bbb;margin-top:8px}#printSheet.cons .cn{margin-top:14px!important;color:#555!important;font-size:10.5px!important}
 @media print{@page{size:letter;margin:12mm}#printSheet.cards .tcards{gap:0}}
+@page cardpg{size:letter;margin:0}
+@media print{#printSheet.cardimgs{page:cardpg;padding:0!important;margin:0!important;text-align:left!important}#printSheet.cardimgs img{display:block;width:215.9mm;height:279.4mm;margin:0;page-break-after:always;break-after:page}#printSheet.cardimgs img:last-child{page-break-after:auto;break-after:auto}}
 @media(max-width:700px){.tcards{grid-template-columns:1fr;justify-items:center}}
 body.guest [data-act^="hall"],body.guest [data-act^="hf"],body.guest [data-act^="edit"],body.guest [data-act^="new"],body.guest [data-act^="val"],body.guest [data-act="faltModal"],body.guest [data-act="regFor"],body.guest [data-act="regVoid"],body.guest [data-act="regRestore"],body.guest [data-act="tecToggle"],body.guest [data-act="tDay"],body.guest [data-act="projEdit"],body.guest [data-act="projNew"],body.guest [data-act="unasg"],body.guest [data-act="capAdd"],body.guest [data-act="capDel"],body.guest [data-act="linAdd"],body.guest [data-act="linDel"],body.guest [data-act="saveMeta"],body.guest [data-act="saveUrl"]{display:none!important}
 body.guest select[data-tur],body.guest input[data-tf]{pointer-events:none;opacity:.75}
@@ -1147,7 +1149,7 @@ function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]
 function pAjustes(){
  const st=S.settings;const pend=S.registros.filter(r=>!r.sync&&!r.demo).length;
  return `<div class="g12"><div class="c4">${card('QR único de registro','Imprímelo y colócalo en producción',`<div style="text-align:center"><div class="qrbox" id="qrhost"></div><p class="mut3" style="font-size:12px;margin:10px 0;word-break:break-all">${esc(qrUrl())}</p>${btn(icon('print',16)+' Imprimir QR','printQR','','ghost')}</div><div class="fld" style="margin-top:14px"><label>Dirección pública de esta aplicación</label><input class="inp" id="urlIn" placeholder="Por defecto: la dirección actual de esta aplicación" value="${esc(st.url||'')}"></div>${btn('Actualizar QR','saveUrl','','sm ghost')}<p class="mut3" style="font-size:12px;margin-top:8px">El QR lleva a la captura rápida de la dirección indicada. Todos los datos se guardan en la base de datos compartida de la empresa.</p>`)}</div>
- <div class="c8">${card('Conexión con la nube','Base de datos compartida (Supabase) · app v4.2.0',`<div class="sub-panel" style="border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)"><div class="ttl" style="color:#86efac">${icon('check',18)} Conectado</div><p class="mut" style="font-size:13px;line-height:1.7">Sesión: <b style="color:var(--tx)">${esc(NB.email||'')}</b> · Rol: <b style="color:var(--tx)">${esc(U.role)}</b><br>Todos los registros, proyectos, técnicos y turnos se guardan automáticamente y los ven todos los usuarios según su rol.</p></div><p class="mut3" style="font-size:12.5px;margin-top:12px">Los técnicos registran sus horas con el QR (código + iniciales, sin contraseña). Sus registros quedan <b style="color:var(--tx2)">por validar</b> hasta que un supervisor los confirme. Supabase gratuito no hace copias automáticas: descarga la copia de seguridad cada semana (botón en “Datos y respaldo”).</p>`)}</div></div>
+ <div class="c8">${card('Conexión con la nube','Base de datos compartida (Supabase) · app v4.2.1',`<div class="sub-panel" style="border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)"><div class="ttl" style="color:#86efac">${icon('check',18)} Conectado</div><p class="mut" style="font-size:13px;line-height:1.7">Sesión: <b style="color:var(--tx)">${esc(NB.email||'')}</b> · Rol: <b style="color:var(--tx)">${esc(U.role)}</b><br>Todos los registros, proyectos, técnicos y turnos se guardan automáticamente y los ven todos los usuarios según su rol.</p></div><p class="mut3" style="font-size:12.5px;margin-top:12px">Los técnicos registran sus horas con el QR (código + iniciales, sin contraseña). Sus registros quedan <b style="color:var(--tx2)">por validar</b> hasta que un supervisor los confirme. Supabase gratuito no hace copias automáticas: descarga la copia de seguridad cada semana (botón en “Datos y respaldo”).</p>`)}</div></div>
  ${listasCard()}${invitadosCard()}<div class="g12"><div class="c12">${card('Empezar de cero','Para dejar el sistema limpio y comenzar la operación real',`<ol class="mut" style="padding-left:18px;line-height:1.9"><li><b style="color:var(--tx)">Datos de prueba:</b> los técnicos, proyectos y registros ficticios (marcados como demo) se limpian desde la base de datos; Soporte te guía.</li><li><b style="color:var(--tx)">Turnos:</b> ajusta los horarios reales y asigna el personal.</li><li><b style="color:var(--tx)">Técnicos:</b> crea cada persona (código, iniciales, nombre, área, turno).</li><li><b style="color:var(--tx)">Proyectos:</b> crea el proyecto (escribe su número y la fecha de entrega) y define su expectativa por etapa.</li><li>Listo: ya se pueden registrar horas en Captura rápida.</li></ol><div class="acts" style="margin-top:12px">${btn('Ir a Turnos','go','data-p="turnos"','sm ghost')}${btn('Ir a Técnicos','go','data-p="tecnicos"','sm ghost')}${btn('Ir a Proyectos','go','data-p="proyectos"','sm ghost')}</div>`)}</div></div>
   <div class="g12"><div class="c6">${can(['Gerencia'])?card('Limpiar fotos de hallazgos','Libera espacio borrando fotos que ya no se necesitan',fotosCardHtml()):''}</div></div>
   <div class="g12"><div class="c6">${card('Datos y respaldo','Exporta una copia de tus datos',`<div style="display:flex;gap:10px;flex-wrap:wrap">${btn(icon('down',16)+' Exportar registros (Excel)','expXLSX','','ghost')}${can(['Gerencia','Calidad'])?btn(icon('down',16)+' Constancia de consentimientos (PDF)','consPdf','','ghost'):''}</div><p class="mut3" style="font-size:12.5px;margin-top:10px">El Excel es para analizar los registros. <b style="color:var(--tx2)">No es una copia de seguridad.</b></p>${backupCardExtra()}${nbSinceNote()}<input type="file" id="impFile" accept=".json" style="display:none"></div>`)}</div>
@@ -2459,12 +2461,56 @@ function tarjetasList(codes){return codes==='todas'?S.tecnicos.filter(t=>t.regis
 function tarjetasOpen(codes,nuevo){
  const L=tarjetasList(codes);if(!L.length){toast('No hay técnicos para imprimir.','wa');return}
  M={type:'tarj',codes};
- openModal(mh(L.length===1?'Tarjeta de '+esc(L[0].nombre):'Tarjetas ('+L.length+')')+(nuevo?'<p class="mut" style="margin-bottom:8px">Técnico creado. Imprime su tarjeta y entrégala en mano.</p>':'')+`<div class="tcards" id="tcPrev">${L.map(tarjetaHtml).join('')}</div><p class="mut3" style="font-size:12px;margin-top:8px">Se imprimen de 10 por hoja carta. Recórtalas por la línea punteada.</p><div class="mf">${btn('Cerrar','mClose','','ghost')}${btn(icon('print',16)+' Imprimir','tarjPrint')}</div>`,'w');
+ openModal(mh(L.length===1?'Tarjeta de '+esc(L[0].nombre):'Tarjetas ('+L.length+')')+(nuevo?'<p class="mut" style="margin-bottom:8px">Técnico creado. Imprime su tarjeta y entrégala en mano.</p>':'')+`<div class="tcards" id="tcPrev">${L.map(tarjetaHtml).join('')}</div><p class="mut3" style="font-size:12px;margin-top:8px">Se imprimen de 10 por hoja carta. Si la impresión no sale bien, usa Descargar PDF e imprímelo desde ahí. Recórtalas por la línea punteada.</p><div class="mf">${btn('Cerrar','mClose','','ghost')}${btn(icon('down',16)+' Descargar PDF','tarjPDF','','ghost')}${btn(icon('print',16)+' Imprimir','tarjPrint')}</div>`,'w');
  setTimeout(()=>tarjetasDraw($('#tcPrev')),30)}
-function tarjetasPrint(){
+/* v4.2.1 · tarjetas: se dibujan como imagen (carta, 10 por hoja) para imprimir o descargar en PDF; así no dependen del CSS de impresión del navegador */
+const _ldImg=src=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src});
+async function tarjetasPaginas(L){
+ const D=200/25.4,mm=v=>v*D,W=Math.round(215.9*D),H=Math.round(279.4*D),CW=90,CH=49,X0=(215.9-2*CW)/2,Y0=(279.4-5*CH)/2;
+ const logo=await _ldImg(LOGO),FF='Arial,Helvetica,sans-serif',pages=[];
+ for(let p=0;p<L.length;p+=10){
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,W,H);
+  L.slice(p,p+10).forEach((t,k)=>{
+   const x=mm(X0+(k%2)*CW),y=mm(Y0+Math.floor(k/2)*CH),w=mm(CW),h=mm(CH);
+   c.strokeStyle='#888';c.lineWidth=2;c.setLineDash([8,6]);c.strokeRect(x+1,y+1,w-2,h-2);c.setLineDash([]);
+   c.fillStyle='#0f172a';c.fillRect(x+3,y+3,w-6,mm(8.4));c.fillStyle='#38bdf8';c.fillRect(x+3,y+3+mm(8.4),w-6,mm(1));
+   let tx=x+mm(4);if(logo){const lh=mm(5.2),lw=lh*logo.width/logo.height;c.drawImage(logo,tx,y+3+mm(1.6),lw,lh);tx+=lw+mm(2)}
+   c.fillStyle='#fff';c.font='700 '+mm(3.3)+'px '+FF;c.textBaseline='middle';c.textAlign='left';c.fillText('LATAMKS · REGISTRO DE HORAS',tx,y+3+mm(4.2));
+   const bx=x+mm(4),by=y+mm(12);c.textBaseline='alphabetic';c.fillStyle='#000';
+   let fs=3.9,nm=(t.nombre||'').toUpperCase();c.font='700 '+mm(fs)+'px '+FF;while(c.measureText(nm).width>mm(50)&&fs>2.4){fs-=.2;c.font='700 '+mm(fs)+'px '+FF}
+   c.fillText(nm,bx,by+mm(3));
+   c.fillStyle='#666';c.font='400 '+mm(2.2)+'px '+FF;c.fillText('CÓDIGO',bx,by+mm(8));c.fillText('INICIALES',bx,by+mm(20));
+   c.fillStyle='#0284c7';c.font='700 '+mm(6)+'px '+FF;c.fillText(t.codigo,bx,by+mm(14.5));c.fillText(t.ini,bx,by+mm(26.5));
+   c.fillStyle='#666';c.font='400 '+mm(2)+'px '+FF;c.fillText('Personal e intransferible · escanea el QR y escribe tu código e iniciales',bx,y+h-mm(3.2));
+   const q=document.createElement('div');q.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(q);
+   try{new QRCode(q,{text:qrUrl(),width:300,height:300,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});const qc=q.querySelector('canvas');
+    if(qc){const qs=mm(30),qx=x+w-qs-mm(4),qy=y+mm(11);c.drawImage(qc,qx,qy,qs,qs);if(logo){const lw=mm(6.4),lh=lw*logo.height/logo.width,pd=mm(.5);c.fillStyle='#fff';c.fillRect(qx+qs/2-lw/2-pd,qy+qs/2-lh/2-pd,lw+2*pd,lh+2*pd);c.drawImage(logo,qx+qs/2-lw/2,qy+qs/2-lh/2,lw,lh)}}}catch(e){}
+   q.remove()});
+  pages.push(cv)}
+ return pages}
+function pdfMulti(jpgs,w,h){
+ const enc=new TextEncoder(),parts=[],offs=[];let len=0;const push=u=>{parts.push(u);len+=u.length},st=s=>push(enc.encode(s));
+ const n=jpgs.length,pw=612,ph=792;st('%PDF-1.4\n');
+ offs[1]=len;st('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+ offs[2]=len;st('2 0 obj\n<< /Type /Pages /Kids ['+jpgs.map((_,i)=>(3+i*3)+' 0 R').join(' ')+'] /Count '+n+' >>\nendobj\n');
+ jpgs.forEach((jpg,i)=>{const a=3+i*3,b=a+1,c=a+2;
+  offs[a]=len;st(a+' 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+pw+' '+ph+'] /Resources << /XObject << /Im0 '+b+' 0 R >> >> /Contents '+c+' 0 R >>\nendobj\n');
+  offs[b]=len;st(b+' 0 obj\n<< /Type /XObject /Subtype /Image /Width '+w+' /Height '+h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpg.length+' >>\nstream\n');push(jpg);st('\nendstream\nendobj\n');
+  const cs='q '+pw+' 0 0 '+ph+' 0 0 cm /Im0 Do Q';offs[c]=len;st(c+' 0 obj\n<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream\nendobj\n')});
+ const tot=3+n*3,xr=len;let x='xref\n0 '+tot+'\n0000000000 65535 f \n';for(let i=1;i<tot;i++)x+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+ st(x+'trailer\n<< /Size '+tot+' /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF');return new Blob(parts,{type:'application/pdf'})}
+async function tarjetasPrint(){
  const L=tarjetasList(M.codes||'todas');if(!L.length)return;
- const ps=$('#printSheet');ps.className='cards';ps.innerHTML=`<div class="tcards">${L.map(tarjetaHtml).join('')}</div>`;tarjetasDraw(ps);
- setTimeout(()=>{try{window.print()}catch(e){toast('La impresión no está disponible aquí.','wa')}setTimeout(()=>{ps.className='';},1500)},350)}
+ toast('Preparando tarjetas…','ok');
+ const pgs=await tarjetasPaginas(L),ps=$('#printSheet');ps.className='cardimgs';ps.innerHTML='';
+ const ims=pgs.map(cv=>{const im=new Image();im.src=cv.toDataURL('image/png');ps.appendChild(im);return im});
+ await Promise.all(ims.map(im=>im.decode?im.decode().catch(()=>{}):Promise.resolve()));
+ setTimeout(()=>{try{window.print()}catch(e){toast('La impresión no está disponible aquí. Usa Descargar PDF.','wa')}setTimeout(()=>{ps.className='';ps.innerHTML=''},1500)},200)}
+async function tarjetasPDF(){
+ const L=tarjetasList(M.codes||'todas');if(!L.length)return;
+ toast('Generando PDF…','ok');
+ const pgs=await tarjetasPaginas(L),jp=pgs.map(cv=>{const b=atob(cv.toDataURL('image/jpeg',.95).split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u});
+ dlBlob(L.length===1?'tarjeta_'+L[0].codigo+'.pdf':'tarjetas_tecnicos_latamks.pdf',pdfMulti(jp,pgs[0].width,pgs[0].height))}
 
 /* ---------- Comparar con proyecto de éxito ---------- */
 function cmpPanel(){
@@ -2494,7 +2540,7 @@ Object.assign(A,{
  backup:()=>nbBackup(),fotosCalc:()=>fotosCalc(),fotosZip:()=>fotosZip(),fotosBorrar:()=>fotosBorrar(),bakLater:()=>{NB.bakHide=true;nbBakCheck()},
  loadAll:async()=>{NB.all=true;toast('Cargando todo el historial…','ok');try{await nbLoad();renderAll(true);nbBakCheck();toast('Historial completo cargado','ok')}catch(e){NB.all=false;toast(nbMsg(e),'er')}},
  cmpToggle:()=>{U.cmpOn=!U.cmpOn;renderPage(true)},
- tarjUna:t=>tarjetasOpen([t.dataset.c]),tarjTodas:()=>tarjetasOpen('todas'),tarjPrint:()=>tarjetasPrint(),
+ tarjUna:t=>tarjetasOpen([t.dataset.c]),tarjTodas:()=>tarjetasOpen('todas'),tarjPrint:()=>tarjetasPrint(),tarjPDF:()=>tarjetasPDF(),
  invCrear:async()=>{const n=(val('invNom')||'').trim(),h=+val('invHoras')||72;if(!n){toast('Escribe el nombre del invitado.','wa');return}
   try{const r=await nbRpc('invitado_crear',{p_nombre:n,p_horas:h});await nbInvLoad();renderPage(true);invModal({codigo:r.codigo,vence:r.vence,nombre:n})}catch(e){toast(nbMsg(e),'er')}},
  invVer:t=>{const i=(NB.inv||[]).find(x=>x.id===t.dataset.id);if(i)invModal(i)},
