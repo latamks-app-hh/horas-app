@@ -274,6 +274,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px}
 .tcard .tq{width:30mm;height:30mm;flex:none}.tcard .tq img,.tcard .tq canvas{width:30mm!important;height:30mm!important}
 .tcard .tf{font-size:6.5px;color:#666;padding:0 4mm 2mm}
 #printSheet.cards{padding:6mm 0!important;text-align:left!important}
+#printSheet.audp{text-align:left!important;padding:0!important;font-size:12px}#printSheet.audp h1{font-size:20px!important;margin:0 0 2px!important}#printSheet.audp p{font-size:11px!important;margin:0 0 8px!important}#printSheet.audp [data-act]:not(a),#printSheet.audp .acts,#printSheet.audp .fbar{display:none!important}#printSheet.audp table{border-collapse:collapse;width:100%}#printSheet.audp td,#printSheet.audp th{border:1px solid #bbb;padding:3px 5px;font-size:11px;color:#000}
 #printSheet.cons{text-align:left!important;padding:6mm 0!important;font-family:Arial,Helvetica,sans-serif}
 #printSheet.cons h1{font-size:20px!important;margin:8px 0 4px!important}#printSheet.cons h2{font-size:15px;margin:16px 0 6px}#printSheet.cons h3{font-size:13px;margin:10px 0 4px}
 #printSheet.cons p{font-size:11.5px!important;margin:3px 0!important;line-height:1.4;color:#222}
@@ -1149,7 +1150,7 @@ function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]
 function pAjustes(){
  const st=S.settings;const pend=S.registros.filter(r=>!r.sync&&!r.demo).length;
  return `<div class="g12"><div class="c4">${card('QR único de registro','Imprímelo y colócalo en producción',`<div style="text-align:center"><div class="qrbox" id="qrhost"></div><p class="mut3" style="font-size:12px;margin:10px 0;word-break:break-all">${esc(qrUrl())}</p>${btn(icon('print',16)+' Imprimir QR','printQR','','ghost')}</div><div class="fld" style="margin-top:14px"><label>Dirección pública de esta aplicación</label><input class="inp" id="urlIn" placeholder="Por defecto: la dirección actual de esta aplicación" value="${esc(st.url||'')}"></div>${btn('Actualizar QR','saveUrl','','sm ghost')}<p class="mut3" style="font-size:12px;margin-top:8px">El QR lleva a la captura rápida de la dirección indicada. Todos los datos se guardan en la base de datos compartida de la empresa.</p>`)}</div>
- <div class="c8">${card('Conexión con la nube','Base de datos compartida (Supabase) · app v4.2.3',`<div class="sub-panel" style="border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)"><div class="ttl" style="color:#86efac">${icon('check',18)} Conectado</div><p class="mut" style="font-size:13px;line-height:1.7">Sesión: <b style="color:var(--tx)">${esc(NB.email||'')}</b> · Rol: <b style="color:var(--tx)">${esc(U.role)}</b><br>Todos los registros, proyectos, técnicos y turnos se guardan automáticamente y los ven todos los usuarios según su rol.</p></div><p class="mut3" style="font-size:12.5px;margin-top:12px">Los técnicos registran sus horas con el QR (código + iniciales, sin contraseña). Sus registros quedan <b style="color:var(--tx2)">por validar</b> hasta que un supervisor los confirme. Supabase gratuito no hace copias automáticas: descarga la copia de seguridad cada semana (botón en “Datos y respaldo”).</p>`)}</div></div>
+ <div class="c8">${card('Conexión con la nube','Base de datos compartida (Supabase) · app v4.2.4',`<div class="sub-panel" style="border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)"><div class="ttl" style="color:#86efac">${icon('check',18)} Conectado</div><p class="mut" style="font-size:13px;line-height:1.7">Sesión: <b style="color:var(--tx)">${esc(NB.email||'')}</b> · Rol: <b style="color:var(--tx)">${esc(U.role)}</b><br>Todos los registros, proyectos, técnicos y turnos se guardan automáticamente y los ven todos los usuarios según su rol.</p></div><p class="mut3" style="font-size:12.5px;margin-top:12px">Los técnicos registran sus horas con el QR (código + iniciales, sin contraseña). Sus registros quedan <b style="color:var(--tx2)">por validar</b> hasta que un supervisor los confirme. Supabase gratuito no hace copias automáticas: descarga la copia de seguridad cada semana (botón en “Datos y respaldo”).</p>`)}</div></div>
  ${listasCard()}${invitadosCard()}<div class="g12"><div class="c12">${card('Empezar de cero','Para dejar el sistema limpio y comenzar la operación real',`<ol class="mut" style="padding-left:18px;line-height:1.9"><li><b style="color:var(--tx)">Datos de prueba:</b> los técnicos, proyectos y registros ficticios (marcados como demo) se limpian desde la base de datos; Soporte te guía.</li><li><b style="color:var(--tx)">Turnos:</b> ajusta los horarios reales y asigna el personal.</li><li><b style="color:var(--tx)">Técnicos:</b> crea cada persona (código, iniciales, nombre, área, turno).</li><li><b style="color:var(--tx)">Proyectos:</b> crea el proyecto (escribe su número y la fecha de entrega) y define su expectativa por etapa.</li><li>Listo: ya se pueden registrar horas en Captura rápida.</li></ol><div class="acts" style="margin-top:12px">${btn('Ir a Turnos','go','data-p="turnos"','sm ghost')}${btn('Ir a Técnicos','go','data-p="tecnicos"','sm ghost')}${btn('Ir a Proyectos','go','data-p="proyectos"','sm ghost')}</div>`)}</div></div>
   <div class="g12"><div class="c6">${can(['Gerencia'])?card('Limpiar fotos de hallazgos','Libera espacio borrando fotos que ya no se necesitan',fotosCardHtml()):''}</div></div>
   <div class="g12"><div class="c6">${card('Datos y respaldo','Exporta una copia de tus datos',`<div style="display:flex;gap:10px;flex-wrap:wrap">${btn(icon('down',16)+' Exportar registros (Excel)','expXLSX','','ghost')}${can(['Gerencia','Calidad'])?btn(icon('down',16)+' Constancia de consentimientos (PDF)','consPdf','','ghost'):''}</div><p class="mut3" style="font-size:12.5px;margin-top:10px">El Excel es para analizar los registros. <b style="color:var(--tx2)">No es una copia de seguridad.</b></p>${backupCardExtra()}${nbSinceNote()}<input type="file" id="impFile" accept=".json" style="display:none"></div>`)}</div>
@@ -1226,15 +1227,15 @@ async function fotosZip(){
   FT.zip=true;z.textContent='Copia descargada: '+(files.length-1)+' fotos. Ya puedes borrar.';toast('Copia de fotos lista','ok')}
  catch(e){z.textContent='';toast(e.message||'Error al descargar las fotos','er')}}
 /* ================= Navegación ================= */
-const G_=['Gerencia'],GS=['Gerencia','Supervisor'],GSC=['Gerencia','Supervisor','Calidad'];
+const AU='Auditoría',G_=['Gerencia'],GS=['Gerencia','Supervisor',AU],GSC=['Gerencia','Supervisor','Calidad',AU],GA=['Gerencia',AU];
 const NAV=[
-{g:'Operación',items:[['captura','Captura rápida','clock',['Gerencia','Supervisor','Técnico']],['faltantes','Horas faltantes','warn',['Gerencia','Supervisor','Técnico']],['supervisor','Panel de supervisor','users',GS],['registros','Registros','db',GSC],['alertas','Alertas','bell',GS]]},
+{g:'Operación',items:[['captura','Captura rápida','clock',['Gerencia','Supervisor','Técnico']],['faltantes','Horas faltantes','warn',['Gerencia','Supervisor','Técnico',AU]],['supervisor','Panel de supervisor','users',GS],['registros','Registros','db',GSC],['alertas','Alertas','bell',GS]]},
 {g:'Análisis',items:[['dashboard','Panel de Gerencia','dash',GS],['etapas','Comparar etapas','layers',GS],['retrabajo','Retrabajo','redo',GSC]]},
-{g:'Gestión',items:[['proyectos','Proyectos','folder',GSC],['expectativas','Expectativas','sliders',GS],['tecnicos','Técnicos','user',G_],['turnos','Turnos','cal',GS],['hallazgos','Hallazgos','flag',GSC],['liberaciones','Liberaciones','check',GSC],['calidad','Gestión de Calidad','trend',GSC]]},
-{g:'Sistema',items:[['respaldo','Copia de seguridad','down',GSC],['catalogo','Etapas y actividades','layers',G_],['ajustes','Ajustes y QR','qr',G_]]}];
+{g:'Gestión',items:[['proyectos','Proyectos','folder',GSC],['expectativas','Expectativas','sliders',GS],['tecnicos','Técnicos','user',GA],['turnos','Turnos','cal',GS],['hallazgos','Hallazgos','flag',GSC],['liberaciones','Liberaciones','check',GSC],['calidad','Gestión de Calidad','trend',GSC]]},
+{g:'Sistema',items:[['respaldo','Copia de seguridad','down',['Gerencia','Supervisor','Calidad']],['catalogo','Etapas y actividades','layers',GA],['ajustes','Ajustes y QR','qr',G_]]}];
 const ALLN=NAV.flatMap(g=>g.items.map(i=>({id:i[0],t:i[1],ic:i[2],r:i[3],g:g.g})));
 const PAGES={faltantes:pFaltantes,expectativas:pExpectativas,captura:pCaptura,supervisor:pSupervisor,registros:pRegistros,alertas:pAlertas,respaldo:pRespaldo,dashboard:pDashboard,etapas:pEtapas,retrabajo:pRetrabajo,proyectos:pProyectos,tecnicos:pTecnicos,turnos:pTurnos,hallazgos:pHallazgos,ajustes:pAjustes,catalogo:pCatalogo};
-const DEFP={Gerencia:'dashboard',Supervisor:'supervisor','Técnico':'captura',Calidad:'hallazgos'};
+const DEFP={Gerencia:'dashboard',Supervisor:'supervisor','Técnico':'captura',Calidad:'hallazgos','Auditoría':'dashboard'};
 const app=()=>$('#app');
 const isMob=()=>innerWidth<=820;
 function toast(m,k=''){const e=document.createElement('div');e.className='toast '+k;e.textContent=m;$('#toasts').appendChild(e);setTimeout(()=>{e.style.opacity='0';e.style.transition='opacity .3s';setTimeout(()=>e.remove(),320)},4800)}
@@ -1255,6 +1256,7 @@ function renderTop(){
  $('#top').innerHTML=`<button class="ib hamb" data-act="drawer" aria-label="Abrir menú">${icon('menu',20)}</button><div><div class="crumb">${it.g} / ${it.t}</div><h1>${U.kiosk?'Registro de horas':it.t}</h1></div><div class="sp"></div>
  ${an?`<div class="noK pers">${sel('f.per',[['7','Últimos 7 días'],['30','Últimos 30 días'],['0','Todo el histórico']],U.f.desde?'':(U.f.per||'0'),{cls:'',id:'perSel'})}</div>`:''}
  <button class="ib" data-act="tema" id="tm" data-tip="Modo claro / oscuro" aria-label="Cambiar entre modo claro y oscuro">${icon(document.documentElement.getAttribute('data-theme')==='light'?'moon':'sun',18)}</button>
+ ${isAud()?`<button class="ib" data-act="audPrint" data-tip="Imprimir esta pantalla" aria-label="Imprimir esta pantalla">${icon('print',18)}</button>`:''}
  <button class="ib noK" data-act="refresh" id="rf" data-tip="Actualizar" aria-label="Actualizar">${icon('refresh',18)}</button>
  <button class="ib noK" data-act="goAlert" data-tip="Alertas" aria-label="Alertas">${icon('bell',18)}${ac?`<span class="dot">${ac>99?'99+':ac}</span>`:''}</button>
  <div class="av" data-tip="${esc(U.name+' · '+U.role)}">${esc(ini2(U.name))}</div>`;
@@ -1848,6 +1850,7 @@ Object.assign(A,{
  progPDF:async()=>{const j=M.cv.toDataURL('image/jpeg',.92).split(',')[1];const bin=atob(j),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);dlBlob(progNombre('pdf'),pdfDesdeJpeg(u,M.cv.width,M.cv.height))},
  progShare:async()=>{try{const b=await blobDe(M.cv,'image/png');const f=new File([b],progNombre('png'),{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Programación de turnos LATAMKS',text:progMsg(M.code)})}else toast('Compartir directo no está disponible aquí. Descarga la imagen y adjúntala.','wa')}catch(e){if(!e||e.name!=='AbortError')toast('No se pudo abrir “Compartir”. Descarga la imagen y adjúntala.','wa')}},
  progCopy:async()=>{try{const b=await blobDe(M.cv,'image/png');await navigator.clipboard.write([new ClipboardItem({'image/png':b})]);toast('Imagen copiada: pégala en WhatsApp Web o en un correo','ok')}catch(e){toast('No se pudo copiar la imagen en esta vista. Usa Descargar imagen.','wa')}},
+ audPrint:()=>{const pg=$('#page');if(!pg)return;const ps=$('#printSheet');const th=document.documentElement.getAttribute('data-theme');ps.className='audp';ps.innerHTML='<h1>'+esc(($('#top h1')||{}).textContent||'Latamks HH')+'</h1><p>'+esc(new Date().toLocaleString('es-CO'))+' · '+esc(U.name)+'</p>'+pg.innerHTML;document.documentElement.setAttribute('data-theme','light');const limp=()=>{window.removeEventListener('afterprint',limp);setTimeout(()=>{ps.className='';ps.innerHTML='';if(th)document.documentElement.setAttribute('data-theme',th)},300)};window.addEventListener('afterprint',limp);setTimeout(()=>{try{window.print()}catch(e){toast('La impresión no está disponible aquí.');limp()}},150)},
  progPrint:()=>{const ps=$('#printSheet');ps.innerHTML='';const im=new Image();im.style.width='100%';let done=false;const go=()=>{if(done)return;done=true;try{window.print()}catch(e){toast('La impresión no está disponible aquí. Descarga el PDF e imprímelo.','wa')}};im.onload=()=>{(im.decode?im.decode():Promise.resolve()).catch(()=>{}).then(()=>setTimeout(go,150))};im.onerror=()=>toast('No se pudo preparar la imagen. Usa Descargar PDF.','wa');ps.appendChild(im);im.src=M.cv.toDataURL('image/png');setTimeout(go,2500)},
  progMsgCopy:()=>A.copyTxt(),
  progWA:async()=>{try{const b=await blobDe(M.cv,'image/png');const f=new File([b],progNombre('png'),{type:'image/png'});
@@ -1969,7 +1972,7 @@ async function nbLoad(){
   await catFetch();
   const since=nbSince(pr);NB.since=since;
   rg=await nbSel('registros_hh','select=*&order=registrado_en.asc,id.asc'+(since?'&fecha=gte.'+since:''));
-  if(NB.perfil&&NB.perfil.rol==='Gerencia'){[his,per]=await Promise.all([safe(nbSel('historial','select=*&order=id.desc'),[]).then(x=>x.slice(0,400)),safe(nbSel('perfiles'),[])])}}
+  if(NB.perfil&&(NB.perfil.rol==='Gerencia'||NB.perfil.rol==='Auditoría')){[his,per]=await Promise.all([safe(nbSel('historial','select=*&order=id.desc'),[]).then(x=>x.slice(0,400)),safe(nbSel('perfiles'),[])])}}
  const st={...NB_DEF,webapp:'',url:'',empresa:'LATAMKS S.A.S.'};
  aj.forEach(a=>{if(a.clave==='meta_semanal')st.meta=+a.valor;else if(['rec','ali','recSab'].includes(a.clave))st[a.clave]=+a.valor;else if(['empresa','url'].includes(a.clave))st[a.clave]=a.valor;else if(a.clave==='ultimo_respaldo')st.respaldo=a.valor;else if(a.clave==='capacidades')st.caps=String(a.valor).split(',').map(Number).filter(n=>n>0);else if(a.clave==='frases')st.frases=String(a.valor).split('|').filter(Boolean);else if(a.clave==='msgsem'){try{st.msgsem=JSON.parse(a.valor)||{}}catch(_){st.msgsem={}}}else if(a.clave==='lineas')st.lineas=String(a.valor).split('|').filter(Boolean)});
  const tmap={},turnoByName={};
@@ -1999,7 +2002,7 @@ function nbSig(){let h=0;const s=ETAPAS.join()+JSON.stringify(ETINFO)+ACT.map(a=
  for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return s.length+':'+h}
 
 /* ---------- Guardado en la nube (solo cambios) ---------- */
-function nbSave(){if(NB.kiosk||!NB.sess)return;NB.dirty=true;clearTimeout(NB.pt);NB.pt=setTimeout(nbPush,500)}
+function nbSave(){if(NB.kiosk||!NB.sess||isAud())return;NB.dirty=true;clearTimeout(NB.pt);NB.pt=setTimeout(nbPush,500)}
 async function nbPush(){
  if(NB.busy){NB.again=true;return}
  NB.busy=true;
@@ -2101,6 +2104,7 @@ async function nbStart(){
   const rows=await nbReq('GET',`/rest/v1/perfiles?select=*&id=eq.${NB.sess.uid}`);const p=rows&&rows[0];
   if(!p||p.activo===false){sessSave(null);nbShowLogin('Tu cuenta aún no tiene acceso asignado. Habla con Gerencia.');return}
   NB.perfil=p;U.role=p.rol;U.name=p.nombre;U.menu=false;
+  if(p.rol==='Auditoría')nbAudOn();
   app().innerHTML='<aside class="side" id="side"></aside><div class="scrim" data-act="closeDrawer"></div><div class="main"><header class="top" id="top"></header><main class="page" id="page"></main></div>';
   await nbLoad();U.page=DEFP[U.role]||'dashboard';U.f=newF();U.c=newC();renderAll();
   clearInterval(NB.poll);NB.poll=setInterval(nbPoll,45000);nbIdleArm();nbBakCheck();nbInvLoad().then(()=>{if(U.page==='ajustes')renderPage(true)})}
@@ -2367,6 +2371,7 @@ async function nubeBoot(){
 
 /* ================= v3.5 · copia de seguridad, invitados, tarjetas, comparación ================= */
 const fmtDT=iso=>{try{return new Date(iso).toLocaleString('es-CO',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}catch(e){return String(iso||'')}};
+const isAud=()=>!!(NB.perfil&&NB.perfil.rol==='Auditoría'&&NB.sess&&!NB.guest);
 const isGer=()=>!!(NB.perfil&&NB.perfil.rol==='Gerencia'&&!NB.guest&&NB.sess);
 const isBak=()=>!!(NB.perfil&&['Gerencia','Calidad','Supervisor'].includes(NB.perfil.rol)&&!NB.guest&&NB.sess);
 
@@ -2424,6 +2429,18 @@ function invModal(inv){
  M.link=link;M.vence=inv.vence;M.nombre=inv.nombre;
  setTimeout(()=>qrInto('#invqr',link,200),30)}
 function qrInto(sel,text,size){const el=$(sel);if(!el)return;el.innerHTML='';try{if(window.QRCode){new QRCode(el,{text,width:size,height:size,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});qrLogo(el)}else el.innerHTML='<p class="mut3" style="padding:30px">No se pudo dibujar el QR (sin internet). Usa el enlace.</p>'}catch(e){}}
+
+/* ---------- Perfil Auditoría y revisiones: ver, filtrar, imprimir y descargar; nunca modificar ---------- */
+const AUD_OK=['audPrint','go','none','drawer','closeDrawer','collapse','menu','pal','palGo','help','tema','refresh','goAlert','per','toggleF','clearF','fset','trend','pickEtapa','moreR','supHoy','cqPer','cmpToggle','catSel','tSel','tab','semNav','goProj','expXLSX','expCSV','hExp','lExp','hFiltro','hPer','hTab','hdet','hfVer','lFiltro','lPer','lTab','ldet','hWA','lWA','copyTxt','rotaCSV','progCopy','progMail','progMsgCopy','progPDF','progPNG','progPrint','progShare','progTheme','progTodos','progUno','progWA','shareOne','semShare','mClose','mOk','logout','chPass','chPassSave','verPass','nbRetry'];
+function nbAudOn(){
+ document.body.classList.add('audit');
+ if(!document.getElementById('audCss')){const st=document.createElement('style');st.id='audCss';
+  st.textContent='body.audit [data-act]'+AUD_OK.map(a=>':not([data-act="'+a+'"])').join('')+'{display:none!important}body.audit select[data-tur],body.audit input[data-tf]{pointer-events:none;opacity:.75}';
+  document.head.appendChild(st)}
+ if(NB.audGuard)return;NB.audGuard=true;
+ window.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-act]');if(!t)return;
+  if(!AUD_OK.includes(t.dataset.act)){e.stopPropagation();e.preventDefault();toast('Perfil de Auditoría: puedes ver, filtrar, imprimir y descargar, pero no modificar.','wa')}},true);
+ window.addEventListener('change',e=>{const d=(e.target&&e.target.dataset)||{};if(d.tur!==undefined||d.tf!==undefined||d.rd!==undefined){e.stopPropagation();e.preventDefault();toast('Perfil de Auditoría: solo lectura.','wa');renderPage(true)}},true)}
 /* Modo invitado */
 async function nbStartGuest(){
  document.body.classList.add('guest');
@@ -2631,7 +2648,7 @@ function hLista(){
 function pHallazgos(){
  const tab=U.hTab||'lista';
  const acts=`<div class="seg" role="group" aria-label="Vista">${[['lista','Hallazgos'],['kpi','Indicadores']].map(([v,l])=>`<button class="${tab===v?'on':''}" data-act="hTab" data-v="${v}">${l}</button>`).join('')}</div>
-  <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">${can(['Gerencia','Calidad','Supervisor'])?btn(icon('plus',16)+' Nuevo hallazgo','hallNew'):''}${can(['Gerencia','Calidad','Supervisor'])||NB.guest?btn(icon('down',16)+' Exportar a Excel','hExp','','ghost'):''}</div>`;
+  <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">${can(['Gerencia','Calidad','Supervisor'])?btn(icon('plus',16)+' Nuevo hallazgo','hallNew'):''}${can(['Gerencia','Calidad','Supervisor'])||NB.guest||isAud()?btn(icon('down',16)+' Exportar a Excel','hExp','','ghost'):''}</div>`;
  return `<div class="fbar">${acts}</div>`+(tab==='kpi'?hKpi():hLista())}
 
 /* ---------- Detalle ---------- */
@@ -2930,7 +2947,7 @@ const lCal=()=>can(['Calidad','Gerencia']);
 const lSup=()=>can(['Gerencia','Supervisor','Calidad']);
 const lInsp=()=>S.tecnicos.filter(t=>t.rol==='Calidad'&&t.activo!==false);
 /* v4.0 · rastro: la cuenta de Calidad es compartida, así que se elige quién hace cada acción */
-const actorNeed=()=>U.role==='Calidad'&&!NB.kiosk&&!NB.guest&&lInsp().length>0;
+const actorNeed=()=>U.role==='Calidad'&&!NB.kiosk&&!NB.guest&&!!(NB.perfil&&NB.perfil.cuenta_compartida===true)&&lInsp().length>0;
 const actorFld=id=>actorNeed()?fld('¿Quién de Calidad lo hace? *',selM(id,lInsp().map(t=>[t.nombre,t.ini+' · '+t.nombre]),'','Elegir persona…'))+'<p class="mut3" style="font-size:12px;margin:-4px 0 8px">La cuenta de Calidad es compartida: aquí queda registrado quién lo hizo de verdad.</p>':'';
 const actorTx=(tx,id)=>{const a=actorNeed()?(val(id)||''):'';return a?(tx?tx+' · ':'')+'Realizado por: '+a:tx};
 const actorOk=id=>{if(actorNeed()&&!val(id)){toast('Elige quién de Calidad hace esta acción.','wa');return false}return true};
@@ -3018,7 +3035,7 @@ function pLiberaciones(){
  S.lib=S.lib||[];S.libh=S.libh||[];
  const tab=U.lTab||'lista';
  const acts=`<div class="seg" role="group" aria-label="Vista">${[['lista','Solicitudes'],['tablero','Tablero'],['kpi','Indicadores']].map(([v,l])=>`<button class="${tab===v?'on':''}" data-act="lTab" data-v="${v}">${l}</button>`).join('')}</div>
-  <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">${lSup()?btn(icon('plus',16)+' Solicitar liberación','lNew'):''}${lSup()?btn(icon('down',16)+' Exportar a Excel','lExp','','ghost'):''}</div>`;
+  <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">${lSup()?btn(icon('plus',16)+' Solicitar liberación','lNew'):''}${lSup()||isAud()?btn(icon('down',16)+' Exportar a Excel','lExp','','ghost'):''}</div>`;
  return `<div class="fbar">${acts}</div>`+(tab==='kpi'?lKpi():tab==='tablero'?lTablero():lLista())}
 
 /* ---------- Detalle ---------- */
