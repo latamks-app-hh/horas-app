@@ -197,7 +197,10 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px}
 .alrt .ai{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none}
 .alrt.er .ai{background:rgba(239,68,68,.14);color:#f87171}.alrt.wa .ai{background:rgba(245,158,11,.14);color:#fbbf24}.alrt.i .ai{background:rgba(56,189,248,.13);color:#7dd3fc}
 .alrt b{font-size:13.5px;display:block}.alrt small{color:var(--tx3);font-size:12px}
-.alrt .btn{margin-left:auto}
+.alrt .btn{margin-left:auto;flex:none;align-self:center}
+.atab{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;padding:14px 18px;border-radius:16px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer;font:inherit;transition:border-color .18s,box-shadow .18s}
+.atab b{display:flex;align-items:center;gap:8px;font-size:15px}.atab small{display:block;color:var(--tx3);font-size:12px;margin-top:3px;font-weight:400}.atab .atn{font-size:28px;font-weight:700;line-height:1}
+.atab:hover{border-color:var(--bd2)}.atab.on{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri) inset}.atab.er.on{border-color:var(--er);box-shadow:0 0 0 1px var(--er) inset}.atab.wa.on{border-color:var(--wa);box-shadow:0 0 0 1px var(--wa) inset}
 /* capture */
 .cap{max-width:760px;margin:0 auto}
 .cap .card{padding:20px}
@@ -975,15 +978,34 @@ function pRegistros(){
  ${rs.length>shown.length?`<div style="text-align:center;margin-top:12px">${btn('Ver más registros','moreR','','ghost')}</div>`:''}`:empty('No hay registros con estos filtros')}${nbSinceNote()}`,{acts:btn(icon('down',16)+' Exportar a Excel','expXLSX','','ghost')});
 }
 /* ================= Alertas ================= */
+/* Alertas: pestañas por nivel y un botón principal con el verbo que corresponde (Completar / Revisar / Validar) */
+const alKey=a=>[a.k,a.reg||a.hall||a.lib||((a.tec||'')+(a.fecha||''))||a.proy||'',a.macro||'',a.t].join('|');
+const alSKey=()=>'hh_al_vistas_'+((NB.sess&&NB.sess.uid)||'x');
+function alVistas(){try{return JSON.parse(localStorage.getItem(alSKey())||'{}')}catch(e){return {}}}
+function alMarcar(k){try{const v=alVistas(),ks=Object.keys(v);if(ks.length>300)ks.sort((a,b)=>v[a]-v[b]).slice(0,100).forEach(x=>delete v[x]);v[k]=Date.now();localStorage.setItem(alSKey(),JSON.stringify(v))}catch(e){}}
+function alertAct(a){
+ const k=a.k||'';
+ if(a.lib)return[k==='Liberación por decidir'?'Validar':k==='Liberación sin asignar'?'Completar':'Revisar','ldet',`data-c="${esc(a.lib)}"`];
+ if(a.hall)return[k==='Hallazgo sin asignar'?'Completar':'Revisar','hdet',`data-c="${esc(a.hall)}"`];
+ if(a.val)return['Validar','valDia',`data-tec="${a.tec}" data-fecha="${a.fecha}"`];
+ if(a.tec)return[k==='Horas excedentes'?'Revisar':'Completar','faltModal',`data-tec="${a.tec}" data-fecha="${a.fecha}"`];
+ if(a.reg)return[a.n==='i'?'Revisar':'Completar','editReg',`data-id="${a.reg}"`];
+ if(a.proy)return[/sobre expectativa|en riesgo|con atención/i.test(k)?'Revisar':'Completar','goProj',`data-p="${a.proy}"`];
+ return null}
 function alertRow(a){
- const ic=a.n==='er'?'warn':a.n==='wa'?'warn':'info';
- const b=a.lib?btn('Abrir','ldet',`data-c="${esc(a.lib)}"`,'sm ghost'):a.hall?btn('Abrir','hdet',`data-c="${esc(a.hall)}"`,'sm ghost'):a.val?btn('Validar','valDia',`data-tec="${a.tec}" data-fecha="${a.fecha}"`,'sm ghost'):a.tec?btn('Completar','faltModal',`data-tec="${a.tec}" data-fecha="${a.fecha}"`,'sm ghost'):a.reg?btn('Revisar','editReg',`data-id="${a.reg}"`,'sm ghost'):a.proy?btn('Ver','goProj',`data-p="${a.proy}"`,'sm ghost'):'';
+ const ic=a.n==='er'?'warn':a.n==='wa'?'warn':'info';const x=alertAct(a);
+ const b=x?btn(x[0],x[1],x[2]+(a.n==='i'?` data-alk="${esc(alKey(a))}"`:''),'sm'):'';
  return `<div class="alrt ${a.n}"><div class="ai">${icon(ic,17)}</div><div style="flex:1;min-width:0"><b>${esc(a.t)}</b><small>${esc(a.s||'')}</small></div>${b}</div>`;
 }
 function pAlertas(){
- const A=alerts();const g=[['er','Críticas'],['wa','Atención'],['i','Información']];
- return `<div class="g12"><div class="c12"><div class="card flat" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div class="logo" style="background:rgba(56,189,248,.14);color:var(--pri);box-shadow:none">${icon('bell',20)}</div><div><b>Las alertas nunca bloquean la operación</b><div class="mut" style="font-size:13px">Sirven para completar información y detectar desviaciones a tiempo.</div></div></div></div></div>
- <div class="g12">${g.map(([k,l])=>{const L=A.filter(a=>a.n===k);return `<div class="c4">${card(l,L.length+' alerta'+(L.length===1?'':'s'),L.length?L.slice(0,25).map(alertRow).join('')+(L.length>25?`<p class="mut3" style="font-size:12px">y ${L.length-25} más…</p>`:''):`<div class="empty">${icon('check',26)}<p>Todo en orden</p></div>`)}</div>`}).join('')}</div>`;
+ const vistas=alVistas();const A=alerts().filter(a=>a.n!=='i'||!vistas[alKey(a)]);
+ const T=[['er','Críticas','warn','requieren acción pronto'],['wa','Atención','bell','conviene resolver'],['i','Información','info','para tu conocimiento']];
+ const cnt=k=>A.filter(a=>a.n===k).length;
+ let tab=U.alTab;if(!T.some(x=>x[0]===tab))tab=(T.find(x=>cnt(x[0]))||T[1])[0];
+ const L=A.filter(a=>a.n===tab),lim=U.alAll?L.length:40,cur=T.find(x=>x[0]===tab);
+ return `<div class="g12"><div class="c12"><div class="card flat" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div class="logo" style="background:rgba(56,189,248,.14);color:var(--pri);box-shadow:none">${icon('bell',20)}</div><div><b>Las alertas nunca bloquean la operación</b><div class="mut" style="font-size:13px">Sirven para completar información y detectar desviaciones a tiempo. Una alerta desaparece sola cuando se atiende; las de información, cuando las abres.</div></div></div></div></div>
+ <div class="g12">${T.map(([k,l,ic,sub])=>`<div class="c4"><button type="button" class="atab ${k} ${k===tab?'on':''}" data-act="alTab" data-v="${k}" aria-pressed="${k===tab}"><span><b>${icon(ic,17)} ${l}</b><small>${cnt(k)} activa${cnt(k)===1?'':'s'} · ${sub}</small></span><span class="atn">${cnt(k)}</span></button></div>`).join('')}</div>
+ <div class="g12"><div class="c12">${card(cur[1],L.length+' activa'+(L.length===1?'':'s')+' · ordenadas por prioridad',L.length?L.slice(0,lim).map(alertRow).join('')+(L.length>lim?`<div style="text-align:center;margin-top:6px">${btn('Ver las '+(L.length-lim)+' restantes','alMore','','sm ghost')}</div>`:''):`<div class="empty">${icon('check',26)}<p>Todo en orden</p></div>`)}</div></div>`;
 }
 /* ================= Dashboard de Gerencia ================= */
 const PAL=['#38BDF8','#22D3EE','#8B5CF6','#6366F1','#0EA5E9','#A78BFA','#14B8A6','#64748B','#7DD3FC'];
@@ -1150,7 +1172,7 @@ function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]
 function pAjustes(){
  const st=S.settings;const pend=S.registros.filter(r=>!r.sync&&!r.demo).length;
  return `<div class="g12"><div class="c4">${card('QR único de registro','Imprímelo y colócalo en producción',`<div style="text-align:center"><div class="qrbox" id="qrhost"></div><p class="mut3" style="font-size:12px;margin:10px 0;word-break:break-all">${esc(qrUrl())}</p>${btn(icon('print',16)+' Imprimir QR','printQR','','ghost')}</div><div class="fld" style="margin-top:14px"><label>Dirección pública de esta aplicación</label><input class="inp" id="urlIn" placeholder="Por defecto: la dirección actual de esta aplicación" value="${esc(st.url||'')}"></div>${btn('Actualizar QR','saveUrl','','sm ghost')}<p class="mut3" style="font-size:12px;margin-top:8px">El QR lleva a la captura rápida de la dirección indicada. Todos los datos se guardan en la base de datos compartida de la empresa.</p>`)}</div>
- <div class="c8">${card('Conexión con la nube','Base de datos compartida (Supabase) · app v4.3.1',`<div class="sub-panel" style="border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)"><div class="ttl" style="color:#86efac">${icon('check',18)} Conectado</div><p class="mut" style="font-size:13px;line-height:1.7">Sesión: <b style="color:var(--tx)">${esc(NB.email||'')}</b> · Rol: <b style="color:var(--tx)">${esc(U.role)}</b><br>Todos los registros, proyectos, técnicos y turnos se guardan automáticamente y los ven todos los usuarios según su rol.</p></div><p class="mut3" style="font-size:12.5px;margin-top:12px">Los técnicos registran sus horas con el QR (código + iniciales, sin contraseña). Sus registros quedan <b style="color:var(--tx2)">por validar</b> hasta que un supervisor los confirme. Supabase gratuito no hace copias automáticas: descarga la copia de seguridad cada semana (botón en “Datos y respaldo”).</p>`)}</div></div>
+ <div class="c8">${card('Conexión con la nube','Base de datos compartida (Supabase) · app v4.3.2',`<div class="sub-panel" style="border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)"><div class="ttl" style="color:#86efac">${icon('check',18)} Conectado</div><p class="mut" style="font-size:13px;line-height:1.7">Sesión: <b style="color:var(--tx)">${esc(NB.email||'')}</b> · Rol: <b style="color:var(--tx)">${esc(U.role)}</b><br>Todos los registros, proyectos, técnicos y turnos se guardan automáticamente y los ven todos los usuarios según su rol.</p></div><p class="mut3" style="font-size:12.5px;margin-top:12px">Los técnicos registran sus horas con el QR (código + iniciales, sin contraseña). Sus registros quedan <b style="color:var(--tx2)">por validar</b> hasta que un supervisor los confirme. Supabase gratuito no hace copias automáticas: descarga la copia de seguridad cada semana (botón en “Datos y respaldo”).</p>`)}</div></div>
  ${listasCard()}${cuentasCard()}${invitadosCard()}<div class="g12"><div class="c12">${card('Empezar de cero','Para dejar el sistema limpio y comenzar la operación real',`<ol class="mut" style="padding-left:18px;line-height:1.9"><li><b style="color:var(--tx)">Datos de prueba:</b> los técnicos, proyectos y registros ficticios (marcados como demo) se limpian desde la base de datos; Soporte te guía.</li><li><b style="color:var(--tx)">Turnos:</b> ajusta los horarios reales y asigna el personal.</li><li><b style="color:var(--tx)">Técnicos:</b> crea cada persona (código, iniciales, nombre, área, turno).</li><li><b style="color:var(--tx)">Proyectos:</b> crea el proyecto (escribe su número y la fecha de entrega) y define su expectativa por etapa.</li><li>Listo: ya se pueden registrar horas en Captura rápida.</li></ol><div class="acts" style="margin-top:12px">${btn('Ir a Turnos','go','data-p="turnos"','sm ghost')}${btn('Ir a Técnicos','go','data-p="tecnicos"','sm ghost')}${btn('Ir a Proyectos','go','data-p="proyectos"','sm ghost')}</div>`)}</div></div>
   <div class="g12"><div class="c6">${can(['Gerencia'])?card('Limpiar fotos de hallazgos','Libera espacio borrando fotos que ya no se necesitan',fotosCardHtml()):''}</div></div>
   <div class="g12"><div class="c6">${card('Datos y respaldo','Exporta una copia de tus datos',`<div style="display:flex;gap:10px;flex-wrap:wrap">${btn(icon('down',16)+' Exportar registros (Excel)','expXLSX','','ghost')}${can(['Gerencia','Calidad'])?btn(icon('down',16)+' Constancia de consentimientos (PDF)','consPdf','','ghost'):''}</div><p class="mut3" style="font-size:12.5px;margin-top:10px">El Excel es para analizar los registros. <b style="color:var(--tx2)">No es una copia de seguridad.</b></p>${backupCardExtra()}${nbSinceNote()}<input type="file" id="impFile" accept=".json" style="display:none"></div>`)}</div>
@@ -1353,7 +1375,7 @@ const A={
  pal:()=>palOpen(),palGo:t=>{closeModal();go(t.dataset.p)},help:()=>helpOpen(),
  tema:()=>{const L=document.documentElement.getAttribute('data-theme')==='light';if(L)document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme','light');try{localStorage.setItem('hh_tema',L?'dark':'light')}catch(_){}const m=document.querySelector('meta[name=theme-color]');if(m)m.content=L?'#0b1220':'#14205A';renderTop()},
  refresh:t=>{t.classList.add('spin');nbRefreshNow();setTimeout(()=>{const b=$('#rf');if(b)b.classList.remove('spin')},650)},
- goAlert:()=>{if(can(GS))go('alertas')},
+ goAlert:()=>{if(can(GS))go('alertas')},alTab:t=>{U.alTab=t.dataset.v;U.alAll=false;renderPage(true)},alMore:()=>{U.alAll=true;renderPage(true)},
  per:t=>{U.f.per=t.dataset.v;U.f.desde='';renderAll(true)},toggleF:()=>{U.showF=!U.showF;renderPage(true)},clearF:()=>{U.f=newF();renderAll(true)},
  fset:t=>{U.f[t.dataset.k]=t.dataset.v;U.showF=U.showF;renderAll();toast('Filtro aplicado: '+t.dataset.v)},
  trend:t=>{U.trend=t.dataset.v;renderPage(true)},pickEtapa:t=>{U.etapa=t.dataset.v;renderPage(true)},
@@ -1398,6 +1420,7 @@ document.addEventListener('click',e=>{
  if(e.target.id==='modal'&&!$('.pal'))closeModal();else if(e.target.id==='modal')closeModal();
  const t=e.target.closest('[data-act]');
  if(!t){if(U.menu&&!e.target.closest('.pw')){U.menu=false;renderSide()}return}
+ if(t.dataset.alk)alMarcar(t.dataset.alk);
  const h=A[t.dataset.act];if(h)h(t,e);
 });
 document.addEventListener('change',e=>{const t=e.target;
@@ -2056,7 +2079,7 @@ function nbShowLogin(msg){
  <div style="text-align:right;margin:-4px 0 6px"><a href="#" data-act="olvide" style="font-size:13px;color:var(--ac,#38bdf8)">¿Olvidaste tu contraseña?</a></div>
  <div id="lg_e" style="min-height:22px;color:var(--er);font-size:13px;margin:4px 0 10px">${esc(msg||'')}</div>
  <div>${btn('Ingresar','login','','big')}</div>
- <p class="mut3" style="margin-top:18px;font-size:12.5px">¿Eres técnico? Registra tus horas escaneando el QR de producción: no necesitas contraseña.</p><p class="mut3" style="margin-top:10px;font-size:11px">Versión 4.3.1</p></div></div></div></div>`}
+ <p class="mut3" style="margin-top:18px;font-size:12.5px">¿Eres técnico? Registra tus horas escaneando el QR de producción: no necesitas contraseña.</p><p class="mut3" style="margin-top:10px;font-size:11px">Versión 4.3.2</p></div></div></div></div>`}
 async function nbLogin(){
  const u=($('#lg_u')||{}).value||'',p=($('#lg_p')||{}).value||'';const er=$('#lg_e');
  if(!u.trim()||!p){if(er)er.textContent='Escribe tu correo y tu contraseña.';return}
@@ -2439,7 +2462,7 @@ function invModal(inv){
 function qrInto(sel,text,size){const el=$(sel);if(!el)return;el.innerHTML='';try{if(window.QRCode){new QRCode(el,{text,width:size,height:size,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});qrLogo(el)}else el.innerHTML='<p class="mut3" style="padding:30px">No se pudo dibujar el QR (sin internet). Usa el enlace.</p>'}catch(e){}}
 
 /* ---------- Perfil Auditoría y revisiones: ver, filtrar, imprimir y descargar; nunca modificar ---------- */
-const AUD_OK=['audPrint','go','none','drawer','closeDrawer','collapse','menu','pal','palGo','help','tema','refresh','goAlert','per','toggleF','clearF','fset','trend','pickEtapa','moreR','supHoy','cqPer','cmpToggle','catSel','tSel','tab','semNav','goProj','expXLSX','expCSV','hExp','lExp','hFiltro','hPer','hTab','hdet','hfVer','lFiltro','lPer','lTab','ldet','hWA','lWA','copyTxt','rotaCSV','progCopy','progMail','progMsgCopy','progPDF','progPNG','progPrint','progShare','progTheme','progTodos','progUno','progWA','shareOne','semShare','mClose','mOk','logout','chPass','chPassSave','verPass','nbRetry'];
+const AUD_OK=['audPrint','alTab','alMore','go','none','drawer','closeDrawer','collapse','menu','pal','palGo','help','tema','refresh','goAlert','per','toggleF','clearF','fset','trend','pickEtapa','moreR','supHoy','cqPer','cmpToggle','catSel','tSel','tab','semNav','goProj','expXLSX','expCSV','hExp','lExp','hFiltro','hPer','hTab','hdet','hfVer','lFiltro','lPer','lTab','ldet','hWA','lWA','copyTxt','rotaCSV','progCopy','progMail','progMsgCopy','progPDF','progPNG','progPrint','progShare','progTheme','progTodos','progUno','progWA','shareOne','semShare','mClose','mOk','logout','chPass','chPassSave','verPass','nbRetry'];
 function nbAudOn(){
  document.body.classList.add('audit');
  if(!document.getElementById('audCss')){const st=document.createElement('style');st.id='audCss';
