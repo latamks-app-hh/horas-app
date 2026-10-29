@@ -238,7 +238,9 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px}
 #modal.open{display:flex;animation:fadein .16s}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 .mbox{width:100%;max-width:640px;max-height:calc(100vh - 40px);overflow:auto;background:rgba(16,23,34,.96);border:1px solid var(--bd2);border-radius:20px;padding:22px;box-shadow:0 30px 80px -20px rgba(0,0,0,.8);animation:pop .2s var(--ease)}
-.mbox.w{max-width:820px}.mbox.s{max-width:460px}
+.mbox.w{max-width:820px}.mbox.s{max-width:460px}.mbox.xl{max-width:1080px}
+.mini.kvc{cursor:pointer;transition:box-shadow .15s,transform .15s}.mini.kvc:hover,.mini.kvc:focus-visible{box-shadow:0 0 0 1.5px var(--pri);transform:translateY(-1px);outline:none}
+.kvg{display:grid;grid-template-columns:1fr 1fr;gap:22px}@media(max-width:820px){.kvg{grid-template-columns:1fr}}
 @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
 .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px}
 .mh h2{font-size:18px}
@@ -1022,7 +1024,7 @@ function pDashboardBase(){
  const dv=K.dev,dvp=K.exp?dv/K.exp*100:0;const dvc=dv>K.exp*.1?'er':dv>0?'wa':'ok';
  const arrow=p=>p==null?`<span class="mut3">sin base de comparación</span>`:p>=0?`<span class="up">${icon('up',14)} +${nf(p,1)}%</span>`:`<span class="dn">${icon('dwn',14)} ${nf(p,1)}%</span>`;
  const hero=(l,ic,v,unit,d,col,series)=>`<div class="c3"><section class="card kpi hero"><div class="k-l">${icon(ic,16)}${l}</div><div class="k-v">${v}<small>${unit}</small></div><div class="k-d">${d}</div>${spark(series,col)}</section></div>`;
- const mini=(l,v,vis,tip)=>`<div class="c3" style="grid-column:span 3"><section class="card mini flat" ${tip?`data-tip="${esc(tip)}"`:''}><div><div class="m-v">${v}</div><div class="m-l">${l}</div></div><div class="m-x">${vis}</div></section></div>`;
+ const mini=(l,v,vis,tip,kv)=>`<div class="c3" style="grid-column:span 3"><section class="card mini flat${kv?' kvc':''}" ${tip?`data-tip="${esc(tip)}"`:''} ${kv?`data-act="kpiOpen" data-k="${kv}" role="button" tabindex="0"`:''}><div><div class="m-v">${v}</div><div class="m-l">${l}</div></div><div class="m-x">${vis}</div></section></div>`;
  const pc=(a,b)=>b?a/b*100:0;
  const s14=f=>dailySeries(rs,14,f);
  const kp=`<div class="g12">
@@ -1035,7 +1037,7 @@ function pDashboardBase(){
  ${mini('HH de retrabajo',nf(K.ret,0),ring(K.pctRet*3,'#F59E0B'))}
  ${mini('HH improductivas',nf(K.imp,0),spark(s14(r=>r.clase==='improd'),'#EF4444').replace('class="spark"','style="width:90px;height:34px"'))}
  ${mini('HH de apoyo',nf(K.apoyo,0),`<div class="stk" style="width:80px"><i style="width:${Math.min(100,pc(K.apoyo,K.tot)*4)}%;background:#5F7A99"></i></div>`)}
- ${mini('Capacitación / no productivas',nf(K.capac,0),ring(pc(K.capac,K.tot)*4,'#94A3B8'))}
+ ${mini('Capacitación / no productivas',nf(K.capac,0),ring(pc(K.capac,K.tot)*4,'#94A3B8'),'Clic para ver el análisis','capac')}
  ${mini('HH programadas',nf(K.prog,0),`<div class="mut3" style="font-size:12px">${nf(pc(Math.max(0,K.prog-K.falt),K.prog),0)}% cubierto</div>`,'Jornadas programadas de días cerrados en el periodo')}
  ${mini('HH faltantes',nf(K.falt,0),badge(K.falt>0?'por completar':'al día',K.falt>0?'wa':'ok'))}
  ${mini('HH excedentes',nf(K.exc,0),badge(K.exc>0?'revisar':'al día',K.exc>0?'wa':'ok'))}
@@ -1172,7 +1174,7 @@ function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]
 function pAjustes(){
  const st=S.settings;const pend=S.registros.filter(r=>!r.sync&&!r.demo).length;
  return `<div class="g12"><div class="c4">${card('QR único de registro','Imprímelo y colócalo en producción',`<div style="text-align:center"><div class="qrbox" id="qrhost"></div><p class="mut3" style="font-size:12px;margin:10px 0;word-break:break-all">${esc(qrUrl())}</p>${btn(icon('print',16)+' Imprimir QR','printQR','','ghost')}</div><div class="fld" style="margin-top:14px"><label>Dirección pública de esta aplicación</label><input class="inp" id="urlIn" placeholder="Por defecto: la dirección actual de esta aplicación" value="${esc(st.url||'')}"></div>${btn('Actualizar QR','saveUrl','','sm ghost')}<p class="mut3" style="font-size:12px;margin-top:8px">El QR lleva a la captura rápida de la dirección indicada. Todos los datos se guardan en la base de datos compartida de la empresa.</p>`)}</div>
- <div class="c8">${card('Conexión con la nube','Base de datos compartida (Supabase) · app v4.3.2',`<div class="sub-panel" style="border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)"><div class="ttl" style="color:#86efac">${icon('check',18)} Conectado</div><p class="mut" style="font-size:13px;line-height:1.7">Sesión: <b style="color:var(--tx)">${esc(NB.email||'')}</b> · Rol: <b style="color:var(--tx)">${esc(U.role)}</b><br>Todos los registros, proyectos, técnicos y turnos se guardan automáticamente y los ven todos los usuarios según su rol.</p></div><p class="mut3" style="font-size:12.5px;margin-top:12px">Los técnicos registran sus horas con el QR (código + iniciales, sin contraseña). Sus registros quedan <b style="color:var(--tx2)">por validar</b> hasta que un supervisor los confirme. Supabase gratuito no hace copias automáticas: descarga la copia de seguridad cada semana (botón en “Datos y respaldo”).</p>`)}</div></div>
+ <div class="c8">${card('Conexión con la nube','Base de datos compartida (Supabase) · app v4.4.0',`<div class="sub-panel" style="border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)"><div class="ttl" style="color:#86efac">${icon('check',18)} Conectado</div><p class="mut" style="font-size:13px;line-height:1.7">Sesión: <b style="color:var(--tx)">${esc(NB.email||'')}</b> · Rol: <b style="color:var(--tx)">${esc(U.role)}</b><br>Todos los registros, proyectos, técnicos y turnos se guardan automáticamente y los ven todos los usuarios según su rol.</p></div><p class="mut3" style="font-size:12.5px;margin-top:12px">Los técnicos registran sus horas con el QR (código + iniciales, sin contraseña). Sus registros quedan <b style="color:var(--tx2)">por validar</b> hasta que un supervisor los confirme. Supabase gratuito no hace copias automáticas: descarga la copia de seguridad cada semana (botón en “Datos y respaldo”).</p>`)}</div></div>
  ${listasCard()}${cuentasCard()}${invitadosCard()}<div class="g12"><div class="c12">${card('Empezar de cero','Para dejar el sistema limpio y comenzar la operación real',`<ol class="mut" style="padding-left:18px;line-height:1.9"><li><b style="color:var(--tx)">Datos de prueba:</b> los técnicos, proyectos y registros ficticios (marcados como demo) se limpian desde la base de datos; Soporte te guía.</li><li><b style="color:var(--tx)">Turnos:</b> ajusta los horarios reales y asigna el personal.</li><li><b style="color:var(--tx)">Técnicos:</b> crea cada persona (código, iniciales, nombre, área, turno).</li><li><b style="color:var(--tx)">Proyectos:</b> crea el proyecto (escribe su número y la fecha de entrega) y define su expectativa por etapa.</li><li>Listo: ya se pueden registrar horas en Captura rápida.</li></ol><div class="acts" style="margin-top:12px">${btn('Ir a Turnos','go','data-p="turnos"','sm ghost')}${btn('Ir a Técnicos','go','data-p="tecnicos"','sm ghost')}${btn('Ir a Proyectos','go','data-p="proyectos"','sm ghost')}</div>`)}</div></div>
   <div class="g12"><div class="c6">${can(['Gerencia'])?card('Limpiar fotos de hallazgos','Libera espacio borrando fotos que ya no se necesitan',fotosCardHtml()):''}</div></div>
   <div class="g12"><div class="c6">${card('Datos y respaldo','Exporta una copia de tus datos',`<div style="display:flex;gap:10px;flex-wrap:wrap">${btn(icon('down',16)+' Exportar registros (Excel)','expXLSX','','ghost')}${can(['Gerencia','Calidad'])?btn(icon('down',16)+' Constancia de consentimientos (PDF)','consPdf','','ghost'):''}</div><p class="mut3" style="font-size:12.5px;margin-top:10px">El Excel es para analizar los registros. <b style="color:var(--tx2)">No es una copia de seguridad.</b></p>${backupCardExtra()}${nbSinceNote()}<input type="file" id="impFile" accept=".json" style="display:none"></div>`)}</div>
@@ -1295,6 +1297,76 @@ function renderPage(keep){
 function renderAll(keep){const a=app();a.classList.toggle('col',!!U.collapsed&&!isMob());a.classList.toggle('kiosk',U.kiosk);renderSide();renderTop();renderPage(keep)}
 function go(p){U.page=p;U.menu=false;app().classList.remove('open');saveUI();renderAll()}
 function drawQR(sel,size){const el=$(sel);if(!el)return;el.innerHTML='';try{if(window.QRCode){new QRCode(el,{text:qrUrl(),width:size,height:size,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});qrLogo(el)}else el.innerHTML='<p style="color:#000;padding:20px;line-height:1.3;font-size:13px">No se pudo cargar el generador de QR.<br>Usa la dirección de abajo.</p>'}catch(e){el.textContent='QR no disponible'}}
+/* ================= Láminas ampliadas (v4.4.0) ================= */
+const KV={};
+const kvGrp=(a,fn)=>{const m={};a.forEach(r=>{const k=fn(r);m[k]=(m[k]||0)+(+r.horas||0)});return Object.entries(m).map(([k,v])=>({k,v:r2(v)})).sort((x,y)=>y.v-x.v)};
+const kvPct=(a,b)=>b?nf(a/b*100,0)+'%':'0%';
+function kvBars(items,avg,col){
+ const n=items.length;if(!n)return empty();
+ const W=760,H=240,L=38,B=30,T=12,mx=niceMax(Math.max(...items.map(i=>i.v),avg||0,1)),ph=H-T-B,bw=(W-L)/n,g=Math.min(10,bw*.25),k=Math.ceil(n/13);
+ let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img" aria-label="Horas por semana">`;
+ for(let i=0;i<=4;i++){const y=T+ph*(1-i/4);s+=`<line x1="${L}" x2="${W}" y1="${y}" y2="${y}" stroke="rgba(148,163,184,.2)" stroke-width="1"/><text x="${L-6}" y="${y+4}" text-anchor="end" style="fill:var(--tx3);font-size:11px">${nf(mx*i/4,Number.isInteger(mx/4)?0:1)}</text>`}
+ items.forEach((it,i)=>{const h=ph*it.v/mx,x=L+i*bw+g/2,y=T+ph-h;
+  s+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(2,bw-g).toFixed(1)}" height="${Math.max(h,it.v>0?2:0).toFixed(1)}" rx="4" fill="${col}" data-tip="${esc(it.tip||it.k+'\n'+hh(it.v)+' HH')}"/>`;
+  if(i%k===0||i===n-1)s+=`<text x="${(x+(bw-g)/2).toFixed(1)}" y="${H-9}" text-anchor="middle" style="fill:var(--tx3);font-size:11px">${esc(it.k)}</text>`});
+ if(avg>0){const y=T+ph*(1-avg/mx);s+=`<line x1="${L}" x2="${W}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#F59E0B" stroke-width="1.6" stroke-dasharray="6 5"/><text x="${W}" y="${(y-5).toFixed(1)}" text-anchor="end" style="fill:#F59E0B;font-size:11px;font-weight:600">promedio ${hh(avg)}</text>`}
+ return s+'</svg>'}
+function kvRecs(){const K=kpis();return {K,all:K.rs.filter(r=>r.clase==='capac'||r.clase==='fuera').sort((a,b)=>a.fecha<b.fecha?1:a.fecha>b.fecha?-1:0)}}
+KV.capac=function(){
+ const {K,all}=kvRecs();const tot=sum(all);
+ const f=U.f,np=+f.per;const perTxt=(f.desde||f.hasta)?'Periodo seleccionado':np?'Últimos '+np+' días':'Todo el histórico';
+ const head=mh('Capacitación / no productivas');
+ const sub=`<p class="mut" style="margin:-6px 0 16px">${perTxt}. Respeta los filtros del Panel (proyecto, área, técnico…).</p>`;
+ if(!all.length)return head+sub+empty('No hay horas de capacitación ni no productivas con los filtros actuales.');
+ /* periodo anterior */
+ let ptot=null;if(np&&!f.desde&&!f.hasta){const t0=today(),a=addDays(t0,-2*np+1),b=addDays(t0,-np);ptot=sum(K.rn.filter(r=>(r.clase==='capac'||r.clase==='fuera')&&r.fecha>=a&&r.fecha<=b))}
+ /* semanas */
+ const wm={};all.forEach(r=>{const m=monday(r.fecha);wm[m]=(wm[m]||0)+(+r.horas||0)});
+ const ks=Object.keys(wm).sort();let wks=[];if(ks.length){for(let m=ks[0];m<=ks[ks.length-1];m=addDays(m,7))wks.push({m,v:r2(wm[m]||0)})}
+ const nW=wks.length;const avg=nW?tot/nW:0;wks=wks.slice(-26);
+ const items=wks.map(w=>({k:dlabel(w.m),v:w.v,tip:'Semana del '+dlabel(w.m)+'\n'+hh(w.v)+' HH'}));
+ const pk=wks.slice().sort((a,b)=>b.v-a.v)[0];
+ const tipos=kvGrp(all,capKey),pers=kvGrp(all,r=>r.nombre||'Sin nombre'),areas=kvGrp(all,r=>r.area||'Sin área');
+ /* lectura automática */
+ const L=[`Se registraron <b>${hh(tot)} HH</b> (${nf(K.tot?tot/K.tot*100:0,1)}% de las HH totales) en ${all.length} registros.`];
+ if(ptot!=null)L.push(ptot>0?`Frente al periodo anterior de igual duración (${hh(ptot)} HH) ${tot>ptot?'subió':tot<ptot?'bajó':'se mantuvo'}${tot===ptot?'':' '+nf(Math.abs((tot-ptot)/ptot*100),0)+'%'}.`:`El periodo anterior no tuvo horas de este tipo.`);
+ L.push(`<b>${esc(tipos[0].k)}</b> concentra el ${kvPct(tipos[0].v,tot)} de las horas.`);
+ if(pers.length>1)L.push(`<b>${esc(pers[0].k)}</b> acumula el ${kvPct(pers[0].v,tot)} (${hh(pers[0].v)} HH)${pers[0].v/tot>=.4?'; conviene revisar si la capacitación se reparte entre el personal':''}.`);
+ if(nW>=3&&pk&&pk.v>2*avg)L.push(`La semana del ${dlabel(pk.m)} fue un pico (${hh(pk.v)} HH) frente a un promedio de ${hh(avg)}.`);
+ /* controles */
+ const ctl=(ok,t,s)=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--bd)"><span style="margin-top:2px">${badge(ok?'OK':'Revisar',ok?'ok':'wa')}</span><div style="flex:1"><div style="font-weight:600">${t}</div>${s?`<div class="mut3" style="font-size:12.5px;margin-top:2px">${s}</div>`:''}</div></div>`;
+ const otra=all.filter(r=>r.act==='Otra'),otraSD=otra.filter(r=>!(r.desc||'').trim());
+ const dj={};all.filter(r=>r.clase==='capac').forEach(r=>{const k=r.tec+'|'+r.fecha;(dj[k]=dj[k]||{n:r.nombre,f:r.fecha,h:0}).h+=+r.horas||0});
+ const largas=Object.values(dj).filter(x=>x.h>4).sort((a,b)=>b.h-a.h);
+ const pd0={};K.rs.filter(isProd).forEach(r=>{pd0[r.fecha]=(pd0[r.fecha]||0)+(+r.horas||0)});
+ const dv=Object.values(pd0).filter(v=>v>0),pAvg=dv.length?dv.reduce((a,b)=>a+b,0)/dv.length:0;
+ const dc={};all.filter(r=>r.clase==='capac').forEach(r=>{if(pAvg&&(pd0[r.fecha]||0)>pAvg*1.25){const o=dc[r.fecha]=dc[r.fecha]||{f:r.fecha,h:0};o.h+=+r.horas||0}});
+ const cargas=Object.values(dc).sort((a,b)=>b.h-a.h);
+ const sd=all.filter(r=>!(r.desc||'').trim()).length;
+ const C=ctl(!otra.length,otra.length?`${otra.length} registro${otra.length>1?'s':''} en «Otra» por clasificar (${hh(sum(otra))} HH)`:'Sin horas en «Otra»',otra.length?`${otraSD.length} sin descripción. Conviene asignarles un tipo concreto o aclarar qué se hizo.`:'Todo está clasificado en un tipo concreto.')
+  +ctl(!largas.length,largas.length?`${largas.length} jornada${largas.length>1?'s':''} con más de 4 HH de capacitación en un mismo día`:'Ninguna jornada supera 4 HH de capacitación',largas.length?largas.slice(0,5).map(x=>`${esc(x.n)} · ${dlabel(x.f)} · ${hh(x.h)} HH`).join('<br>'):'')
+  +ctl(!cargas.length,cargas.length?`${cargas.length} día${cargas.length>1?'s':''} de alta carga de producción con capacitación (${hh(sum(cargas.map(x=>({horas:x.h}))))} HH)`:'Sin capacitación en días de alta carga',cargas.length?cargas.slice(0,5).map(x=>`${dfull(x.f)} · ${hh(x.h)} HH`).join('<br>')+`<br><span style="opacity:.8">Alta carga = día con producción 25% por encima del promedio diario del periodo.</span>`:'Alta carga = día con producción 25% por encima del promedio diario del periodo.')
+  +`<div class="mut3" style="font-size:12.5px;padding-top:10px;border-top:1px solid var(--bd)">${sd} de ${all.length} registros no tienen descripción (es opcional al registrar).</div>`;
+ /* detalle */
+ const sh=all.slice(0,40);
+ const tb=`<div class="tw"><table class="t"><thead><tr><th>Fecha</th><th>Persona</th><th>Tipo</th><th class="r">HH</th><th>Descripción</th></tr></thead><tbody>${sh.map(r=>`<tr><td style="white-space:nowrap">${dlabel(r.fecha)}</td><td>${esc(r.nombre)}</td><td>${esc(capKey(r))}${r.act==='Otra'?' '+badge('por clasificar','wa'):''}</td><td class="num">${hh(r.horas)}</td><td class="mut3">${esc(r.desc||'—')}</td></tr>`).join('')}</tbody></table></div>${all.length>sh.length?`<p class="mut3" style="font-size:12.5px;margin-top:8px">Se muestran los 40 más recientes de ${all.length}. El Excel trae todos.</p>`:''}`;
+ const kh=(t,s)=>`<div style="margin:0 0 10px"><h3 style="font-size:15px">${t}</h3>${s?`<p class="mut3" style="font-size:12.5px">${s}</p>`:''}</div>`;
+ return head+sub
+ +`<div style="display:flex;gap:22px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><div style="font-size:34px;font-weight:700;letter-spacing:-.02em">${nf(tot,1)}<small style="font-size:15px;font-weight:500;color:var(--tx2)"> HH</small></div><div class="mut">${nf(K.tot?tot/K.tot*100:0,1)}% de las HH totales</div>${ptot!=null?`<div class="mut">Periodo anterior: ${hh(ptot)} HH</div>`:''}</div>`
+ +kh('Horas por semana','La línea punteada es el promedio semanal'+(nW>26?' · últimas 26 semanas':''))+kvBars(items,avg,'#94A3B8')
+ +`<div style="margin-top:20px;padding:14px 16px;border-radius:14px;background:rgba(148,163,184,.1)"><div style="font-weight:700;margin-bottom:6px">Lectura del periodo</div><ul style="margin:0;padding-left:18px;line-height:1.55">${L.map(x=>`<li>${x}</li>`).join('')}</ul></div>`
+ +`<div class="kvg" style="margin-top:20px"><div>${kh('Por tipo','En qué se usó el tiempo')}${hbars(tipos.map(t=>({k:t.k,v:t.v,c:'#94A3B8'})))}</div><div>${kh('Por persona','Quién concentra las horas'+(pers.length>10?' · 10 principales':''))}${hbars(pers.slice(0,10).map(t=>({k:t.k,v:t.v,c:'#94A3B8'})))}</div></div>`
+ +`<div class="kvg" style="margin-top:20px"><div>${kh('Por área','')}${hbars(areas.map(t=>({k:t.k,v:t.v,c:'#94A3B8'})))}</div><div>${kh('Controles para auditoría','Se calculan solos con los registros')}${C}</div></div>`
+ +`<div style="margin-top:22px">${kh('Detalle de registros','')}${tb}</div>`
+ +`<div class="mf">${btn(icon('down',16)+' Descargar Excel','kvXls','data-k="capac"','ghost')}${btn('Cerrar','mClose')}</div>`;
+};
+const capKey=r=>r.clase==='fuera'?'Almacén (fuera de producción)':(r.act||r.cat||'Sin tipo');
+function kvXls(k){
+ if(k!=='capac')return;const {all}=kvRecs(),tot=sum(all);
+ const sA={name:'Registros',cols:[{h:'Fecha',w:12,t:'d'},{h:'Persona',w:26},{h:'Área',w:20},{h:'Tipo',w:30},{h:'Horas',w:9,t:'n'},{h:'Descripción',w:44},{h:'Registrado por',w:22}],rows:all.slice().reverse().map(r=>[r.fecha,r.nombre,r.area,capKey(r),r.horas,r.desc||'',r.por||''])};
+ const sB={name:'Por tipo',cols:[{h:'Tipo',w:32},{h:'Horas',w:11,t:'n'},{h:'% del total',w:12,t:'n'}],rows:kvGrp(all,capKey).map(x=>[x.k,x.v,r2(tot?x.v/tot*100:0)])};
+ const sC={name:'Por persona',cols:[{h:'Persona',w:30},{h:'Horas',w:11,t:'n'},{h:'% del total',w:12,t:'n'}],rows:kvGrp(all,r=>r.nombre||'Sin nombre').map(x=>[x.k,x.v,r2(tot?x.v/tot*100:0)])};
+ dlBlob('capacitacion_no_productivas_'+today()+'.xlsx',xlsxBlob([sA,sB,sC]));toast('Excel descargado','ok')}
 /* ================= Modales ================= */
 let M={};
 function openModal(html,cls=''){const m=$('#modal');m.innerHTML=`<div class="mbox ${cls}" role="dialog" aria-modal="true">${html}</div>`;m.className='open'+(cls==='pal'?' pal':'');m.style.display='flex';const f=m.querySelector('input:not([type=hidden]),select,textarea');if(f&&cls!=='pal')setTimeout(()=>f.focus({preventScroll:true}),30)}
@@ -1409,6 +1481,7 @@ const A={
  copyApps:()=>{try{navigator.clipboard.writeText(APPS).then(()=>toast('Código copiado','ok'),()=>toast('Selecciona el código y cópialo manualmente','wa'))}catch(e){toast('Selecciona el código y cópialo manualmente','wa')}},
  delDemo:()=>nbNo(),_delDemo:()=>confirmM('Eliminar datos de demostración','Se eliminarán los técnicos, proyectos, registros y hallazgos de demostración. Lo que hayas creado tú se conserva. Esta acción no se puede deshacer.','Eliminar datos demo',()=>{S.tecnicos=S.tecnicos.filter(x=>!x.demo);S.proyectos=S.proyectos.filter(x=>!x.demo);S.registros=S.registros.filter(x=>!x.demo);S.hallazgos=S.hallazgos.filter(x=>!x.demo);S.demo=false;U.c=newC();U.f=newF();save();closeModal();renderAll();toast('Datos demo eliminados','ok')},1),
  loadDemo:()=>nbNo(),_loadDemo:()=>confirmM('Cargar datos de demostración','Esto reemplaza los técnicos, proyectos y registros actuales por datos de demostración.','Reemplazar y cargar',()=>{const st=S.settings,tu=S.turnos;S=baseState();S.settings=st;S.turnos=tu;genDemo();U.c=newC();save();closeModal();renderAll();toast('Datos demo cargados','ok')},1),
+ kpiOpen:t=>{const f=KV[t.dataset.k];if(f){M={type:'kv',k:t.dataset.k};openModal(f(),'xl')}},kvXls:t=>{try{kvXls(t.dataset.k)}catch(e){toast('No se pudo crear el Excel: '+e.message,'er')}},
  mClose:()=>closeModal(),mOk:()=>{const cb=M.cb;if(cb)cb()}
 };
 function setPath(p,v){
@@ -2079,7 +2152,7 @@ function nbShowLogin(msg){
  <div style="text-align:right;margin:-4px 0 6px"><a href="#" data-act="olvide" style="font-size:13px;color:var(--ac,#38bdf8)">¿Olvidaste tu contraseña?</a></div>
  <div id="lg_e" style="min-height:22px;color:var(--er);font-size:13px;margin:4px 0 10px">${esc(msg||'')}</div>
  <div>${btn('Ingresar','login','','big')}</div>
- <p class="mut3" style="margin-top:18px;font-size:12.5px">¿Eres técnico? Registra tus horas escaneando el QR de producción: no necesitas contraseña.</p><p class="mut3" style="margin-top:10px;font-size:11px">Versión 4.3.2</p></div></div></div></div>`}
+ <p class="mut3" style="margin-top:18px;font-size:12.5px">¿Eres técnico? Registra tus horas escaneando el QR de producción: no necesitas contraseña.</p><p class="mut3" style="margin-top:10px;font-size:11px">Versión 4.4.0</p></div></div></div></div>`}
 async function nbLogin(){
  const u=($('#lg_u')||{}).value||'',p=($('#lg_p')||{}).value||'';const er=$('#lg_e');
  if(!u.trim()||!p){if(er)er.textContent='Escribe tu correo y tu contraseña.';return}
@@ -2462,7 +2535,7 @@ function invModal(inv){
 function qrInto(sel,text,size){const el=$(sel);if(!el)return;el.innerHTML='';try{if(window.QRCode){new QRCode(el,{text,width:size,height:size,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});qrLogo(el)}else el.innerHTML='<p class="mut3" style="padding:30px">No se pudo dibujar el QR (sin internet). Usa el enlace.</p>'}catch(e){}}
 
 /* ---------- Perfil Auditoría y revisiones: ver, filtrar, imprimir y descargar; nunca modificar ---------- */
-const AUD_OK=['audPrint','alTab','alMore','go','none','drawer','closeDrawer','collapse','menu','pal','palGo','help','tema','refresh','goAlert','per','toggleF','clearF','fset','trend','pickEtapa','moreR','supHoy','cqPer','cmpToggle','catSel','tSel','tab','semNav','goProj','expXLSX','expCSV','hExp','lExp','hFiltro','hPer','hTab','hdet','hfVer','lFiltro','lPer','lTab','ldet','hWA','lWA','copyTxt','rotaCSV','progCopy','progMail','progMsgCopy','progPDF','progPNG','progPrint','progShare','progTheme','progTodos','progUno','progWA','shareOne','semShare','mClose','mOk','logout','chPass','chPassSave','verPass','nbRetry'];
+const AUD_OK=['kpiOpen','kvXls','audPrint','alTab','alMore','go','none','drawer','closeDrawer','collapse','menu','pal','palGo','help','tema','refresh','goAlert','per','toggleF','clearF','fset','trend','pickEtapa','moreR','supHoy','cqPer','cmpToggle','catSel','tSel','tab','semNav','goProj','expXLSX','expCSV','hExp','lExp','hFiltro','hPer','hTab','hdet','hfVer','lFiltro','lPer','lTab','ldet','hWA','lWA','copyTxt','rotaCSV','progCopy','progMail','progMsgCopy','progPDF','progPNG','progPrint','progShare','progTheme','progTodos','progUno','progWA','shareOne','semShare','mClose','mOk','logout','chPass','chPassSave','verPass','nbRetry'];
 function nbAudOn(){
  document.body.classList.add('audit');
  if(!document.getElementById('audCss')){const st=document.createElement('style');st.id='audCss';
