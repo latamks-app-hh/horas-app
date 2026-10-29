@@ -239,7 +239,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 .mbox{width:100%;max-width:640px;max-height:calc(100vh - 40px);overflow:auto;background:rgba(16,23,34,.96);border:1px solid var(--bd2);border-radius:20px;padding:22px;box-shadow:0 30px 80px -20px rgba(0,0,0,.8);animation:pop .2s var(--ease)}
 .mbox.w{max-width:820px}.mbox.s{max-width:460px}.mbox.xl{max-width:1080px}
-.mini.kvc{cursor:pointer;transition:box-shadow .15s,transform .15s}.mini.kvc:hover,.mini.kvc:focus-visible{box-shadow:0 0 0 1.5px var(--pri);transform:translateY(-1px);outline:none}
+.kvc{cursor:pointer;transition:box-shadow .15s,transform .15s}.kvc:hover,.kvc:focus-visible{box-shadow:0 0 0 1.5px var(--pri);transform:translateY(-1px);outline:none}
 .kvg{display:grid;grid-template-columns:1fr 1fr;gap:22px}@media(max-width:820px){.kvg{grid-template-columns:1fr}}
 @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
 .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px}
@@ -1023,24 +1023,24 @@ function pDashboardBase(){
  const dT=delta(rn,r=>r.clase!=='aus'),dR=delta(rn,r=>r.clase==='retrabajo');
  const dv=K.dev,dvp=K.exp?dv/K.exp*100:0;const dvc=dv>K.exp*.1?'er':dv>0?'wa':'ok';
  const arrow=p=>p==null?`<span class="mut3">sin base de comparación</span>`:p>=0?`<span class="up">${icon('up',14)} +${nf(p,1)}%</span>`:`<span class="dn">${icon('dwn',14)} ${nf(p,1)}%</span>`;
- const hero=(l,ic,v,unit,d,col,series)=>`<div class="c3"><section class="card kpi hero"><div class="k-l">${icon(ic,16)}${l}</div><div class="k-v">${v}<small>${unit}</small></div><div class="k-d">${d}</div>${spark(series,col)}</section></div>`;
+ const hero=(l,ic,v,unit,d,col,series,kv)=>`<div class="c3"><section class="card kpi hero${kv?' kvc':''}" ${kv?`data-act="kpiOpen" data-k="${kv}" role="button" tabindex="0" data-tip="Clic para ver el análisis"`:''}><div class="k-l">${icon(ic,16)}${l}</div><div class="k-v">${v}<small>${unit}</small></div><div class="k-d">${d}</div>${spark(series,col)}</section></div>`;
  const mini=(l,v,vis,tip,kv)=>`<div class="c3" style="grid-column:span 3"><section class="card mini flat${kv?' kvc':''}" ${tip?`data-tip="${esc(tip)}"`:''} ${kv?`data-act="kpiOpen" data-k="${kv}" role="button" tabindex="0"`:''}><div><div class="m-v">${v}</div><div class="m-l">${l}</div></div><div class="m-x">${vis}</div></section></div>`;
  const pc=(a,b)=>b?a/b*100:0;
  const s14=f=>dailySeries(rs,14,f);
  const kp=`<div class="g12">
- ${hero('HH totales registradas','clock',nf(K.tot,0),'HH',`${arrow(dT.p)}<span>vs. 7 días previos</span>`,'#38BDF8',s14(r=>r.clase!=='aus'))}
- ${hero('% de retrabajo sobre HH totales','redo',nf(K.pctRet,1),'%',`<span>${nf(K.ret,0)} HH de retrabajo</span> ${arrow(dR.p)}`,'#F59E0B',s14(r=>r.clase==='retrabajo'))}
- ${hero('Desviación global vs. expectativa','trend',(dv>0?'+':'')+nf(dv,0),'HH',`${badge(nf(dvp,1)+'% de la expectativa',dvc)}<span>etapas terminadas o excedidas</span>`,dv>0?'#EF4444':'#22C55E',s14(r=>isProd(r)))}
- ${hero('Proyectos activos','factory',K.activos,'',`<span>${K.P.length} en el filtro actual</span>`,'#8B5CF6',s14(r=>!!r.proy))}
+ ${hero('HH totales registradas','clock',nf(K.tot,0),'HH',`${arrow(dT.p)}<span>vs. 7 días previos</span>`,'#38BDF8',s14(r=>r.clase!=='aus'),'tot')}
+ ${hero('% de retrabajo sobre HH totales','redo',nf(K.pctRet,1),'%',`<span>${nf(K.ret,0)} HH de retrabajo</span> ${arrow(dR.p)}`,'#F59E0B',s14(r=>r.clase==='retrabajo'),'pret')}
+ ${hero('Desviación global vs. expectativa','trend',(dv>0?'+':'')+nf(dv,0),'HH',`${badge(nf(dvp,1)+'% de la expectativa',dvc)}<span>etapas terminadas o excedidas</span>`,dv>0?'#EF4444':'#22C55E',s14(r=>isProd(r)),'dev')}
+ ${hero('Proyectos activos','factory',K.activos,'',`<span>${K.P.length} en el filtro actual</span>`,'#8B5CF6',s14(r=>!!r.proy),'proy')}
  </div><div class="g12">
- ${mini('HH de fabricación normal',nf(K.normal,0),ring(pc(K.normal,K.tot),'#38BDF8'),nf(pc(K.normal,K.tot),0)+'% de las HH totales')}
- ${mini('HH de retrabajo',nf(K.ret,0),ring(K.pctRet*3,'#F59E0B'))}
- ${mini('HH improductivas',nf(K.imp,0),spark(s14(r=>r.clase==='improd'),'#EF4444').replace('class="spark"','style="width:90px;height:34px"'))}
- ${mini('HH de apoyo',nf(K.apoyo,0),`<div class="stk" style="width:80px"><i style="width:${Math.min(100,pc(K.apoyo,K.tot)*4)}%;background:#5F7A99"></i></div>`)}
+ ${mini('HH de fabricación normal',nf(K.normal,0),ring(pc(K.normal,K.tot),'#38BDF8'),nf(pc(K.normal,K.tot),0)+'% de las HH totales · clic para ver el análisis','normal')}
+ ${mini('HH de retrabajo',nf(K.ret,0),ring(K.pctRet*3,'#F59E0B'),'Clic para ver el análisis','ret')}
+ ${mini('HH improductivas',nf(K.imp,0),spark(s14(r=>r.clase==='improd'),'#EF4444').replace('class="spark"','style="width:90px;height:34px"'),'Clic para ver el análisis','improd')}
+ ${mini('HH de apoyo',nf(K.apoyo,0),`<div class="stk" style="width:80px"><i style="width:${Math.min(100,pc(K.apoyo,K.tot)*4)}%;background:#5F7A99"></i></div>`,'Clic para ver el análisis','apoyo')}
  ${mini('Capacitación / no productivas',nf(K.capac,0),ring(pc(K.capac,K.tot)*4,'#94A3B8'),'Clic para ver el análisis','capac')}
- ${mini('HH programadas',nf(K.prog,0),`<div class="mut3" style="font-size:12px">${nf(pc(Math.max(0,K.prog-K.falt),K.prog),0)}% cubierto</div>`,'Jornadas programadas de días cerrados en el periodo')}
- ${mini('HH faltantes',nf(K.falt,0),badge(K.falt>0?'por completar':'al día',K.falt>0?'wa':'ok'))}
- ${mini('HH excedentes',nf(K.exc,0),badge(K.exc>0?'revisar':'al día',K.exc>0?'wa':'ok'))}
+ ${mini('HH programadas',nf(K.prog,0),`<div class="mut3" style="font-size:12px">${nf(pc(Math.max(0,K.prog-K.falt),K.prog),0)}% cubierto</div>`,'Jornadas programadas de días cerrados en el periodo · clic para ver el análisis','prog')}
+ ${mini('HH faltantes',nf(K.falt,0),badge(K.falt>0?'por completar':'al día',K.falt>0?'wa':'ok'),'Clic para ver el análisis','falt')}
+ ${mini('HH excedentes',nf(K.exc,0),badge(K.exc>0?'revisar':'al día',K.exc>0?'wa':'ok'),'Clic para ver el análisis','exc')}
  </div>`;
  /* curva + resumen */
  const cv=curve(P,rn);
@@ -1298,9 +1298,17 @@ function renderAll(keep){const a=app();a.classList.toggle('col',!!U.collapsed&&!
 function go(p){U.page=p;U.menu=false;app().classList.remove('open');saveUI();renderAll()}
 function drawQR(sel,size){const el=$(sel);if(!el)return;el.innerHTML='';try{if(window.QRCode){new QRCode(el,{text:qrUrl(),width:size,height:size,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});qrLogo(el)}else el.innerHTML='<p style="color:#000;padding:20px;line-height:1.3;font-size:13px">No se pudo cargar el generador de QR.<br>Usa la dirección de abajo.</p>'}catch(e){el.textContent='QR no disponible'}}
 /* ================= Láminas ampliadas (v4.4.0) ================= */
-const KV={};
+const KV={},KVX={},KVC={};
 const kvGrp=(a,fn)=>{const m={};a.forEach(r=>{const k=fn(r);m[k]=(m[k]||0)+(+r.horas||0)});return Object.entries(m).map(([k,v])=>({k,v:r2(v)})).sort((x,y)=>y.v-x.v)};
 const kvPct=(a,b)=>b?nf(a/b*100,0)+'%':'0%';
+const kvKh=(t,s)=>`<div style="margin:0 0 10px"><h3 style="font-size:15px">${t}</h3>${s?`<p class="mut3" style="font-size:12.5px">${s}</p>`:''}</div>`;
+const kvCtl=(ok,t,s)=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--bd)"><span style="margin-top:2px">${badge(ok?'OK':'Revisar',ok?'ok':'wa')}</span><div style="flex:1"><div style="font-weight:600">${t}</div>${s?`<div class="mut3" style="font-size:12.5px;margin-top:2px">${s}</div>`:''}</div></div>`;
+const kvPer=()=>{const f=U.f,np=+f.per;return (f.desde||f.hasta)?'Periodo seleccionado':np?'Últimos '+np+' días':'Todo el histórico'};
+const kvSub=(extra)=>`<p class="mut" style="margin:-6px 0 16px">${extra||kvPer()+'. Respeta los filtros del Panel (proyecto, área, técnico…).'}</p>`;
+const kvBig=(v,u,rest)=>`<div style="display:flex;gap:22px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><div style="font-size:34px;font-weight:700;letter-spacing:-.02em">${v}<small style="font-size:15px;font-weight:500;color:var(--tx2)"> ${u}</small></div>${rest.map(x=>`<div class="mut">${x}</div>`).join('')}</div>`;
+const kvLect=L=>`<div style="margin-top:20px;padding:14px 16px;border-radius:14px;background:rgba(148,163,184,.1)"><div style="font-weight:700;margin-bottom:6px">Lectura del periodo</div><ul style="margin:0;padding-left:18px;line-height:1.55">${L.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+const kvBtns=k=>`<div class="mf">${btn(icon('down',16)+' Descargar Excel','kvXls','data-k="'+k+'"','ghost')}${btn('Cerrar','mClose')}</div>`;
+const kvTbl=(cols,rows,tot,n)=>`<div class="tw"><table class="t"><thead><tr>${cols.map(c=>`<th class="${c[2]||''}">${c[0]}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td class="${c[2]==='r'?'num':''}">${c[1](r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${tot>rows.length?`<p class="mut3" style="font-size:12.5px;margin-top:8px">Se muestran ${rows.length} de ${tot}. El Excel trae todos.</p>`:''}`;
 function kvBars(items,avg,col){
  const n=items.length;if(!n)return empty();
  const W=760,H=240,L=38,B=30,T=12,mx=niceMax(Math.max(...items.map(i=>i.v),avg||0,1)),ph=H-T-B,bw=(W-L)/n,g=Math.min(10,bw*.25),k=Math.ceil(n/13);
@@ -1311,62 +1319,154 @@ function kvBars(items,avg,col){
   if(i%k===0||i===n-1)s+=`<text x="${(x+(bw-g)/2).toFixed(1)}" y="${H-9}" text-anchor="middle" style="fill:var(--tx3);font-size:11px">${esc(it.k)}</text>`});
  if(avg>0){const y=T+ph*(1-avg/mx);s+=`<line x1="${L}" x2="${W}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#F59E0B" stroke-width="1.6" stroke-dasharray="6 5"/><text x="${W}" y="${(y-5).toFixed(1)}" text-anchor="end" style="fill:#F59E0B;font-size:11px;font-weight:600">promedio ${hh(avg)}</text>`}
  return s+'</svg>'}
-function kvRecs(){const K=kpis();return {K,all:K.rs.filter(r=>r.clase==='capac'||r.clase==='fuera').sort((a,b)=>a.fecha<b.fecha?1:a.fecha>b.fecha?-1:0)}}
-KV.capac=function(){
- const {K,all}=kvRecs();const tot=sum(all);
- const f=U.f,np=+f.per;const perTxt=(f.desde||f.hasta)?'Periodo seleccionado':np?'Últimos '+np+' días':'Todo el histórico';
- const head=mh('Capacitación / no productivas');
- const sub=`<p class="mut" style="margin:-6px 0 16px">${perTxt}. Respeta los filtros del Panel (proyecto, área, técnico…).</p>`;
- if(!all.length)return head+sub+empty('No hay horas de capacitación ni no productivas con los filtros actuales.');
- /* periodo anterior */
- let ptot=null;if(np&&!f.desde&&!f.hasta){const t0=today(),a=addDays(t0,-2*np+1),b=addDays(t0,-np);ptot=sum(K.rn.filter(r=>(r.clase==='capac'||r.clase==='fuera')&&r.fecha>=a&&r.fecha<=b))}
- /* semanas */
- const wm={};all.forEach(r=>{const m=monday(r.fecha);wm[m]=(wm[m]||0)+(+r.horas||0)});
- const ks=Object.keys(wm).sort();let wks=[];if(ks.length){for(let m=ks[0];m<=ks[ks.length-1];m=addDays(m,7))wks.push({m,v:r2(wm[m]||0)})}
- const nW=wks.length;const avg=nW?tot/nW:0;wks=wks.slice(-26);
- const items=wks.map(w=>({k:dlabel(w.m),v:w.v,tip:'Semana del '+dlabel(w.m)+'\n'+hh(w.v)+' HH'}));
- const pk=wks.slice().sort((a,b)=>b.v-a.v)[0];
- const tipos=kvGrp(all,capKey),pers=kvGrp(all,r=>r.nombre||'Sin nombre'),areas=kvGrp(all,r=>r.area||'Sin área');
- /* lectura automática */
- const L=[`Se registraron <b>${hh(tot)} HH</b> (${nf(K.tot?tot/K.tot*100:0,1)}% de las HH totales) en ${all.length} registros.`];
- if(ptot!=null)L.push(ptot>0?`Frente al periodo anterior de igual duración (${hh(ptot)} HH) ${tot>ptot?'subió':tot<ptot?'bajó':'se mantuvo'}${tot===ptot?'':' '+nf(Math.abs((tot-ptot)/ptot*100),0)+'%'}.`:`El periodo anterior no tuvo horas de este tipo.`);
- L.push(`<b>${esc(tipos[0].k)}</b> concentra el ${kvPct(tipos[0].v,tot)} de las horas.`);
- if(pers.length>1)L.push(`<b>${esc(pers[0].k)}</b> acumula el ${kvPct(pers[0].v,tot)} (${hh(pers[0].v)} HH)${pers[0].v/tot>=.4?'; conviene revisar si la capacitación se reparte entre el personal':''}.`);
- if(nW>=3&&pk&&pk.v>2*avg)L.push(`La semana del ${dlabel(pk.m)} fue un pico (${hh(pk.v)} HH) frente a un promedio de ${hh(avg)}.`);
- /* controles */
- const ctl=(ok,t,s)=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--bd)"><span style="margin-top:2px">${badge(ok?'OK':'Revisar',ok?'ok':'wa')}</span><div style="flex:1"><div style="font-weight:600">${t}</div>${s?`<div class="mut3" style="font-size:12.5px;margin-top:2px">${s}</div>`:''}</div></div>`;
- const otra=all.filter(r=>r.act==='Otra'),otraSD=otra.filter(r=>!(r.desc||'').trim());
- const dj={};all.filter(r=>r.clase==='capac').forEach(r=>{const k=r.tec+'|'+r.fecha;(dj[k]=dj[k]||{n:r.nombre,f:r.fecha,h:0}).h+=+r.horas||0});
- const largas=Object.values(dj).filter(x=>x.h>4).sort((a,b)=>b.h-a.h);
- const pd0={};K.rs.filter(isProd).forEach(r=>{pd0[r.fecha]=(pd0[r.fecha]||0)+(+r.horas||0)});
- const dv=Object.values(pd0).filter(v=>v>0),pAvg=dv.length?dv.reduce((a,b)=>a+b,0)/dv.length:0;
- const dc={};all.filter(r=>r.clase==='capac').forEach(r=>{if(pAvg&&(pd0[r.fecha]||0)>pAvg*1.25){const o=dc[r.fecha]=dc[r.fecha]||{f:r.fecha,h:0};o.h+=+r.horas||0}});
- const cargas=Object.values(dc).sort((a,b)=>b.h-a.h);
- const sd=all.filter(r=>!(r.desc||'').trim()).length;
- const C=ctl(!otra.length,otra.length?`${otra.length} registro${otra.length>1?'s':''} en «Otra» por clasificar (${hh(sum(otra))} HH)`:'Sin horas en «Otra»',otra.length?`${otraSD.length} sin descripción. Conviene asignarles un tipo concreto o aclarar qué se hizo.`:'Todo está clasificado en un tipo concreto.')
-  +ctl(!largas.length,largas.length?`${largas.length} jornada${largas.length>1?'s':''} con más de 4 HH de capacitación en un mismo día`:'Ninguna jornada supera 4 HH de capacitación',largas.length?largas.slice(0,5).map(x=>`${esc(x.n)} · ${dlabel(x.f)} · ${hh(x.h)} HH`).join('<br>'):'')
-  +ctl(!cargas.length,cargas.length?`${cargas.length} día${cargas.length>1?'s':''} de alta carga de producción con capacitación (${hh(sum(cargas.map(x=>({horas:x.h}))))} HH)`:'Sin capacitación en días de alta carga',cargas.length?cargas.slice(0,5).map(x=>`${dfull(x.f)} · ${hh(x.h)} HH`).join('<br>')+`<br><span style="opacity:.8">Alta carga = día con producción 25% por encima del promedio diario del periodo.</span>`:'Alta carga = día con producción 25% por encima del promedio diario del periodo.')
-  +`<div class="mut3" style="font-size:12.5px;padding-top:10px;border-top:1px solid var(--bd)">${sd} de ${all.length} registros no tienen descripción (es opcional al registrar).</div>`;
- /* detalle */
- const sh=all.slice(0,40);
- const tb=`<div class="tw"><table class="t"><thead><tr><th>Fecha</th><th>Persona</th><th>Tipo</th><th class="r">HH</th><th>Descripción</th></tr></thead><tbody>${sh.map(r=>`<tr><td style="white-space:nowrap">${dlabel(r.fecha)}</td><td>${esc(r.nombre)}</td><td>${esc(capKey(r))}${r.act==='Otra'?' '+badge('por clasificar','wa'):''}</td><td class="num">${hh(r.horas)}</td><td class="mut3">${esc(r.desc||'—')}</td></tr>`).join('')}</tbody></table></div>${all.length>sh.length?`<p class="mut3" style="font-size:12.5px;margin-top:8px">Se muestran los 40 más recientes de ${all.length}. El Excel trae todos.</p>`:''}`;
- const kh=(t,s)=>`<div style="margin:0 0 10px"><h3 style="font-size:15px">${t}</h3>${s?`<p class="mut3" style="font-size:12.5px">${s}</p>`:''}</div>`;
- return head+sub
- +`<div style="display:flex;gap:22px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><div style="font-size:34px;font-weight:700;letter-spacing:-.02em">${nf(tot,1)}<small style="font-size:15px;font-weight:500;color:var(--tx2)"> HH</small></div><div class="mut">${nf(K.tot?tot/K.tot*100:0,1)}% de las HH totales</div>${ptot!=null?`<div class="mut">Periodo anterior: ${hh(ptot)} HH</div>`:''}</div>`
- +kh('Horas por semana','La línea punteada es el promedio semanal'+(nW>26?' · últimas 26 semanas':''))+kvBars(items,avg,'#94A3B8')
- +`<div style="margin-top:20px;padding:14px 16px;border-radius:14px;background:rgba(148,163,184,.1)"><div style="font-weight:700;margin-bottom:6px">Lectura del periodo</div><ul style="margin:0;padding-left:18px;line-height:1.55">${L.map(x=>`<li>${x}</li>`).join('')}</ul></div>`
- +`<div class="kvg" style="margin-top:20px"><div>${kh('Por tipo','En qué se usó el tiempo')}${hbars(tipos.map(t=>({k:t.k,v:t.v,c:'#94A3B8'})))}</div><div>${kh('Por persona','Quién concentra las horas'+(pers.length>10?' · 10 principales':''))}${hbars(pers.slice(0,10).map(t=>({k:t.k,v:t.v,c:'#94A3B8'})))}</div></div>`
- +`<div class="kvg" style="margin-top:20px"><div>${kh('Por área','')}${hbars(areas.map(t=>({k:t.k,v:t.v,c:'#94A3B8'})))}</div><div>${kh('Controles para auditoría','Se calculan solos con los registros')}${C}</div></div>`
- +`<div style="margin-top:22px">${kh('Detalle de registros','')}${tb}</div>`
- +`<div class="mf">${btn(icon('down',16)+' Descargar Excel','kvXls','data-k="capac"','ghost')}${btn('Cerrar','mClose')}</div>`;
-};
+function kvWeeks(pairs,label){ /* pairs [{f:fecha,h:horas}] */
+ const wm={};pairs.forEach(p=>{const m=monday(p.f);wm[m]=(wm[m]||0)+p.h});const ks=Object.keys(wm).sort();let wks=[];
+ if(ks.length)for(let m=ks[0];m<=ks[ks.length-1];m=addDays(m,7))wks.push({m,v:r2(wm[m]||0)});
+ const tot=wks.reduce((a,w)=>a+w.v,0),avg=wks.length?tot/wks.length:0,nW=wks.length;wks=wks.slice(-26);
+ return{nW,avg,wks,items:wks.map(w=>({k:dlabel(w.m),v:w.v,tip:'Semana del '+dlabel(w.m)+'\n'+hh(w.v)+' '+(label||'HH')})),pk:wks.slice().sort((a,b)=>b.v-a.v)[0]}}
 const capKey=r=>r.clase==='fuera'?'Almacén (fuera de producción)':(r.act||r.cat||'Sin tipo');
-function kvXls(k){
- if(k!=='capac')return;const {all}=kvRecs(),tot=sum(all);
- const sA={name:'Registros',cols:[{h:'Fecha',w:12,t:'d'},{h:'Persona',w:26},{h:'Área',w:20},{h:'Tipo',w:30},{h:'Horas',w:9,t:'n'},{h:'Descripción',w:44},{h:'Registrado por',w:22}],rows:all.slice().reverse().map(r=>[r.fecha,r.nombre,r.area,capKey(r),r.horas,r.desc||'',r.por||''])};
- const sB={name:'Por tipo',cols:[{h:'Tipo',w:32},{h:'Horas',w:11,t:'n'},{h:'% del total',w:12,t:'n'}],rows:kvGrp(all,capKey).map(x=>[x.k,x.v,r2(tot?x.v/tot*100:0)])};
- const sC={name:'Por persona',cols:[{h:'Persona',w:30},{h:'Horas',w:11,t:'n'},{h:'% del total',w:12,t:'n'}],rows:kvGrp(all,r=>r.nombre||'Sin nombre').map(x=>[x.k,x.v,r2(tot?x.v/tot*100:0)])};
- dlBlob('capacitacion_no_productivas_'+today()+'.xlsx',xlsxBlob([sA,sB,sC]));toast('Excel descargado','ok')}
+const kvEt=r=>r.macro?r.macro+(r.act?' · '+r.act:''):(r.act||capKey(r));
+const kvCols=[['Fecha',r=>dlabel(r.fecha)],['Persona',r=>esc(r.nombre)],['Proyecto',r=>esc(r.proy||'—')],['Etapa / actividad',r=>esc(kvEt(r))],['HH',r=>hh(r.horas),'r'],['Observación',r=>`<span class="mut3">${esc(r.desc||r.causa||'—')}</span>`]];
+const kvLong=(all,lim,fn)=>{const dj={};all.forEach(r=>{if(r.clase==='aus')return;const k=r.tec+'|'+r.fecha;(dj[k]=dj[k]||{n:r.nombre,f:r.fecha,h:0}).h+=+r.horas||0});return Object.values(dj).filter(x=>x.h>lim).sort((a,b)=>b.h-a.h)};
+/* ---------- láminas basadas en registros ---------- */
+function kvRec(c){
+ const K=kpis(),all=K.rs.filter(c.pick).sort((a,b)=>a.fecha<b.fecha?1:a.fecha>b.fecha?-1:0),tot=sum(all),np=+U.f.per;
+ const head=mh(c.title),sub=kvSub();
+ if(!all.length)return head+sub+empty('No hay horas de este tipo con los filtros actuales.');
+ let ptot=null;if(np&&!U.f.desde&&!U.f.hasta){const t0=today(),a=addDays(t0,-2*np+1),b=addDays(t0,-np);ptot=sum(K.rn.filter(r=>c.pick(r)&&r.fecha>=a&&r.fecha<=b))}
+ const W=kvWeeks(all.map(r=>({f:r.fecha,h:+r.horas||0})));
+ const tipos=kvGrp(all,c.tipo),pers=kvGrp(all,r=>r.nombre||'Sin nombre');
+ const pctT=K.tot?tot/K.tot*100:0;
+ const L=[`Se registraron <b>${hh(tot)} HH</b>${c.noPct?'':` (${nf(pctT,1)}% de las HH totales)`} en ${all.length} registros.`];
+ if(ptot!=null)L.push(ptot>0?`Frente al periodo anterior de igual duración (${hh(ptot)} HH) ${tot>ptot?'subió':tot<ptot?'bajó':'se mantuvo'}${tot===ptot?'':' '+nf(Math.abs((tot-ptot)/ptot*100),0)+'%'}.`:'El periodo anterior no tuvo horas de este tipo.');
+ L.push(`<b>${esc(tipos[0].k)}</b> concentra el ${kvPct(tipos[0].v,tot)} de las horas.`);
+ if(pers.length>1)L.push(`<b>${esc(pers[0].k)}</b> acumula el ${kvPct(pers[0].v,tot)} (${hh(pers[0].v)} HH).`);
+ if(W.nW>=3&&W.pk&&W.pk.v>2*W.avg)L.push(`La semana del ${dlabel(W.pk.m)} fue un pico (${hh(W.pk.v)} HH) frente a un promedio de ${hh(W.avg)}.`);
+ (c.read?c.read(all,tot,K,tipos,pers):[]).forEach(x=>L.push(x));
+ const bars=a=>hbars(a.slice(0,10).map(t=>({k:t.k,v:t.v,c:c.col})));
+ const ex=[[c.tipoT||'Por tipo','',tipos],['Por persona','Quién concentra las horas'+(pers.length>10?' · 10 principales':''),pers],...(c.extra||[]).map(e=>[e[0],e[1]||'',kvGrp(all,e[2])])];
+ let grid='';for(let i=0;i<ex.length;i+=2)grid+=`<div class="kvg" style="margin-top:20px">${[ex[i],ex[i+1]].filter(Boolean).map(e=>`<div>${kvKh(e[0],e[1])}${bars(e[2])}</div>`).join('')}</div>`;
+ const C=c.ctl?c.ctl(all,K):'';
+ const cols=c.cols||kvCols,sh=all.slice(0,40);
+ return head+sub+kvBig(nf(tot,1),'HH',[...(c.noPct?[]:[nf(pctT,1)+'% de las HH totales']),...(ptot!=null?['Periodo anterior: '+hh(ptot)+' HH']:[])])
+ +kvKh('Horas por semana','La línea punteada es el promedio semanal'+(W.nW>26?' · últimas 26 semanas':''))+kvBars(W.items,W.avg,c.col)
+ +kvLect(L)+grid
+ +(C?`<div style="margin-top:20px">${kvKh('Controles para auditoría','Se calculan solos con los registros')}${C}</div>`:'')
+ +`<div style="margin-top:22px">${kvKh('Detalle de registros','')}${kvTbl(cols,sh,all.length)}</div>`+kvBtns(c.key)}
+function kvRecX(c){const K=kpis(),all=K.rs.filter(c.pick).sort((a,b)=>a.fecha<b.fecha?-1:1),tot=sum(all);
+ return[{name:'Registros',cols:[{h:'Fecha',w:12,t:'d'},{h:'Persona',w:26},{h:'Área',w:20},{h:'Proyecto',w:11},{h:'Etapa / actividad',w:40},{h:'Horas',w:9,t:'n'},{h:'Tipo de trabajo',w:18},{h:'Causa',w:22},{h:'Origen',w:18},{h:'Descripción',w:40},{h:'Estado',w:12}],rows:all.map(r=>[r.fecha,r.nombre,r.area,r.proy||'',kvEt(r),r.horas,r.tipo,r.causa||'',r.origen||'',r.desc||'',r.estado])},
+ {name:'Por tipo',cols:[{h:'Tipo',w:34},{h:'Horas',w:11,t:'n'},{h:'% del total',w:12,t:'n'}],rows:kvGrp(all,c.tipo).map(x=>[x.k,x.v,r2(tot?x.v/tot*100:0)])},
+ {name:'Por persona',cols:[{h:'Persona',w:30},{h:'Horas',w:11,t:'n'},{h:'% del total',w:12,t:'n'}],rows:kvGrp(all,r=>r.nombre||'Sin nombre').map(x=>[x.k,x.v,r2(tot?x.v/tot*100:0)])}]}
+const kvLarga=(all,lim)=>{const l=kvLong(all,lim);return kvCtl(!l.length,l.length?`${l.length} jornada${l.length>1?'s':''} con más de ${lim} HH registradas en un día`:`Ninguna jornada supera ${lim} HH`,l.length?l.slice(0,5).map(x=>`${esc(x.n)} · ${dlabel(x.f)} · ${hh(x.h)} HH`).join('<br>'):'')};
+KVC.tot={key:'tot',title:'HH totales registradas',col:'#38BDF8',pick:r=>r.clase!=='aus',tipo:r=>(CL[r.clase]||{n:r.clase}).n,tipoT:'Por clase de trabajo',noPct:true,extra:[['Por etapa','Dónde se fue el tiempo',r=>r.macro||'Sin etapa (no ligado a proyecto)'],['Por proyecto','',r=>r.proy||'Sin proyecto']],
+ ctl:(all)=>{const inc=all.filter(r=>r.estado==='Incompleto');return kvCtl(!inc.length,inc.length?`${inc.length} registro${inc.length>1?'s':''} incompleto${inc.length>1?'s':''} (${hh(sum(inc))} HH)`:'Todos los registros están completos',inc.length?'Falta causa u origen en retrabajos. Se completan desde Alertas.':'')+kvLarga(all,10)}};
+KVC.ret={key:'ret',title:'HH de retrabajo',col:'#F59E0B',pick:r=>r.clase==='retrabajo',tipo:r=>r.causa||'Sin causa',tipoT:'Por causa',extra:[['Por origen','¿Dónde se originó?',r=>r.origen||'Sin origen'],['Por etapa','',r=>r.macro||'Sin etapa'],['Por proyecto','',r=>r.proy||'Sin proyecto']],
+ read:(all,tot,K,t,p)=>{const e=kvGrp(all,r=>r.macro||'Sin etapa')[0];return e&&all.length>2?[`La etapa con más retrabajo es <b>${esc(e.k)}</b> (${kvPct(e.v,tot)}).`]:[]},
+ ctl:(all)=>{const inc=all.filter(r=>r.estado==='Incompleto'),sh=all.filter(r=>(r.origen==='Calidad'||r.causa==='Hallazgo de Calidad')&&!r.hallazgo),e=kvGrp(all,r=>r.macro||'Sin etapa')[0],tt=sum(all);
+  return kvCtl(!inc.length,inc.length?`${inc.length} retrabajo${inc.length>1?'s':''} sin causa u origen (${hh(sum(inc))} HH)`:'Todos los retrabajos tienen causa y origen','')
+  +kvCtl(!sh.length,sh.length?`${sh.length} retrabajo${sh.length>1?'s':''} de Calidad sin código de hallazgo (${hh(sum(sh))} HH)`:'Los retrabajos de Calidad tienen código de hallazgo','Sin el código no se puede trazar el retrabajo hasta el hallazgo.')
+  +kvCtl(!(e&&tt&&e.v/tt>=.4),e&&tt&&e.v/tt>=.4?`Una sola etapa concentra el ${kvPct(e.v,tt)} del retrabajo: ${esc(e.k)}`:'El retrabajo no se concentra en una sola etapa','Concentración de 40% o más se marca para revisión.')}};
+KVC.normal={key:'normal',title:'HH de fabricación normal',col:'#38BDF8',pick:r=>r.clase==='normal',tipo:r=>r.macro||'Sin etapa',tipoT:'Por etapa',extra:[['Por proyecto','',r=>r.proy||'Sin proyecto'],['Por área','',r=>r.area||'Sin área']],ctl:(all)=>kvLarga(all,10)};
+KVC.improd={key:'improd',title:'HH improductivas',col:'#EF4444',pick:r=>r.clase==='improd',tipo:r=>r.causa||r.act||'Sin causa',tipoT:'Por causa de la espera',extra:[['Por área','',r=>r.area||'Sin área']],
+ ctl:(all)=>{const acc=all.filter(r=>r.causa==='Accidente laboral'||r.act==='Accidente laboral'),t=kvGrp(all,r=>r.causa||r.act||'Sin causa')[0],tt=sum(all),fm=all.filter(r=>(r.causa||r.act)==='Falla mecánica'),l=kvLong(all,2);
+  return kvCtl(!acc.length,acc.length?`${acc.length} registro${acc.length>1?'s':''} por accidente laboral (${hh(sum(acc))} HH)`:'Sin accidentes laborales registrados','Un accidente requiere seguimiento aparte del tiempo perdido.')
+  +kvCtl(!(t&&tt&&t.v/tt>=.5&&all.length>2),t&&tt&&t.v/tt>=.5&&all.length>2?`Una causa concentra el ${kvPct(t.v,tt)}: ${esc(t.k)}`:'Ninguna causa domina las esperas','Si una sola causa pasa del 50%, conviene atacarla primero.')
+  +kvCtl(fm.length<3,fm.length>=3?`Falla mecánica repetida: ${fm.length} registros (${hh(sum(fm))} HH)`:'Sin fallas mecánicas repetidas','Tres o más registros se marcan para revisar mantenimiento.')
+  +kvCtl(!l.length,l.length?`${l.length} persona-día con más de 2 HH improductivas`:'Ninguna persona supera 2 HH improductivas en un día',l.length?l.slice(0,5).map(x=>`${esc(x.n)} · ${dlabel(x.f)} · ${hh(x.h)} HH`).join('<br>'):'')}};
+KVC.apoyo={key:'apoyo',title:'HH de apoyo',col:'#5F7A99',pick:r=>r.clase==='apoyo',tipo:r=>r.act||r.cat||'Sin tipo',tipoT:'Por tipo de apoyo',extra:[['Por área','',r=>r.area||'Sin área']],
+ ctl:(all,K)=>{const t={};K.rs.filter(r=>r.clase!=='aus').forEach(r=>{t[r.tec]=(t[r.tec]||0)+(+r.horas||0)});const a={};all.forEach(r=>{(a[r.tec]=a[r.tec]||{n:r.nombre,h:0}).h+=+r.horas||0});
+  const hi=Object.entries(a).filter(([k,o])=>t[k]&&o.h/t[k]>.25&&o.h>=4).map(([k,o])=>({n:o.n,p:o.h/t[k]*100,h:o.h})).sort((x,y)=>y.p-x.p),ad=all.filter(r=>r.act==='Actividad adicional'&&!(r.desc||'').trim());
+  return kvCtl(!hi.length,hi.length?`${hi.length} persona${hi.length>1?'s':''} dedican más del 25% de su tiempo a apoyo`:'Nadie dedica más del 25% de su tiempo a apoyo',hi.length?hi.slice(0,5).map(x=>`${esc(x.n)} · ${nf(x.p,0)}% (${hh(x.h)} HH)`).join('<br>'):'Se ignoran quienes tienen menos de 4 HH de apoyo.')
+  +kvCtl(!ad.length,ad.length?`${ad.length} «Actividad adicional» sin descripción`:'Las actividades adicionales tienen descripción','No se sabe qué se hizo si no se describe.')}};
+KVC.capac={key:'capac',title:'Capacitación / no productivas',col:'#94A3B8',pick:r=>r.clase==='capac'||r.clase==='fuera',tipo:capKey,tipoT:'Por tipo',extra:[['Por área','',r=>r.area||'Sin área']],
+ cols:[['Fecha',r=>dlabel(r.fecha)],['Persona',r=>esc(r.nombre)],['Tipo',r=>esc(capKey(r))+(r.act==='Otra'?' '+badge('por clasificar','wa'):'')],['HH',r=>hh(r.horas),'r'],['Descripción',r=>`<span class="mut3">${esc(r.desc||'—')}</span>`]],
+ read:(all,tot,K,t,p)=>p.length>1&&p[0].v/tot>=.4?['Una sola persona concentra buena parte de las horas: conviene revisar si la capacitación se reparte entre el personal.']:[],
+ ctl:(all,K)=>{const otra=all.filter(r=>r.act==='Otra'),otraSD=otra.filter(r=>!(r.desc||'').trim());
+  const pd0={};K.rs.filter(isProd).forEach(r=>{pd0[r.fecha]=(pd0[r.fecha]||0)+(+r.horas||0)});const dv=Object.values(pd0).filter(v=>v>0),pAvg=dv.length?dv.reduce((a,b)=>a+b,0)/dv.length:0;
+  const dc={};all.filter(r=>r.clase==='capac').forEach(r=>{if(pAvg&&(pd0[r.fecha]||0)>pAvg*1.25){const o=dc[r.fecha]=dc[r.fecha]||{f:r.fecha,h:0};o.h+=+r.horas||0}});const cargas=Object.values(dc).sort((a,b)=>b.h-a.h);
+  const sd=all.filter(r=>!(r.desc||'').trim()).length,l=kvLong(all.filter(r=>r.clase==='capac'),4);
+  return kvCtl(!otra.length,otra.length?`${otra.length} registro${otra.length>1?'s':''} en «Otra» por clasificar (${hh(sum(otra))} HH)`:'Sin horas en «Otra»',otra.length?`${otraSD.length} sin descripción. Conviene asignarles un tipo concreto o aclarar qué se hizo.`:'Todo está clasificado en un tipo concreto.')
+  +kvCtl(!l.length,l.length?`${l.length} jornada${l.length>1?'s':''} con más de 4 HH de capacitación en un mismo día`:'Ninguna jornada supera 4 HH de capacitación',l.length?l.slice(0,5).map(x=>`${esc(x.n)} · ${dlabel(x.f)} · ${hh(x.h)} HH`).join('<br>'):'')
+  +kvCtl(!cargas.length,cargas.length?`${cargas.length} día${cargas.length>1?'s':''} de alta carga de producción con capacitación (${hh(cargas.reduce((a,x)=>a+x.h,0))} HH)`:'Sin capacitación en días de alta carga','Alta carga = día con producción 25% por encima del promedio diario del periodo.'+(cargas.length?'<br>'+cargas.slice(0,5).map(x=>`${dfull(x.f)} · ${hh(x.h)} HH`).join('<br>'):''))
+  +`<div class="mut3" style="font-size:12.5px;padding-top:10px;border-top:1px solid var(--bd)">${sd} de ${all.length} registros no tienen descripción (es opcional al registrar).</div>`}};
+Object.keys(KVC).forEach(k=>{KV[k]=()=>kvRec(KVC[k]);KVX[k]=()=>kvRecX(KVC[k])});
+KV.pret=KV.ret;KVX.pret=KVX.ret;
+/* ---------- desviación y proyectos ---------- */
+const kvProyRows=K=>K.P.map(p=>{const e=p.exp||{total:0,et:{}},pr=K.rn.filter(r=>r.proy===p.num),real=sum(pr.filter(isProd)),s=stageStats([p],K.rn),dev=ETAPAS.reduce((a,x)=>a+s[x].dev,0),exp=ETAPAS.reduce((a,x)=>a+s[x].exp,0),sumE=ETAPAS.reduce((a,x)=>a+(+(e.et||{})[x]||0),0),last=pr.map(r=>r.fecha).sort().pop()||'';return{p,real,exp,dev,tot:+e.total||0,sumE,last,pct:(+e.total||0)?real/e.total*100:0}});
+KV.dev=function(){
+ const K=kpis(),head=mh('Desviación global vs. expectativa'),sub=kvSub('Acumulado de los proyectos del filtro. No depende del periodo; cuenta etapas terminadas o excedidas.');
+ const et=ETAPAS.filter(e=>K.st[e].exp>0||K.st[e].real>0),rows=kvProyRows(K).filter(x=>x.exp>0||x.real>0).sort((a,b)=>b.dev-a.dev);
+ if(!et.length)return head+sub+empty('Todavía no hay expectativas ni horas con los filtros actuales.');
+ const dv=K.dev,pc=K.exp?dv/K.exp*100:0,worst=et.slice().sort((a,b)=>K.st[b].dev-K.st[a].dev)[0],sob=et.filter(e=>K.st[e].exp>0&&K.st[e].real>K.st[e].exp*1.1),sinE=et.filter(e=>!K.st[e].exp&&K.st[e].real>0),ps=rows.filter(x=>x.dev>0);
+ const L=[`La desviación es de <b>${dv>0?'+':''}${nf(dv,0)} HH</b> (${nf(pc,1)}% de la expectativa de ${nf(K.exp,0)} HH).`];
+ if(K.st[worst].dev>0)L.push(`La etapa con mayor desviación es <b>${esc(worst)}</b>: ${K.st[worst].dev>0?'+':''}${nf(K.st[worst].dev,0)} HH.`);
+ L.push(ps.length?`${ps.length} proyecto${ps.length>1?'s':''} con desviación; el mayor es <b>${esc(ps[0].p.num)}</b> (+${nf(ps[0].dev,0)} HH).`:'Ningún proyecto tiene desviación.');
+ const inc=rows.filter(x=>x.tot&&Math.abs(x.sumE-x.tot)>=.01),sinP=rows.filter(x=>!x.tot&&x.real>0);
+ const C=kvCtl(!sob.length,sob.length?`${sob.length} etapa${sob.length>1?'s':''} más de 10% sobre la expectativa`:'Ninguna etapa pasa 10% sobre la expectativa',sob.slice(0,6).map(e=>`${esc(e)} · ${nf(K.st[e].real,0)} de ${nf(K.st[e].exp,0)} HH`).join('<br>'))
+  +kvCtl(!sinP.length,sinP.length?`${sinP.length} proyecto${sinP.length>1?'s':''} con horas y sin expectativa total`:'Todos los proyectos con horas tienen expectativa',sinP.slice(0,6).map(x=>`${esc(x.p.num)} · ${nf(x.real,0)} HH`).join('<br>'))
+  +kvCtl(!sinE.length,sinE.length?`${sinE.length} etapa${sinE.length>1?'s':''} con horas y sin expectativa`:'Todas las etapas con horas tienen expectativa',sinE.slice(0,6).map(esc).join('<br>'))
+  +kvCtl(!inc.length,inc.length?`${inc.length} proyecto${inc.length>1?'s':''} donde las etapas no suman el total`:'Las expectativas por etapa suman el total en todos los proyectos',inc.slice(0,6).map(x=>`${esc(x.p.num)} · etapas ${nf(x.sumE,0)} vs total ${nf(x.tot,0)} HH`).join('<br>'));
+ const tb=kvTbl([['Proyecto',x=>esc(x.p.num)],['Cliente',x=>esc(x.p.cliente||'')],['Expectativa (HH)',x=>nf(x.exp,0),'r'],['Real (HH)',x=>nf(x.real,0),'r'],['Desviación (HH)',x=>(x.dev>0?'+':'')+nf(x.dev,0),'r']],rows.slice(0,40),rows.length);
+ return head+sub+kvBig((dv>0?'+':'')+nf(dv,0),'HH',[nf(pc,1)+'% de la expectativa',nf(K.real,0)+' real / '+nf(K.exp,0)+' esperadas'])
+ +kvKh('Expectativa y real por etapa','La barra gris es lo esperado; la de color, lo real')+pairRows(et.map(e=>({label:e,exp:K.st[e].exp,real:K.st[e].real,closed:false})))
+ +kvLect(L)+`<div style="margin-top:20px">${kvKh('Controles para auditoría','Se calculan solos con las expectativas y registros')}${C}</div>`
+ +`<div style="margin-top:22px">${kvKh('Desviación por proyecto','')}${tb}</div>`+kvBtns('dev')};
+KVX.dev=function(){const K=kpis(),rows=kvProyRows(K);return[{name:'Por etapa',cols:[{h:'Etapa',w:28},{h:'Expectativa',w:13,t:'n'},{h:'Real',w:11,t:'n'},{h:'Desviación',w:13,t:'n'}],rows:ETAPAS.map(e=>[e,r2(K.st[e].exp),r2(K.st[e].real),r2(K.st[e].dev)])},{name:'Por proyecto',cols:[{h:'Proyecto',w:12},{h:'Cliente',w:24},{h:'Expectativa',w:13,t:'n'},{h:'Real',w:11,t:'n'},{h:'Desviación',w:13,t:'n'}],rows:rows.map(x=>[x.p.num,x.p.cliente||'',r2(x.exp),r2(x.real),r2(x.dev)])}]};
+KV.proy=function(){
+ const K=kpis(),head=mh('Proyectos activos'),sub=kvSub('Proyectos del filtro actual. HH reales acumuladas frente a la expectativa total.');
+ const rows=kvProyRows(K).filter(x=>x.p.estado==='Activo').sort((a,b)=>b.pct-a.pct);
+ if(!rows.length)return head+sub+empty('No hay proyectos activos con los filtros actuales.');
+ const t0=today(),sob=rows.filter(x=>x.tot&&x.real>x.tot),sinE=rows.filter(x=>!x.tot),quietos=rows.filter(x=>!x.last||daysBetween(x.last,t0)>7),riesgo=rows.filter(x=>x.tot&&x.pct>=90&&x.real<=x.tot);
+ const L=[`Hay <b>${rows.length}</b> proyecto${rows.length>1?'s':''} activo${rows.length>1?'s':''} (${K.P.length} en el filtro actual).`];
+ L.push(sob.length?`${sob.length} ya superó la expectativa total; el más avanzado es <b>${esc(sob[0].p.num)}</b> (${nf(sob[0].pct,0)}% consumido).`:'Ninguno ha superado su expectativa total.');
+ if(quietos.length)L.push(`${quietos.length} sin horas registradas en los últimos 7 días.`);
+ const C=kvCtl(!sob.length,sob.length?`${sob.length} proyecto${sob.length>1?'s':''} sobre la expectativa total`:'Ningún proyecto sobre la expectativa total',sob.slice(0,6).map(x=>`${esc(x.p.num)} · ${nf(x.real,0)} de ${nf(x.tot,0)} HH`).join('<br>'))
+  +kvCtl(!riesgo.length,riesgo.length?`${riesgo.length} proyecto${riesgo.length>1?'s':''} con 90% o más de la expectativa consumida`:'Ninguno cerca de agotar su expectativa',riesgo.slice(0,6).map(x=>`${esc(x.p.num)} · ${nf(x.pct,0)}%`).join('<br>'))
+  +kvCtl(!sinE.length,sinE.length?`${sinE.length} proyecto${sinE.length>1?'s':''} activo${sinE.length>1?'s':''} sin expectativa`:'Todos los proyectos activos tienen expectativa',sinE.slice(0,6).map(x=>esc(x.p.num)).join('<br>'))
+  +kvCtl(!quietos.length,quietos.length?`${quietos.length} proyecto${quietos.length>1?'s':''} sin horas en 7 días`:'Todos tienen horas en los últimos 7 días',quietos.slice(0,6).map(x=>`${esc(x.p.num)} · ${x.last?'último registro '+dlabel(x.last):'sin registros'}`).join('<br>'));
+ const tb=kvTbl([['Proyecto',x=>esc(x.p.num)],['Cliente',x=>esc(x.p.cliente||'')],['Capacidad',x=>esc(x.p.cap||'')],['Etapa actual',x=>esc(stageOf(x.p))],['Expectativa',x=>nf(x.tot,0),'r'],['Real',x=>nf(x.real,0),'r'],['% consumido',x=>x.tot?nf(x.pct,0)+'%':'—','r'],['Último registro',x=>x.last?dlabel(x.last):'—']],rows.slice(0,40),rows.length);
+ return head+sub+kvBig(String(rows.length),'activos',[sob.length+' sobre expectativa',quietos.length+' sin movimiento'])
+ +kvKh('Expectativa y real por proyecto','La barra gris es lo esperado; la de color, lo real')+pairRows(rows.slice(0,15).map(x=>({label:x.p.num+' · '+(x.p.cap||'')+' gal',exp:x.tot,real:x.real,closed:false})))
+ +kvLect(L)+`<div style="margin-top:20px">${kvKh('Controles para auditoría','')}${C}</div>`+`<div style="margin-top:22px">${kvKh('Detalle de proyectos','')}${tb}</div>`+kvBtns('proy')};
+KVX.proy=function(){const K=kpis();return[{name:'Proyectos activos',cols:[{h:'Proyecto',w:12},{h:'Cliente',w:24},{h:'Capacidad',w:11},{h:'Etapa actual',w:22},{h:'Expectativa',w:13,t:'n'},{h:'Real',w:11,t:'n'},{h:'% consumido',w:13,t:'n'},{h:'Último registro',w:14,t:'d'}],rows:kvProyRows(K).filter(x=>x.p.estado==='Activo').map(x=>[x.p.num,x.p.cliente||'',x.p.cap||'',stageOf(x.p),r2(x.tot),r2(x.real),r2(x.pct),x.last])}]};
+/* ---------- programadas / faltantes / excedentes ---------- */
+function kvProgData(){
+ const f=U.f,t0=today();let d0=f.desde||(+f.per?addDays(t0,-(+f.per)+1):'');let d1=f.hasta||addDays(t0,-1);if(d1>=t0)d1=addDays(t0,-1);
+ const rs=live();if(!d0)d0=rs.map(r=>r.fecha).sort()[0]||t0;if(d0<ALERTAS_DESDE)d0=ALERTAS_DESDE;
+ const techs=S.tecnicos.filter(t=>t.registra&&t.activo!==false&&(!f.tec||t.codigo===f.tec)&&(!f.area||t.area===f.area)&&(!f.esp||t.esp===f.esp));
+ const by={};rs.forEach(r=>{const k=r.tec+'|'+r.fecha;by[k]=(by[k]||0)+r.horas});const out=[];
+ for(let d=d0;d<=d1;d=addDays(d,1)){if(f.sem&&wk(d)!==f.sem)continue;if(f.mes&&d.slice(0,7)!==f.mes)continue;
+  techs.forEach(t=>{const p=prog(t,d),g=by[t.codigo+'|'+d]||0;if(!p&&!g)return;out.push({t,d,p,g,falt:Math.max(0,p-g),exc:Math.max(0,g-p)})})}
+ return out}
+function kvProg(mode){
+ const T={prog:['HH programadas','#38BDF8'],falt:['HH faltantes','#F59E0B'],exc:['HH excedentes','#EF4444']}[mode];
+ const head=mh(T[0]),sub=kvSub('Solo días ya cerrados (hasta ayer). Programadas = jornada del turno; faltantes = programadas sin registrar; excedentes = registradas por encima de la jornada.');
+ const D=kvProgData();if(!D.length)return head+sub+empty('No hay jornadas cerradas en este periodo con los filtros actuales.');
+ const P=D.reduce((a,x)=>a+x.p,0),F=D.reduce((a,x)=>a+x.falt,0),E=D.reduce((a,x)=>a+x.exc,0),cub=P?(P-F)/P*100:0;
+ const val=x=>mode==='prog'?x.p:mode==='falt'?x.falt:x.exc,tot=mode==='prog'?P:mode==='falt'?F:E;
+ const W=kvWeeks(D.filter(x=>val(x)>0).map(x=>({f:x.d,h:val(x)})));
+ const per={};D.forEach(x=>{const o=per[x.t.codigo]=per[x.t.codigo]||{n:x.t.nombre,p:0,g:0,f:0,e:0,df:0,de:0};o.p+=x.p;o.g+=x.g;o.f+=x.falt;o.e+=x.exc;if(x.falt>.01)o.df++;if(x.exc>.01)o.de++});
+ const pl=Object.values(per),dowH={};D.forEach(x=>{const k=dow(x.d);dowH[k]=(dowH[k]||0)+(mode==='prog'?x.p:mode==='falt'?x.falt:x.exc)});
+ const dk=Object.entries(dowH).sort((a,b)=>b[1]-a[1])[0];
+ const L=[`En el periodo se programaron <b>${hh(P)} HH</b>; faltaron ${hh(F)} y hubo ${hh(E)} de excedente. Cobertura: <b>${nf(cub,0)}%</b>.`];
+ if(mode!=='prog'){const top=pl.slice().sort((a,b)=>(mode==='falt'?b.f-a.f:b.e-a.e))[0];if(top&&(mode==='falt'?top.f:top.e)>0)L.push(`<b>${esc(top.n)}</b> concentra ${kvPct(mode==='falt'?top.f:top.e,tot)} (${hh(mode==='falt'?top.f:top.e)} HH).`);if(dk&&dk[1]>0&&tot>0)L.push(`El día con más ${mode==='falt'?'faltantes':'excedentes'} es el <b>${DN[dk[0]].toLowerCase()}</b> (${kvPct(dk[1],tot)}).`)}
+ else if(dk)L.push(`El día con más horas programadas es el <b>${DN[dk[0]].toLowerCase()}</b>.`);
+ if(W.nW>=3&&W.pk&&W.pk.v>2*W.avg&&mode!=='prog')L.push(`La semana del ${dlabel(W.pk.m)} fue un pico (${hh(W.pk.v)} HH).`);
+ const rep=pl.filter(x=>x.df>=3).sort((a,b)=>b.df-a.df),gr=D.filter(x=>x.exc>2).sort((a,b)=>b.exc-a.exc);
+ const C=kvCtl(!rep.length,rep.length?`${rep.length} persona${rep.length>1?'s':''} con faltantes en 3 o más días`:'Nadie acumula faltantes en 3 o más días',rep.slice(0,6).map(x=>`${esc(x.n)} · ${x.df} días · ${hh(x.f)} HH`).join('<br>'))
+  +kvCtl(!gr.length,gr.length?`${gr.length} jornada${gr.length>1?'s':''} con más de 2 HH por encima de lo programado`:'Ninguna jornada excede más de 2 HH',gr.slice(0,6).map(x=>`${esc(x.t.nombre)} · ${dlabel(x.d)} · +${hh(x.exc)} HH`).join('<br>'))
+  +kvCtl(cub>=95,cub>=95?'Cobertura de 95% o más':`Cobertura de ${nf(cub,0)}%, por debajo de 95%`,'Cada HH sin registrar es tiempo del que no se sabe en qué se usó.');
+ const pb=mode==='prog'?pl.map(x=>({k:x.n,v:r2(x.p),tip:x.n+'\nProgramadas: '+hh(x.p)+' HH\nCubierto: '+nf(x.p?(x.p-x.f)/x.p*100:0,0)+'%'})):pl.map(x=>({k:x.n,v:r2(mode==='falt'?x.f:x.e)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+ const rows=mode==='prog'?pl.sort((a,b)=>b.p-a.p).map(x=>({a:x.n,b:hh(x.p),c:hh(x.g),d:nf(x.p?(x.p-x.f)/x.p*100:0,0)+'%'})):D.filter(x=>val(x)>.01).sort((a,b)=>val(b)-val(a)).map(x=>({a:x.t.nombre,b:dfull(x.d),c:hh(x.p),d:hh(x.g),e:(mode==='falt'?'-':'+')+hh(val(x))}));
+ const cols=mode==='prog'?[['Persona',x=>esc(x.a)],['Programadas',x=>x.b,'r'],['Registradas',x=>x.c,'r'],['Cubierto',x=>x.d,'r']]:[['Persona',x=>esc(x.a)],['Día',x=>x.b],['Programadas',x=>x.c,'r'],['Registradas',x=>x.d,'r'],[mode==='falt'?'Faltan':'Sobran',x=>x.e,'r']];
+ return head+sub+kvBig(nf(tot,1),'HH',[nf(cub,0)+'% de cobertura',D.length+' jornadas cerradas'])
+ +kvKh(mode==='prog'?'HH programadas por semana':mode==='falt'?'HH faltantes por semana':'HH excedentes por semana','La línea punteada es el promedio semanal')+kvBars(W.items,W.avg,T[1])
+ +kvLect(L)+`<div class="kvg" style="margin-top:20px"><div>${kvKh(mode==='prog'?'Programadas por persona':mode==='falt'?'Faltantes por persona':'Excedentes por persona','')}${pb.length?hbars(pb.slice(0,10).map(x=>({k:x.k,v:x.v,c:T[1],tip:x.tip}))):empty('Sin '+(mode==='falt'?'faltantes':'excedentes'))}</div><div>${kvKh('Controles para auditoría','Se calculan solos con los registros')}${C}</div></div>`
+ +`<div style="margin-top:22px">${kvKh(mode==='prog'?'Detalle por persona':'Detalle por jornada','')}${kvTbl(cols,rows.slice(0,40),rows.length)}</div>`+kvBtns(mode)}
+function kvProgX(){const D=kvProgData();return[{name:'Persona y día',cols:[{h:'Fecha',w:12,t:'d'},{h:'Persona',w:26},{h:'Programadas',w:13,t:'n'},{h:'Registradas',w:13,t:'n'},{h:'Faltantes',w:12,t:'n'},{h:'Excedentes',w:12,t:'n'}],rows:D.map(x=>[x.d,x.t.nombre,r2(x.p),r2(x.g),r2(x.falt),r2(x.exc)])}]}
+['prog','falt','exc'].forEach(m=>{KV[m]=()=>kvProg(m);KVX[m]=kvProgX});
+function kvXls(k){const f=KVX[k];if(!f)return;const t=(KVC[k]||{}).title||({dev:'desviacion',proy:'proyectos_activos',prog:'hh_programadas',falt:'hh_faltantes',exc:'hh_excedentes'}[k]||k);
+ dlBlob(String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')+'_'+today()+'.xlsx',xlsxBlob(f()));toast('Excel descargado','ok')}
 /* ================= Modales ================= */
 let M={};
 function openModal(html,cls=''){const m=$('#modal');m.innerHTML=`<div class="mbox ${cls}" role="dialog" aria-modal="true">${html}</div>`;m.className='open'+(cls==='pal'?' pal':'');m.style.display='flex';const f=m.querySelector('input:not([type=hidden]),select,textarea');if(f&&cls!=='pal')setTimeout(()=>f.focus({preventScroll:true}),30)}
