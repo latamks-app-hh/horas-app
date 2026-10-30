@@ -952,11 +952,11 @@ function pSupervisor(){
  const falt=rows.reduce((a,x)=>a+Math.max(0,-x.j.df),0),exc=rows.reduce((a,x)=>a+Math.max(0,x.j.df),0);
  const rd=live().filter(r=>r.fecha===d&&techs.some(t=>t.codigo===r.tec));
  const rets=rd.filter(r=>r.clase==='retrabajo'),nov=rd.filter(r=>['aus','capac','improd'].includes(r.clase));
- const mini=(l,v,c='')=>`<div class="card mini flat"><div><div class="m-v ${c}">${v}</div><div class="m-l">${l}</div></div></div>`;
+ const mini=(l,v,c='',kv='')=>`<div class="card mini flat${kv?' kvc':''}" ${kv?`data-act="kpiOpen" data-k="${kv}" role="button" tabindex="0" data-tip="Clic para ver el análisis"`:''}><div><div class="m-v ${c}">${v}</div><div class="m-l">${l}</div></div></div>`;
  const A=alerts().filter(a=>a.fecha===d||(a.reg&&rd.some(r=>r.id===a.reg)));
  const act=S.proyectos.filter(p=>p.estado==='Activo').map(p=>{const hd=sum(rd.filter(r=>r.proy===p.num&&isProd(r)));const real=sum(live().filter(r=>r.proy===p.num&&isProd(r)));const s=semaf(real,p.exp&&p.exp.total);return{p,hd,real,s}});
  return `<div class="fbar"><input type="date" class="inp" style="width:170px" data-f="supF" value="${d}" aria-label="Fecha">${sel('supT',S.turnos.map(t=>[t.id,t.nombre]),U.supT,{ph:'Todos los turnos'})}${btn('Hoy','supHoy','','ghost sm')}<span class="mut" style="margin-left:6px">${dfull(d)}</span><div style="margin-left:auto">${btn(icon('print',14)+' Tarjetas','tarjTodas','','ghost sm')}</div></div>
- <div class="g12 minis">${[mini('Personal del turno',rows.length),mini('HH programadas',hh(P)),mini('HH registradas',hh(G)),mini('HH faltantes',hh(falt),falt>.01?'dn':''),mini('HH excedentes',hh(exc),exc>.01?'dn':'')].map(x=>`<div class="c3" style="grid-column:span 2">${x}</div>`).join('')}<div class="c3" style="grid-column:span 2">${mini('Retrabajos del día',rets.length)}</div></div>
+ <div class="g12 minis">${[mini('Personal del turno',rows.length,'','sPers'),mini('HH programadas',hh(P),'','sProg'),mini('HH registradas',hh(G),'','sReg'),mini('HH faltantes',hh(falt),falt>.01?'dn':'','sFalt'),mini('HH excedentes',hh(exc),exc>.01?'dn':'','sExc')].map(x=>`<div class="c3" style="grid-column:span 2">${x}</div>`).join('')}<div class="c3" style="grid-column:span 2">${mini('Retrabajos del día',rets.length,'','sRet')}</div></div>
  <div class="g12"><div class="c12">${card('Alertas del día',`${A.length} activa${A.length===1?'':'s'}`,A.length?`<div class="algrid">${A.slice(0,8).map(alertRow).join('')}</div>`:`<div class="empty">${icon('check',26)}<p>Sin alertas para esta fecha</p></div>`)}</div></div>
  <div class="g12"><div class="c12">${card('Personal y jornada','Programadas vs registradas del día',rows.length?`<div class="tw"><table class="t stkm"><thead><tr><th>Técnico</th><th>Turno</th><th class="r">Prog.</th><th class="r">Reg.</th><th>Estado</th><th>Distribución</th><th></th></tr></thead><tbody>${rows.map(({t,j})=>{
   const st=!j.p&&!j.g?badge('Sin jornada','n'):Math.abs(j.df)<.01?badge('Completa','ok'):j.df<0?badge('Faltan '+hh(-j.df),'wa'):badge('+'+hh(j.df)+' exced.','er');
@@ -1306,7 +1306,7 @@ const kvCtl=(ok,t,s)=>`<div style="display:flex;gap:10px;align-items:flex-start;
 const kvPer=()=>{const f=U.f,np=+f.per;return (f.desde||f.hasta)?'Periodo seleccionado':np?'Últimos '+np+' días':'Todo el histórico'};
 const kvSub=(extra)=>`<p class="mut" style="margin:-6px 0 16px">${extra||kvPer()+'. Respeta los filtros del Panel (proyecto, área, técnico…).'}</p>`;
 const kvBig=(v,u,rest)=>`<div style="display:flex;gap:22px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><div style="font-size:34px;font-weight:700;letter-spacing:-.02em">${v}<small style="font-size:15px;font-weight:500;color:var(--tx2)"> ${u}</small></div>${rest.map(x=>`<div class="mut">${x}</div>`).join('')}</div>`;
-const kvLect=L=>`<div style="margin-top:20px;padding:14px 16px;border-radius:14px;background:rgba(148,163,184,.1)"><div style="font-weight:700;margin-bottom:6px">Lectura del periodo</div><ul style="margin:0;padding-left:18px;line-height:1.55">${L.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+const kvLect=(L,t)=>`<div style="margin-top:20px;padding:14px 16px;border-radius:14px;background:rgba(148,163,184,.1)"><div style="font-weight:700;margin-bottom:6px">${t||'Lectura del periodo'}</div><ul style="margin:0;padding-left:18px;line-height:1.55">${L.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
 const kvBtns=k=>`<div class="mf">${btn(icon('down',16)+' Descargar Excel','kvXls','data-k="'+k+'"','ghost')}${btn('Cerrar','mClose')}</div>`;
 const kvTbl=(cols,rows,tot,n)=>`<div class="tw"><table class="t"><thead><tr>${cols.map(c=>`<th class="${c[2]||''}">${c[0]}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td class="${c[2]==='r'?'num':''}">${c[1](r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${tot>rows.length?`<p class="mut3" style="font-size:12.5px;margin-top:8px">Se muestran ${rows.length} de ${tot}. El Excel trae todos.</p>`:''}`;
 function kvBars(items,avg,col){
@@ -1465,7 +1465,70 @@ function kvProg(mode){
  +`<div style="margin-top:22px">${kvKh(mode==='prog'?'Detalle por persona':'Detalle por jornada','')}${kvTbl(cols,rows.slice(0,40),rows.length)}</div>`+kvBtns(mode)}
 function kvProgX(){const D=kvProgData();return[{name:'Persona y día',cols:[{h:'Fecha',w:12,t:'d'},{h:'Persona',w:26},{h:'Programadas',w:13,t:'n'},{h:'Registradas',w:13,t:'n'},{h:'Faltantes',w:12,t:'n'},{h:'Excedentes',w:12,t:'n'}],rows:D.map(x=>[x.d,x.t.nombre,r2(x.p),r2(x.g),r2(x.falt),r2(x.exc)])}]}
 ['prog','falt','exc'].forEach(m=>{KV[m]=()=>kvProg(m);KVX[m]=kvProgX});
-function kvXls(k){const f=KVX[k];if(!f)return;const t=(KVC[k]||{}).title||({dev:'desviacion',proy:'proyectos_activos',prog:'hh_programadas',falt:'hh_faltantes',exc:'hh_excedentes'}[k]||k);
+/* ---------- láminas de Supervisión (por día) ---------- */
+const KVT={sPers:'personal_del_turno',sProg:'hh_programadas_dia',sReg:'hh_registradas_dia',sFalt:'hh_faltantes_dia',sExc:'hh_excedentes_dia',sRet:'retrabajos_del_dia',dev:'desviacion',proy:'proyectos_activos',prog:'hh_programadas',falt:'hh_faltantes',exc:'hh_excedentes'};
+const kvSupRows=d=>S.tecnicos.filter(t=>t.registra&&t.activo!==false&&(!U.supT||turnoDe(t,d)===U.supT)).map(t=>({t,j:jornadaInfo(t,d)}));
+const kvSupM={
+ sPers:{t:'Personal del turno',u:'personas',c:'#38BDF8',m:R=>R.filter(x=>x.j.p||x.j.g).length},
+ sProg:{t:'HH programadas del día',u:'HH',c:'#38BDF8',m:R=>R.reduce((a,x)=>a+x.j.p,0)},
+ sReg:{t:'HH registradas del día',u:'HH',c:'#22C55E',m:R=>R.reduce((a,x)=>a+x.j.g,0)},
+ sFalt:{t:'HH faltantes del día',u:'HH',c:'#F59E0B',m:R=>R.reduce((a,x)=>a+Math.max(0,-x.j.df),0)},
+ sExc:{t:'HH excedentes del día',u:'HH',c:'#EF4444',m:R=>R.reduce((a,x)=>a+Math.max(0,x.j.df),0)},
+ sRet:{t:'Retrabajos del día',u:'HH',c:'#F59E0B',m:R=>sum(R.flatMap(x=>x.j.rs.filter(r=>r.clase==='retrabajo')))}};
+function kvSup(mode){
+ const M=kvSupM[mode],d=U.supF,R=kvSupRows(d),val=M.m(R),dec=M.u==='HH'?1:0;
+ const head=mh(M.t),sub=kvSub(`${dfull(d)} · ${U.supT?esc(turnoName(U.supT)):'todos los turnos'}. Sigue la fecha y el turno elegidos en Supervisión.`);
+ /* serie: últimos 14 días con jornada */
+ const ser=[];for(let i=13;i>=0;i--){const dd=addDays(d,-i),RR=i?kvSupRows(dd):R;if(i&&!RR.some(x=>x.j.p||x.j.g))continue;const v=M.m(RR);ser.push({d:dd,v:r2(v)})}
+ const prev=ser.filter(x=>x.d!==d),avg=prev.length?prev.reduce((a,x)=>a+x.v,0)/prev.length:0;
+ const items=ser.map(x=>({k:dlabel(x.d),v:x.v,tip:dfull(x.d)+'\n'+nf(x.v,1)+' '+M.u}));
+ const rs=R.flatMap(x=>x.j.rs),ret=rs.filter(r=>r.clase==='retrabajo');
+ const L=[`${dfull(d)}: <b>${nf(val,dec)} ${M.u}</b>.`];
+ if(prev.length)L.push(`El promedio de los ${prev.length} días anteriores con jornada es ${nf(avg,dec)} ${M.u}; ${val>avg*1.15?'hoy está por encima':val<avg*.85?'hoy está por debajo':'hoy está en lo normal'}.`);
+ const P=R.reduce((a,x)=>a+x.j.p,0),G=R.reduce((a,x)=>a+x.j.g,0);
+ if(mode!=='sRet'&&mode!=='sPers')L.push(`Se programaron ${hh(P)} HH y se registraron ${hh(G)} (${P?nf(G/P*100,0):0}% de lo programado).`);
+ const sinReg=R.filter(x=>x.j.p>0&&x.j.g===0),sinJ=R.filter(x=>!x.j.p&&x.j.g>0),pend=rs.filter(r=>r.pend),inc=rs.filter(r=>r.estado==='Incompleto');
+ if(mode==='sPers'){L.push(`${R.filter(x=>x.j.p||x.j.g).length} de ${R.length} personas tienen jornada hoy; ${R.filter(x=>x.j.p>0&&Math.abs(x.j.df)<.01).length} la completaron.`);if(sinReg.length)L.push(`${sinReg.length} con jornada y sin ningún registro.`)}
+ if(mode==='sRet'){L.push(ret.length?`Hay ${ret.length} retrabajo${ret.length>1?'s':''} en ${new Set(ret.map(r=>r.proy+'|'+r.macro)).size} etapa${new Set(ret.map(r=>r.proy+'|'+r.macro)).size>1?'s':''} de proyecto.`:'No hubo retrabajos este día.')}
+ if(mode==='sFalt'&&val>0){const w=R.slice().sort((a,b)=>a.j.df-b.j.df)[0];L.push(`Quien más debe: <b>${esc(w.t.nombre)}</b> (${hh(-w.j.df)} HH).`)}
+ if(mode==='sExc'&&val>0){const w=R.slice().sort((a,b)=>b.j.df-a.j.df)[0];L.push(`Mayor excedente: <b>${esc(w.t.nombre)}</b> (+${hh(w.j.df)} HH).`)}
+ /* controles */
+ const dp=addDays(d,-1);const f2=R.filter(x=>x.j.df<-.01&&x.j.p>0).filter(x=>{const q=jornadaInfo(x.t,dp);return q.p>0&&q.df<-.01});
+ const big=R.filter(x=>x.j.df>2),lst=a=>a.slice(0,6).map(x=>esc(x.t.nombre)+' · '+(x.j.df<0?'faltan '+hh(-x.j.df):x.j.df>0?'+'+hh(x.j.df):'')+(x.j.p?' de '+hh(x.j.p):'')).join('<br>');
+ const cS=kvCtl(!sinReg.length,sinReg.length?`${sinReg.length} persona${sinReg.length>1?'s':''} con jornada y sin registros`:'Todos con jornada registraron algo',lst(sinReg)),
+  cJ=kvCtl(!sinJ.length,sinJ.length?`${sinJ.length} persona${sinJ.length>1?'s':''} registraron sin tener jornada programada`:'Nadie registró fuera de su jornada',lst(sinJ)),
+  cP=kvCtl(!pend.length,pend.length?`${pend.length} registro${pend.length>1?'s':''} por validar (${hh(sum(pend))} HH)`:'No hay registros por validar','Se validan desde el botón «Validar» de cada persona.'),
+  cI=kvCtl(!inc.length,inc.length?`${inc.length} registro${inc.length>1?'s':''} incompleto${inc.length>1?'s':''}`:'Todos los registros están completos','Falta causa u origen en retrabajos.'),
+  c2=kvCtl(!f2.length,f2.length?`${f2.length} persona${f2.length>1?'s':''} con faltantes también ayer`:'Nadie acumula faltantes dos días seguidos',lst(f2)),
+  cB=kvCtl(!big.length,big.length?`${big.length} jornada${big.length>1?'s':''} con más de 2 HH por encima de lo programado`:'Ninguna jornada excede más de 2 HH',lst(big));
+ const sh=ret.filter(r=>(r.origen==='Calidad'||r.causa==='Hallazgo de Calidad')&&!r.hallazgo),rep={};ret.forEach(r=>{const k=r.proy+'|'+r.macro;rep[k]=(rep[k]||0)+1});const rp=Object.entries(rep).filter(([k,n])=>n>=2);
+ const cR=kvCtl(!inc.filter(r=>r.clase==='retrabajo').length,inc.filter(r=>r.clase==='retrabajo').length?`${inc.filter(r=>r.clase==='retrabajo').length} retrabajo${inc.filter(r=>r.clase==='retrabajo').length>1?'s':''} sin causa u origen`:'Todos los retrabajos tienen causa y origen','')
+  +kvCtl(!sh.length,sh.length?`${sh.length} retrabajo${sh.length>1?'s':''} de Calidad sin código de hallazgo`:'Los retrabajos de Calidad tienen código de hallazgo','')
+  +kvCtl(!rp.length,rp.length?`${rp.length} etapa${rp.length>1?'s':''} con 2 o más retrabajos el mismo día`:'No hay retrabajos repetidos en una misma etapa',rp.map(([k,n])=>esc(k.replace('|',' · '))+' · '+n+' registros').join('<br>'));
+ const C={sPers:cS+cJ,sProg:cS+cJ,sReg:cP+cI+cJ,sFalt:cS+c2+cP,sExc:cB+cJ,sRet:cR}[mode];
+ /* barras por persona / extra */
+ const perV=x=>mode==='sProg'?x.j.p:mode==='sReg'?x.j.g:mode==='sFalt'?Math.max(0,-x.j.df):mode==='sExc'?Math.max(0,x.j.df):sum(x.j.rs.filter(r=>r.clase==='retrabajo'));
+ const pb=R.map(x=>({k:x.t.nombre,v:r2(perV(x))})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+ let left,right;
+ if(mode==='sPers'){left=kvKh('Estado de la jornada','')+hbars([['Completa',R.filter(x=>x.j.p>0&&Math.abs(x.j.df)<.01).length,'#22C55E'],['Faltan horas',R.filter(x=>x.j.df<-.01&&x.j.g>0).length,'#F59E0B'],['Sin registros',sinReg.length,'#EF4444'],['Con excedente',R.filter(x=>x.j.df>.01&&x.j.p>0).length,'#8B5CF6'],['Sin jornada',R.filter(x=>!x.j.p&&!x.j.g).length,'#64748B']].filter(x=>x[1]>0).map(x=>({k:x[0],v:x[1],c:x[2],tip:x[0]+'\n'+x[1]+' personas'})))}
+ else left=kvKh(mode==='sRet'?'Retrabajo por persona':'Por persona','')+(pb.length?hbars(pb.slice(0,10).map(x=>({k:x.k,v:x.v,c:M.c}))):empty('Sin datos para este día'));
+ if(mode==='sReg'){const cl=Object.keys(CL).map(k=>({k:CL[k].n,v:r2(sum(rs.filter(r=>r.clase===k))),c:CL[k].c})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);right=kvKh('Por clase de trabajo','Cómo se distribuyó el tiempo')+hbars(cl)}
+ else if(mode==='sRet'){const cz=kvGrp(ret,r=>r.causa||'Sin causa');right=kvKh('Por causa','')+(cz.length?hbars(cz.map(x=>({k:x.k,v:x.v,c:M.c}))):empty('Sin retrabajos'))}
+ else right=kvKh('Controles para auditoría','Se calculan solos con los registros del día')+C;
+ const ctlBlock=(mode==='sReg'||mode==='sRet')?`<div style="margin-top:20px">${kvKh('Controles para auditoría','Se calculan solos con los registros del día')}${C}</div>`:'';
+ /* detalle */
+ const dst=x=>!x.j.p&&!x.j.g?'Sin jornada':Math.abs(x.j.df)<.01?'Completa':x.j.df<0?'Faltan '+hh(-x.j.df):'+'+hh(x.j.df)+' exced.';
+ const det=mode==='sRet'?kvTbl([['Persona',r=>esc(r.nombre)],['Proyecto',r=>esc(r.proy||'—')],['Etapa',r=>esc(r.macro||'—')],['Causa',r=>esc(r.causa||'Sin causa')],['Origen',r=>esc(r.origen||'Sin origen')],['Hallazgo',r=>esc(r.hallazgo||'—')],['HH',r=>hh(r.horas),'r']],ret,ret.length)
+  :kvTbl([['Persona',x=>esc(x.t.nombre)],['Área',x=>esc(x.t.area||'')],['Turno',x=>esc(turnoName(turnoDe(x.t,d)))],['Prog.',x=>hh(x.j.p),'r'],['Reg.',x=>hh(x.j.g),'r'],['Estado',x=>dst(x)]],R.slice().sort((a,b)=>b.j.p-a.j.p),R.length);
+ return head+sub+kvBig(nf(val,dec),M.u,[prev.length?'Promedio previo: '+nf(avg,dec)+' '+M.u:'',`${R.length} personas en el filtro`].filter(Boolean))
+ +kvKh('Últimos días con jornada','Barras = cada día; la línea punteada es el promedio de los días anteriores')+kvBars(items,avg,M.c)
+ +kvLect(L,'Lectura del día')+`<div class="kvg" style="margin-top:20px"><div>${left}</div><div>${right||''}</div></div>`+ctlBlock
+ +`<div style="margin-top:22px">${kvKh(mode==='sRet'?'Detalle de retrabajos':'Detalle por persona','')}${det}</div>`+kvBtns(mode)}
+function kvSupX(mode){const d=U.supF,R=kvSupRows(d);
+ return[{name:'Personal del día',cols:[{h:'Persona',w:26},{h:'Área',w:20},{h:'Turno',w:16},{h:'Programadas',w:13,t:'n'},{h:'Registradas',w:13,t:'n'},{h:'Faltan',w:11,t:'n'},{h:'Excedente',w:11,t:'n'}],rows:R.map(x=>[x.t.nombre,x.t.area||'',turnoName(turnoDe(x.t,d)),r2(x.j.p),r2(x.j.g),r2(Math.max(0,-x.j.df)),r2(Math.max(0,x.j.df))])},
+ {name:'Registros del día',cols:[{h:'Persona',w:26},{h:'Proyecto',w:11},{h:'Etapa / actividad',w:40},{h:'Horas',w:9,t:'n'},{h:'Tipo',w:18},{h:'Causa',w:22},{h:'Origen',w:18},{h:'Hallazgo',w:14},{h:'Estado',w:12}],rows:R.flatMap(x=>x.j.rs).filter(r=>mode!=='sRet'||r.clase==='retrabajo').map(r=>[r.nombre,r.proy||'',kvEt(r),r.horas,r.tipo,r.causa||'',r.origen||'',r.hallazgo||'',r.estado])}]}
+Object.keys(kvSupM).forEach(k=>{KV[k]=()=>kvSup(k);KVX[k]=()=>kvSupX(k)});
+function kvXls(k){const f=KVX[k];if(!f)return;const t=KVT[k]||(KVC[k]||{}).title||k;
  dlBlob(String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')+'_'+today()+'.xlsx',xlsxBlob(f()));toast('Excel descargado','ok')}
 /* ================= Modales ================= */
 let M={};
