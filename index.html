@@ -296,6 +296,11 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px}
 @media print{#printSheet.cardimgs{page:cardpg;padding:0!important;margin:0!important;text-align:left!important}#printSheet.cardimgs img{display:block;width:215.9mm;height:279.4mm;margin:0;page-break-after:always;break-after:page}#printSheet.cardimgs img:last-child{page-break-after:auto;break-after:auto}}
 @media(max-width:700px){.tcards{grid-template-columns:1fr;justify-items:center}}
 body.guest [data-act^="hall"],body.guest [data-act^="hf"],body.guest [data-act^="edit"],body.guest [data-act^="new"],body.guest [data-act^="val"],body.guest [data-act="faltModal"],body.guest [data-act="regFor"],body.guest [data-act="regVoid"],body.guest [data-act="regRestore"],body.guest [data-act="tecToggle"],body.guest [data-act="tDay"],body.guest [data-act="projEdit"],body.guest [data-act="projNew"],body.guest [data-act="unasg"],body.guest [data-act="capAdd"],body.guest [data-act="capDel"],body.guest [data-act="linAdd"],body.guest [data-act="linDel"],body.guest [data-act="saveMeta"],body.guest [data-act="saveUrl"]{display:none!important}
+.fct0{display:flex;flex-direction:column;gap:8px}.fcrow{display:flex;gap:8px;justify-content:center}
+.fcs{min-width:120px;border-radius:12px;padding:12px 16px;color:#fff;display:flex;flex-direction:column;gap:2px;min-width:0;box-sizing:border-box}.fcs b{font-size:13px;font-weight:650}.fcs span{font-size:22px;font-weight:700}.fcs small{opacity:.85;font-size:12px}
+.fcr{display:grid;grid-template-columns:minmax(120px,1.2fr) 2fr minmax(90px,auto);gap:10px;align-items:center;padding:6px 8px;border-radius:10px}.fcl{font-size:13px}.fct{height:10px;border-radius:6px;background:rgba(148,163,184,.18);overflow:hidden}.fct i{display:block;height:100%;border-radius:6px}.fcv{font-size:12.5px;text-align:right;color:var(--tx2)}
+.fcg{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.fct4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.kvc{cursor:pointer}@media(max-width:560px){.fcrow{flex-direction:column}.fcs{width:100%!important}.fcr{grid-template-columns:1fr}.fcv{text-align:left}}
 body.guest select[data-tur],body.guest input[data-tf]{pointer-events:none;opacity:.75}
 @media(max-width:820px){.minis{grid-template-columns:repeat(2,1fr)!important}.minis>div{grid-column:span 1!important}}
 
@@ -1180,7 +1185,7 @@ function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]
 function pAjustes(){
  const st=S.settings;const pend=S.registros.filter(r=>!r.sync&&!r.demo).length;
  return `<div class="g12"><div class="c4">${card('QR único de registro','Imprímelo y colócalo en producción',`<div style="text-align:center"><div class="qrbox" id="qrhost"></div><p class="mut3" style="font-size:12px;margin:10px 0;word-break:break-all">${esc(qrUrl())}</p>${btn(icon('print',16)+' Imprimir QR','printQR','','ghost')}</div><div class="fld" style="margin-top:14px"><label>Dirección pública de esta aplicación</label><input class="inp" id="urlIn" placeholder="Por defecto: la dirección actual de esta aplicación" value="${esc(st.url||'')}"></div>${btn('Actualizar QR','saveUrl','','sm ghost')}<p class="mut3" style="font-size:12px;margin-top:8px">El QR lleva a la captura rápida de la dirección indicada. Todos los datos se guardan en la base de datos compartida de la empresa.</p>`)}</div>
- <div class="c8">${card('Conexión con la nube','Base de datos compartida (Supabase) · app v4.5.0',`<div class="sub-panel" style="border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)"><div class="ttl" style="color:#86efac">${icon('check',18)} Conectado</div><p class="mut" style="font-size:13px;line-height:1.7">Sesión: <b style="color:var(--tx)">${esc(NB.email||'')}</b> · Rol: <b style="color:var(--tx)">${esc(U.role)}</b><br>Todos los registros, proyectos, técnicos y turnos se guardan automáticamente y los ven todos los usuarios según su rol.</p></div><p class="mut3" style="font-size:12.5px;margin-top:12px">Los técnicos registran sus horas con el QR (código + iniciales, sin contraseña). Sus registros quedan <b style="color:var(--tx2)">por validar</b> hasta que un supervisor los confirme. Supabase gratuito no hace copias automáticas: descarga la copia de seguridad cada semana (botón en “Datos y respaldo”).</p>`)}</div></div>
+ <div class="c8">${card('Conexión con la nube','Base de datos compartida (Supabase) · app v4.6.0',`<div class="sub-panel" style="border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)"><div class="ttl" style="color:#86efac">${icon('check',18)} Conectado</div><p class="mut" style="font-size:13px;line-height:1.7">Sesión: <b style="color:var(--tx)">${esc(NB.email||'')}</b> · Rol: <b style="color:var(--tx)">${esc(U.role)}</b><br>Todos los registros, proyectos, técnicos y turnos se guardan automáticamente y los ven todos los usuarios según su rol.</p></div><p class="mut3" style="font-size:12.5px;margin-top:12px">Los técnicos registran sus horas con el QR (código + iniciales, sin contraseña). Sus registros quedan <b style="color:var(--tx2)">por validar</b> hasta que un supervisor los confirme. Supabase gratuito no hace copias automáticas: descarga la copia de seguridad cada semana (botón en “Datos y respaldo”).</p>`)}</div></div>
  ${listasCard()}${cuentasCard()}${invitadosCard()}<div class="g12"><div class="c12">${card('Empezar de cero','Para dejar el sistema limpio y comenzar la operación real',`<ol class="mut" style="padding-left:18px;line-height:1.9"><li><b style="color:var(--tx)">Datos de prueba:</b> los técnicos, proyectos y registros ficticios (marcados como demo) se limpian desde la base de datos; Soporte te guía.</li><li><b style="color:var(--tx)">Turnos:</b> ajusta los horarios reales y asigna el personal.</li><li><b style="color:var(--tx)">Técnicos:</b> crea cada persona (código, iniciales, nombre, área, turno).</li><li><b style="color:var(--tx)">Proyectos:</b> crea el proyecto (escribe su número y la fecha de entrega) y define su expectativa por etapa.</li><li>Listo: ya se pueden registrar horas en Captura rápida.</li></ol><div class="acts" style="margin-top:12px">${btn('Ir a Turnos','go','data-p="turnos"','sm ghost')}${btn('Ir a Técnicos','go','data-p="tecnicos"','sm ghost')}${btn('Ir a Proyectos','go','data-p="proyectos"','sm ghost')}</div>`)}</div></div>
   <div class="g12"><div class="c6">${can(['Gerencia'])?card('Limpiar fotos de hallazgos','Libera espacio borrando fotos que ya no se necesitan',fotosCardHtml()):''}</div></div>
   <div class="g12"><div class="c6">${card('Datos y respaldo','Exporta una copia de tus datos',`<div style="display:flex;gap:10px;flex-wrap:wrap">${btn(icon('down',16)+' Exportar registros (Excel)','expXLSX','','ghost')}${can(['Gerencia','Calidad'])?btn(icon('down',16)+' Constancia de consentimientos (PDF)','consPdf','','ghost'):''}</div><p class="mut3" style="font-size:12.5px;margin-top:10px">El Excel es para analizar los registros. <b style="color:var(--tx2)">No es una copia de seguridad.</b></p>${backupCardExtra()}${nbSinceNote()}<input type="file" id="impFile" accept=".json" style="display:none"></div>`)}</div>
@@ -1260,11 +1265,11 @@ async function fotosZip(){
 const AU='Auditoría',G_=['Gerencia'],GS=['Gerencia','Supervisor',AU],GSC=['Gerencia','Supervisor','Calidad',AU],GA=['Gerencia',AU];
 const NAV=[
 {g:'Operación',items:[['captura','Captura rápida','clock',['Gerencia','Supervisor','Técnico',AU]],['faltantes','Horas faltantes','warn',['Gerencia','Supervisor','Técnico',AU]],['supervisor','Panel de supervisor','users',GS],['registros','Registros','db',GSC],['alertas','Alertas','bell',GS]]},
-{g:'Análisis',items:[['dashboard','Panel de Gerencia','dash',GS],['etapas','Comparar etapas','layers',GS],['retrabajo','Retrabajo','redo',GSC]]},
+{g:'Análisis',items:[['dashboard','Panel de Gerencia','dash',GS],['etapas','Comparar etapas','layers',GS],['retrabajo','Retrabajo','redo',GSC],['auditoria','Auditoría','search',['Gerencia',AU]]]},
 {g:'Gestión',items:[['proyectos','Proyectos','folder',GSC],['expectativas','Expectativas','sliders',GS],['tecnicos','Técnicos','user',GA],['turnos','Turnos','cal',GS],['hallazgos','Hallazgos','flag',GSC],['liberaciones','Liberaciones','check',GSC],['calidad','Gestión de Calidad','trend',GSC]]},
 {g:'Sistema',items:[['respaldo','Copia de seguridad','down',['Gerencia','Supervisor','Calidad']],['catalogo','Etapas y actividades','layers',GA],['ajustes','Ajustes y QR','qr',G_]]}];
 const ALLN=NAV.flatMap(g=>g.items.map(i=>({id:i[0],t:i[1],ic:i[2],r:i[3],g:g.g})));
-const PAGES={faltantes:pFaltantes,expectativas:pExpectativas,captura:pCaptura,supervisor:pSupervisor,registros:pRegistros,alertas:pAlertas,respaldo:pRespaldo,dashboard:pDashboard,etapas:pEtapas,retrabajo:pRetrabajo,proyectos:pProyectos,tecnicos:pTecnicos,turnos:pTurnos,hallazgos:pHallazgos,ajustes:pAjustes,catalogo:pCatalogo};
+const PAGES={auditoria:pAuditoria,faltantes:pFaltantes,expectativas:pExpectativas,captura:pCaptura,supervisor:pSupervisor,registros:pRegistros,alertas:pAlertas,respaldo:pRespaldo,dashboard:pDashboard,etapas:pEtapas,retrabajo:pRetrabajo,proyectos:pProyectos,tecnicos:pTecnicos,turnos:pTurnos,hallazgos:pHallazgos,ajustes:pAjustes,catalogo:pCatalogo};
 const DEFP={Gerencia:'dashboard',Supervisor:'supervisor','Técnico':'captura',Calidad:'hallazgos','Auditoría':'dashboard'};
 const app=()=>$('#app');
 const isMob=()=>innerWidth<=820;
@@ -1567,6 +1572,67 @@ function kvSupX(mode){const d=U.supF,R=kvSupRows(d);
 Object.keys(kvSupM).forEach(k=>{KV[k]=()=>kvSup(k);KVX[k]=()=>kvSupX(k)});
 function kvXls(k){const f=KVX[k];if(!f)return;const t=KVT[k]||(KVC[k]||{}).title||k;
  dlBlob(String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')+'_'+today()+'.xlsx',xlsxBlob(f()));toast('Excel descargado','ok')}
+/* ===== v4.6.0 · Horas fuera de proyectos (tornado) y página Auditoría ===== */
+const FC_COL={proy:'#38BDF8',otro:'#14B8A6',aus:'#64748B'};
+const fcCols=[['Fecha',r=>dlabel(r.fecha)],['Persona',r=>esc(r.nombre)],['Categoría',r=>esc(r.cat||r.macro||r.act||'—')],['HH',r=>hh(r.horas),'r'],['Descripción',r=>`<span class="mut3">${esc(r.desc||'—')}</span>`]];
+function fcCtl(tp){return (all,K)=>{
+ const gen=all.filter(r=>['Otra','Otro','Ausencia'].includes(r.cat)),sd=all.filter(r=>!(r.desc||'').trim());
+ const ap={};K.rs.filter(isProd).forEach(r=>{ap[r.tec+'|'+r.fecha]=1});
+ let out=kvCtl(!gen.length,gen.length?`${gen.length} registro${gen.length>1?'s':''} en categorías genéricas (${hh(sum(gen))} HH)`:'Todo está en categorías concretas',gen.length?'«Otra», «Otro» o «Ausencia» no explican el motivo: conviene asignar una categoría específica.':'');
+ if(tp==='aus'){const x=all.filter(r=>ap[r.tec+'|'+r.fecha]);out+=kvCtl(!x.length,x.length?`${x.length} ausencia${x.length>1?'s':''} el mismo día con horas de producción`:'Ninguna ausencia coincide con horas de producción',x.slice(0,5).map(r=>`${esc(r.nombre)} · ${dlabel(r.fecha)} · ${hh(r.horas)} HH`).join('<br>'))}
+ else{const l=kvLong(all,4);out+=kvCtl(!l.length,l.length?`${l.length} jornada${l.length>1?'s':''} con más de 4 HH fuera de proyecto en un día`:'Ninguna jornada supera 4 HH fuera de proyecto',l.slice(0,5).map(x=>`${esc(x.n)} · ${dlabel(x.f)} · ${hh(x.h)} HH`).join('<br>'))}
+ return out+`<div class="mut3" style="font-size:12.5px;padding-top:10px;border-top:1px solid var(--bd)">${sd.length} de ${all.length} registros no tienen descripción (es opcional al registrar).</div>`}}
+function fcReg(k){
+ if(KV[k])return true;const p=k.split(':'),tp=p[1],v=p.slice(2).join(':');let c;
+ if(tp==='proy')c={pick:r=>r.kind==='proy',title:'HH en proyectos',tipo:r=>r.macro||'Sin etapa',tipoT:'Por etapa'};
+ else if(tp==='cl')c={pick:r=>r.kind==='otro'&&r.clase===v,title:(CL[v]||{n:v}).n,tipo:r=>r.cat||'Sin categoría',tipoT:'Por categoría'};
+ else if(tp==='otro')c=v==='*'?{pick:r=>r.kind==='otro',title:'HH de otro tiempo',tipo:r=>r.cat||'Sin categoría',tipoT:'Por categoría'}:{pick:r=>r.kind==='otro'&&r.cat===v,title:v,tipo:r=>r.cat||'Sin categoría',tipoT:'Categoría'};
+ else if(tp==='aus')c=v==='*'?{pick:r=>r.kind==='aus',title:'HH de ausencia',tipo:r=>r.cat||r.causa||'Sin motivo',tipoT:'Por motivo'}:{pick:r=>r.kind==='aus'&&(r.cat||r.causa)===v,title:'Ausencia · '+v,tipo:r=>r.cat||r.causa||'Sin motivo',tipoT:'Motivo'};
+ else return false;
+ KVC[k]={key:k,col:FC_COL[tp==='cl'?'otro':tp]||'#14B8A6',noPct:true,extra:[['Por área','',r=>r.area||'Sin área']],cols:fcCols,ctl:tp==='proy'?null:fcCtl(tp==='aus'?'aus':'otro'),...c};
+ KV[k]=()=>kvRec(KVC[k]);KVX[k]=()=>kvRecX(KVC[k]);return true}
+function fcData(){const K=kpis(),rs=K.rs,T=sum(rs),pr=rs.filter(r=>r.kind==='proy'),ot=rs.filter(r=>r.kind==='otro'),au=rs.filter(r=>r.kind==='aus');
+ const ho=sum(ot),ha=sum(au),hp=sum(pr),fu=ho+ha;
+ return{K,rs,T,pr,ot,au,hp,ho,ha,fu,cls:sumBy(ot,r=>r.clase),cat:sumBy(ot,r=>r.cat),ausC:sumBy(au,r=>r.cat||r.causa||'Sin motivo')}}
+const fcP=(a,b)=>b?nf(a/b*100,1)+'%':'0%';
+function fcStep(w,col,l,v,sub,k){return `<div class="fcs${k?' kvc':''}" ${k?`data-act="kpiOpen" data-k="${esc(k)}" role="button" tabindex="0" data-tip="Clic para ver el análisis"`:''} style="width:${Math.max(8,w)}%;background:${col}"><b>${l}</b><span>${v}</span>${sub?`<small>${sub}</small>`:''}</div>`}
+function fcTornado(D){
+ if(!D.T)return empty('Todavía no hay horas registradas con los filtros actuales.');
+ const pT=D.hp/D.T*100,pO=D.ho/D.T*100,pA=D.ha/D.T*100;
+ const catRow=(k,v,col,key,tot)=>`<div class="fcr kvc" data-act="kpiOpen" data-k="${esc(key)}" role="button" tabindex="0" data-tip="Clic para ver el análisis"><span class="fcl">${esc(k)}</span><span class="fct"><i style="width:${Math.max(2,v/tot*100)}%;background:${col}"></i></span><span class="fcv">${hh(v)} HH · ${fcP(v,tot)}</span></div>`;
+ const colO=D.cls.map(c=>`<div class="fcr kvc" data-act="kpiOpen" data-k="fc:cl:${c.k}" role="button" tabindex="0" data-tip="Clic para ver el análisis"><span class="fcl"><b>${esc((CL[c.k]||{n:c.k}).n)}</b></span><span class="fct"><i style="width:${Math.max(2,c.v/D.ho*100)}%;background:${(CL[c.k]||{}).c||'#14B8A6'}"></i></span><span class="fcv">${hh(c.v)} HH</span></div>${D.cat.filter(x=>((OTROS.find(o=>o[0]===x.k)||[0,'capac'])[1])===c.k).map(x=>catRow('· '+x.k,x.v,'#14B8A650','fc:otro:'+x.k,D.ho)).join('')}`).join('');
+ return `<div class="fct0">
+ <div class="fcrow">${fcStep(100,'#1E3A8A','Horas registradas',hh(D.T)+' HH','Todo el personal del filtro · incluye ausencias','')}</div>
+ <div class="fcrow">${fcStep(Math.min(Math.max(pT,10),66),'#0EA5E9','En proyectos',hh(D.hp)+' HH',nf(pT,1)+'%','fc:proy:*')}${D.fu>0?fcStep(Math.max(100-pT,34),'#0F766E','Fuera de proyectos',hh(D.fu)+' HH',nf(100-pT,1)+'% del total',''):''}</div>
+ <div class="fcrow"><div class="fcrow" style="width:${Math.max(100-pT,34)}%;margin-left:auto">${D.ho>0?fcStep(Math.max(D.ho/D.fu*100,25),'#14B8A6','Otro tiempo',hh(D.ho)+' HH',nf(pO,1)+'% del total','fc:otro:*'):''}${D.ha>0?fcStep(Math.max(D.ha/D.fu*100,25),'#64748B','Ausencia',hh(D.ha)+' HH',nf(pA,1)+'% del total','fc:aus:*'):''}</div></div>
+ </div>
+ <div class="g12" style="margin-top:18px"><div class="c6"><h3 style="font-size:15px;margin-bottom:8px">Otro tiempo · ${hh(D.ho)} HH</h3>${D.ho?colO:'<p class="mut3">Sin horas de otro tiempo.</p>'}</div>
+ <div class="c6"><h3 style="font-size:15px;margin-bottom:8px">Ausencia · ${hh(D.ha)} HH</h3>${D.ha?D.ausC.map(c=>catRow(c.k,c.v,'#64748B','fc:aus:'+c.k,D.ha)).join(''):'<p class="mut3">Sin ausencias.</p>'}</div></div>`}
+function fcRevisar(D){
+ const items=[],ot=D.ot,au=D.au,K=D.K;
+ const imp=sum(ot.filter(r=>r.clase==='improd')),gen=D.rs.filter(r=>r.kind!=='proy'&&['Otra','Otro','Ausencia'].includes(r.cat));
+ const ap={};K.rs.filter(isProd).forEach(r=>{ap[r.tec+'|'+r.fecha]=1});const cf=au.filter(r=>ap[r.tec+'|'+r.fecha]);
+ const mant=sum(ot.filter(r=>r.clase==='mant')),sup=D.T?D.fu/D.T*100:0;
+ const c=(ok,t,s,k)=>`<div class="card flat${k?' kvc':''}" ${k?`data-act="kpiOpen" data-k="${k}" role="button" tabindex="0" data-tip="Clic para ver el análisis"`:''} style="padding:14px"><div style="margin-bottom:6px">${badge(ok?'OK':'Revisar',ok?'ok':'wa')}</div><div style="font-weight:650">${t}</div><div class="mut3" style="font-size:12.5px;margin-top:4px">${s}</div></div>`;
+ return `<div class="fcg">${c(sup<=25,`${nf(sup,1)}% de las horas están fuera de proyectos`,sup>25?'Más de una cuarta parte de la jornada no va a proyectos.':'Dentro de lo habitual (menos de 25%).','fc:otro:*')}
+ ${c(imp<=D.ho*.2,`${hh(imp)} HH improductivas (esperas)`,D.ho?nf(imp/D.ho*100,0)+'% del otro tiempo.':'Sin otro tiempo.','improd')}
+ ${c(!gen.length,gen.length?`${gen.length} registros en categorías genéricas`:'Sin categorías genéricas',gen.length?hh(sum(gen))+' HH sin motivo concreto («Otra», «Otro», «Ausencia»).':'Todo con motivo concreto.',gen.length?'fc:otro:*':'')}
+ ${c(!cf.length,cf.length?`${cf.length} ausencia${cf.length>1?'s':''} con horas de producción el mismo día`:'Ausencias coherentes con producción',cf.length?cf.slice(0,3).map(r=>esc(r.nombre)+' · '+dlabel(r.fecha)).join('<br>'):'Ninguna coincide con horas registradas en proyecto.','fc:aus:*')}
+ ${c(true,`${hh(mant)} HH de mantenimiento`,'Incluye «Mantenimiento» y «Soporte a mantenimiento».','fc:cl:mant')}</div>`}
+function fcPanel(){const D=fcData();
+ const W=kvWeeks(D.rs.filter(r=>r.kind!=='proy').map(r=>({f:r.fecha,h:+r.horas||0})));
+ return card('Flujo de las horas','De todas las horas registradas, cuántas van a proyectos y cuántas no. Toca cualquier bloque para ver su análisis.',fcTornado(D))
+ +`<div style="height:16px"></div>`+card('¿Qué hay que revisar?','Controles automáticos sobre las horas fuera de proyectos',fcRevisar(D))
+ +`<div style="height:16px"></div>`+card('Horas fuera de proyectos por semana','Otro tiempo + ausencia',kvBars(W.items,W.avg,'#14B8A6'))}
+function pFuera(){return filterBar()+fcPanel()}
+function pAuditoria(){const K=kpis(),D=fcData();
+ const m=(l,v,s,k,c='')=>`<section class="card mini flat kvc" data-act="kpiOpen" data-k="${k}" role="button" tabindex="0" data-tip="Clic para ver el análisis"><div><div class="m-v ${c}">${v}</div><div class="m-l">${l}</div></div><div class="mut3" style="font-size:12px">${s}</div></section>`;
+ const AL=alerts().filter(a=>a.n==='er').length;
+ const tiles=`<div class="fct4">${m('HH registradas',nf(K.tot,0),'Clic para ver el análisis','tot')}${m('HH de retrabajo',nf(K.ret,0),nf(K.pctRet,1)+'% de las HH','ret')}${m('HH improductivas',nf(K.imp,0),'Esperas','improd')}${m('Desviación vs. expectativa',(K.dev>0?'+':'')+nf(K.dev,0),'HH','dev')}
+ ${m('Otro tiempo',hh(D.ho),fcP(D.ho,D.T)+' del total','fc:otro:*')}${m('Ausencias',hh(D.ha),fcP(D.ha,D.T)+' del total','fc:aus:*')}${m('HH faltantes',nf(K.falt,0),'Jornadas programadas','falt')}${m('HH excedentes',nf(K.exc,0),'Sobre la jornada','exc')}</div>`;
+ return filterBar()+`<div style="margin:4px 0 16px"><p class="mut">Puntos clave de revisión de un auditor. Toca cualquier ficha para ver su análisis, controles y descargar el Excel.${isAud()?' Perfil de solo lectura.':''}</p></div>`+tiles
+ +`<div style="height:16px"></div>`+card('Curva de expectativa vs. realidad',"Toca para ver el análisis",'<div style="padding:4px 0"><button class="btn ghost" data-act="kpiOpen" data-k="curva">Abrir análisis de la curva</button></div>')
+ +`<div style="height:16px"></div>`+fcPanel()+`<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">${btn('Ver alertas'+(AL?' ('+AL+' críticas)':''),'go','data-p="alertas"','ghost')}${btn('Ver retrabajo','go','data-p="retrabajo"','ghost')}${btn('Ver registros','go','data-p="registros"','ghost')}</div>`}
 /* ================= Modales ================= */
 let M={};
 function openModal(html,cls=''){const m=$('#modal');m.innerHTML=`<div class="mbox ${cls}" role="dialog" aria-modal="true">${html}</div>`;m.className='open'+(cls==='pal'?' pal':'');m.style.display='flex';const f=m.querySelector('input:not([type=hidden]),select,textarea');if(f&&cls!=='pal')setTimeout(()=>f.focus({preventScroll:true}),30)}
@@ -1681,7 +1747,7 @@ const A={
  copyApps:()=>{try{navigator.clipboard.writeText(APPS).then(()=>toast('Código copiado','ok'),()=>toast('Selecciona el código y cópialo manualmente','wa'))}catch(e){toast('Selecciona el código y cópialo manualmente','wa')}},
  delDemo:()=>nbNo(),_delDemo:()=>confirmM('Eliminar datos de demostración','Se eliminarán los técnicos, proyectos, registros y hallazgos de demostración. Lo que hayas creado tú se conserva. Esta acción no se puede deshacer.','Eliminar datos demo',()=>{S.tecnicos=S.tecnicos.filter(x=>!x.demo);S.proyectos=S.proyectos.filter(x=>!x.demo);S.registros=S.registros.filter(x=>!x.demo);S.hallazgos=S.hallazgos.filter(x=>!x.demo);S.demo=false;U.c=newC();U.f=newF();save();closeModal();renderAll();toast('Datos demo eliminados','ok')},1),
  loadDemo:()=>nbNo(),_loadDemo:()=>confirmM('Cargar datos de demostración','Esto reemplaza los técnicos, proyectos y registros actuales por datos de demostración.','Reemplazar y cargar',()=>{const st=S.settings,tu=S.turnos;S=baseState();S.settings=st;S.turnos=tu;genDemo();U.c=newC();save();closeModal();renderAll();toast('Datos demo cargados','ok')},1),
- kpiOpen:t=>{const f=KV[t.dataset.k];if(f){M={type:'kv',k:t.dataset.k};openModal(f(),'xl')}},kvXls:t=>{try{kvXls(t.dataset.k)}catch(e){toast('No se pudo crear el Excel: '+e.message,'er')}},
+ kpiOpen:t=>{if(String(t.dataset.k).startsWith('fc:'))fcReg(t.dataset.k);const f=KV[t.dataset.k];if(f){M={type:'kv',k:t.dataset.k};openModal(f(),'xl')}},kvXls:t=>{try{kvXls(t.dataset.k)}catch(e){toast('No se pudo crear el Excel: '+e.message,'er')}},
  mClose:()=>closeModal(),mOk:()=>{const cb=M.cb;if(cb)cb()}
 };
 function setPath(p,v){
@@ -1950,6 +2016,10 @@ function pFaltantes(){
 }
 /* ---------- Dashboard: se añaden Rendimiento por área y Proyectos activos ---------- */
 function pDashboard(){
+ const tabs=`<div class="tabs" style="margin-bottom:16px"><button class="${U.dtab==='fuera'?'':'on'}" data-act="dtab" data-v="prod">Producción</button><button class="${U.dtab==='fuera'?'on':''}" data-act="dtab" data-v="fuera">Horas fuera de proyectos</button></div>`;
+ if(U.dtab==='fuera')return tabs+pFuera();
+ return tabs+pDashboard0()}
+function pDashboard0(){
  const K=kpis(),rs=K.rs;const base=pDashboardBase();const nd=rs.filter(r=>r.clase!=='aus');const T=sum(nd)||1;
  const t0=today(),inR=(r,a,b)=>r.fecha>addDays(t0,-a)&&r.fecha<=addDays(t0,-b);
  const areas=sumBy(nd,r=>r.area||'Sin área');
@@ -1962,6 +2032,7 @@ function pDashboard(){
 /* ================= Acciones nuevas ================= */
 Object.assign(A,{
  tab:t=>{U.tab=t.dataset.v;renderPage(true)},
+ dtab:t=>{U.dtab=t.dataset.v;renderPage(true)},
  semNav:t=>{const v=+t.dataset.v;U.semW=v===0?monday(today()):addDays(U.semW,7*v);renderPage(true)},
  semCopy:()=>{const p=addDays(U.semW,-7);S.rota[U.semW]={};S.tecnicos.filter(x=>x.registra).forEach(x=>{S.rota[U.semW][x.codigo]=turnoDe(x,p)});logH('Programación semanal','copiada de '+dlabel(p),dlabel(U.semW));save();renderPage(true);toast('Semana copiada','ok')},
  semReset:()=>{delete S.rota[U.semW];save();renderPage(true);toast('Vuelven los turnos por defecto','ok')},
