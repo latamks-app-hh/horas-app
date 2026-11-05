@@ -1201,7 +1201,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.7.0';
+const APP_VER='4.8.0';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1740,7 +1740,7 @@ function fcPanel(aud){const D=fcData();
    <h4 style="margin:22px 0 8px;font-size:14px">Personas con más horas fuera de proyectos</h4>${fcPersonas(D)}</section>`}
 function pFuera(){return filterBar()+fcPanel(false)}
 function pAuditoria(){return filterBar()+`<div style="margin:4px 0 14px"><p class="mut">Puntos clave de revisión de un auditor. Toca cualquier ficha o anillo para ver su análisis, controles y descargar el Excel.${isAud()?' Perfil de solo lectura.':''}</p></div>`
- +`<div class="fcbtn"><button class="btn ghost" data-act="kpiOpen" data-k="curva">Curva de expectativa vs. realidad</button>${btn('Ver alertas','go','data-p="alertas"','ghost')}${btn('Ver retrabajo','go','data-p="retrabajo"','ghost')}${btn('Ver registros','go','data-p="registros"','ghost')}</div>`+fcPanel(true)}
+ +`<div class="fcbtn">${repBtn()}<button class="btn ghost" data-act="kpiOpen" data-k="curva">Curva de expectativa vs. realidad</button>${btn('Ver alertas','go','data-p="alertas"','ghost')}${btn('Ver retrabajo','go','data-p="retrabajo"','ghost')}${btn('Ver registros','go','data-p="registros"','ghost')}</div>`+fcPanel(true)}
 /* ================= Modales ================= */
 let M={};
 function openModal(html,cls=''){const m=$('#modal');m.innerHTML=`<div class="mbox ${cls}" role="dialog" aria-modal="true">${html}</div>`;m.className='open'+(cls==='pal'?' pal':'');m.style.display='flex';const f=m.querySelector('input:not([type=hidden]),select,textarea');if(f&&cls!=='pal')setTimeout(()=>f.focus({preventScroll:true}),30)}
@@ -2123,8 +2123,143 @@ function pFaltantes(){
  <div class="c7">${card('Registro de horas justificadas','Últimos 25 movimientos con los filtros de la rueda',log.length?`<div class="tw" style="max-height:340px;overflow:auto"><table class="t"><thead><tr><th>Fecha</th><th>Técnico</th><th>Motivo</th><th>Clasificación</th><th class="r">HH</th></tr></thead><tbody>${log.map(r=>`<tr><td>${dlabel(r.fecha)}</td><td>${esc(r.nombre)}</td><td>${esc(r.cat||r.causa)}</td><td>${r.kind==='aus'?badge('Ausencia','n'):badge('Jornada','i')}</td><td class="num">${hh(r.horas)}</td></tr>`).join('')}</tbody></table></div>`:empty('Sin registros'))}</div></div>`;
 }
 /* ---------- Dashboard: se añaden Rendimiento por área y Proyectos activos ---------- */
+
+/* ===== v4.8.0 · Informe ejecutivo (PDF + Excel) ===== */
+function repBuild(){
+ const K=kpis(),D=fcData(),f=U.f,rs=K.rs,T=D.T,np=+f.per,t0=today(),ds=rs.map(r=>r.fecha).sort();
+ const scope={per:(f.desde||f.hasta)?'Rango elegido':(!f.per||f.per==='0')?'Todo el histórico':'Últimos '+f.per+' días',proy:f.proy?'Proyecto '+f.proy:'Todos los proyectos (activos y cerrados)',desde:ds[0]||'',hasta:ds[ds.length-1]||'',n:rs.length,dias:new Set(ds).size};
+ let prev=null;if(np&&!f.desde&&!f.hasta){const a=addDays(t0,-2*np+1),b=addDays(t0,-np);prev=K.rn.filter(r=>r.fecha>=a&&r.fecha<=b)}
+ const chg=(c,p)=>p>0?(c-p)/p*100:null;
+ const pT=prev?sum(prev.filter(r=>r.clase!=='aus')):null,pR=prev?sum(prev.filter(r=>r.clase==='retrabajo')):null;
+ const ret=K.ret,tot=K.tot,imp=sum(D.ot.filter(r=>r.clase==='improd')),mant=sum(D.ot.filter(r=>r.clase==='mant'));
+ const rets=rs.filter(r=>r.clase==='retrabajo'),causas=sumBy(rets,r=>r.causa||'Sin causa'),origs=sumBy(rets,r=>r.origen||'Sin origen'),retP=sumBy(rets,r=>r.proy||'Sin proyecto');
+ const pr=kvProyRows(K).map(x=>{const p=x.p;let tp=null;if(p.entrega&&p.inicio){const tt=bdaysB(p.inicio,p.entrega),el=t0<p.inicio?0:bdaysB(p.inicio,t0<p.entrega?t0:p.entrega);tp=Math.min(100,el/tt*100)}
+  const s=semaf(x.real,x.tot);return{num:p.num,cliente:p.cliente||'',cap:p.cap||'',etapa:stageOf(p),exp:x.tot,real:x.real,pct:x.pct,dev:x.dev,estado:p.estado,entrega:p.entrega||'',tp,sem:s.c}}).filter(x=>x.estado==='Activo'||x.real>0).sort((a,b)=>b.pct-a.pct);
+ const et=ETAPAS.map(e=>({k:e,exp:K.st[e].exp,real:K.st[e].real,dev:K.st[e].dev})).filter(x=>x.exp>0||x.real>0);
+ const per={};rs.forEach(r=>{const o=per[r.nombre||'Sin nombre']=per[r.nombre||'Sin nombre']||{n:r.nombre||'Sin nombre',t:0,f:0};o.t+=+r.horas||0;if(r.kind!=='proy')o.f+=+r.horas||0});
+ const pers=Object.values(per).filter(x=>x.f>0).sort((a,b)=>b.f-a.f).slice(0,10).map(x=>({...x,p:x.t?x.f/x.t*100:0}));
+ const cv=curve(K.P,K.rn),n=cv.labels.length,gap=n?r2(cv.real[n-1]-cv.exp[n-1]):0;
+ const gen=D.rs.filter(r=>r.kind!=='proy'&&['Otra','Otro','Ausencia'].includes(r.cat)),pend=rs.filter(r=>r.pend).length,rsin=rets.filter(r=>!r.causa).length;
+ const act=K.P.filter(p=>p.estado==='Activo'),sinE=act.filter(p=>!(+(p.exp&&p.exp.total)||0)),sob=pr.filter(x=>x.exp&&x.real>x.exp),riesgo=pr.filter(x=>x.exp&&x.real<=x.exp&&x.pct>=90),ret10=pr.filter(x=>x.tp!=null&&x.pct>x.tp+15&&x.exp);
+ const crit=alerts().filter(a=>a.n==='er').length;
+ const pcF=T?D.fu/T*100:0,pcR=tot?ret/tot*100:0,dvp=K.exp?K.dev/K.exp*100:0;
+ /* lectura */
+ const L=[];
+ L.push(`Se registraron ${hh(T)} HH (${scope.dias} días con registros). El ${nf(T?D.hp/T*100:0,1)}% (${hh(D.hp)} HH) fue a proyectos y el ${nf(pcF,1)}% (${hh(D.fu)} HH) fuera de proyectos: ${hh(D.ho)} HH de otro tiempo y ${hh(D.ha)} HH de ausencias.`);
+ if(pT!=null&&pT>0)L.push(`Frente al periodo anterior de igual duración (${hh(pT)} HH), las horas ${tot>pT?'subieron':tot<pT?'bajaron':'se mantuvieron'}${tot===pT?'':' '+nf(Math.abs(chg(tot,pT)),0)+'%'}.`);
+ if(K.exp>0)L.push(K.dev>0?`El acumulado de proyectos va ${nf(K.dev,0)} HH por encima de la expectativa (${nf(dvp,1)}% sobre ${nf(K.exp,0)} HH esperadas).`:K.dev<0?`El acumulado de proyectos va ${nf(-K.dev,0)} HH por debajo de la expectativa (${nf(-dvp,1)}%): hay holgura, o hay horas por registrar.`:'El acumulado de proyectos coincide con la expectativa.');
+ const w=et.slice().sort((a,b)=>b.dev-a.dev)[0];if(w&&w.dev>0)L.push(`La etapa con mayor desviación es ${w.k}: ${nf(w.real,0)} HH reales frente a ${nf(w.exp,0)} esperadas (+${nf(w.dev,0)} HH).`);
+ L.push(ret>0?`El retrabajo suma ${hh(ret)} HH (${nf(pcR,1)}% de las horas de personal)${pR!=null&&pR>0?'; frente al periodo anterior '+(ret>pR?'subió ':ret<pR?'bajó ':'se mantuvo ')+(ret===pR?'':nf(Math.abs(chg(ret,pR)),0)+'%'):''}. Principal causa: ${causas[0]?causas[0].k+' ('+nf(causas[0].v/ret*100,0)+'%)':'sin causa registrada'}; principal origen: ${origs[0]?origs[0].k:'—'}.`:'No hay horas de retrabajo en el periodo.');
+ if(imp>0)L.push(`Las esperas e improductividad suman ${hh(imp)} HH (${nf(T?imp/T*100:0,1)}% de las horas).`);
+ if(mant>0)L.push(`Mantenimiento y soporte a mantenimiento suman ${hh(mant)} HH.`);
+ if(pers[0]&&pers[0].p>=40)L.push(`${pers[0].n} dedica ${nf(pers[0].p,0)}% de su tiempo (${hh(pers[0].f)} HH) a actividades fuera de proyectos.`);
+ if(K.falt>0||K.exc>0)L.push(`Cumplimiento de registro: ${nf(K.falt,0)} HH faltantes y ${nf(K.exc,0)} HH excedentes frente a las jornadas programadas.`);
+ /* decisiones */
+ const Rc=[];
+ if(sob.length)Rc.push({p:'Alta',t:`Revisar con producción los proyectos que ya superaron su expectativa: ${sob.slice(0,4).map(x=>x.num+' ('+nf(x.pct,0)+'%)').join(', ')}. Definir si se ajusta la expectativa o se corrige el proceso.`});
+ if(riesgo.length)Rc.push({p:'Media',t:`Proyectos cerca de agotar la expectativa (90% o más): ${riesgo.slice(0,4).map(x=>x.num).join(', ')}. Confirmar horas restantes antes de comprometer fecha de entrega.`});
+ if(ret10.length)Rc.push({p:'Media',t:`El consumo de horas va por delante del avance en el tiempo en: ${ret10.slice(0,4).map(x=>x.num).join(', ')}. Riesgo de sobrecosto si no se corrige el ritmo.`});
+ if(pcR>8&&causas[0])Rc.push({p:pcR>12?'Alta':'Media',t:`El retrabajo pesa ${nf(pcR,1)}% de las horas. Atacar primero la causa «${causas[0].k}» y el origen «${origs[0]?origs[0].k:'—'}» con una acción correctiva y responsable definido.`});
+ if(rsin)Rc.push({p:'Alta',t:`${rsin} registros de retrabajo no tienen causa: completarlos antes de cerrar el periodo para que el análisis sea confiable.`});
+ if(pcF>25)Rc.push({p:'Media',t:`${nf(pcF,1)}% de las horas está fuera de proyectos. Revisar la carga de apoyo, capacitación y mantenimiento frente a la carga de producción.`});
+ if(imp>0&&T&&imp/T>.03)Rc.push({p:'Media',t:`Reducir esperas (${hh(imp)} HH): revisar disponibilidad de material, instrucciones y herramientas en las áreas afectadas.`});
+ if(gen.length)Rc.push({p:'Baja',t:`${gen.length} registros usan categorías genéricas («Otra», «Otro», «Ausencia») por ${hh(sum(gen))} HH. Pedir al personal que especifique el motivo.`});
+ if(K.falt>0)Rc.push({p:'Media',t:`${nf(K.falt,0)} HH faltantes por registrar: pedir a los técnicos que completen sus jornadas para no subestimar los costos.`});
+ if(sinE.length)Rc.push({p:'Alta',t:`Proyectos activos sin expectativa: ${sinE.slice(0,5).map(p=>p.num).join(', ')}. Sin expectativa no se puede medir desviación.`});
+ if(pend)Rc.push({p:'Baja',t:`${pend} registros siguen por validar por un supervisor.`});
+ if(!Rc.length)Rc.push({p:'Baja',t:'La operación se mantiene dentro de lo esperado. Continuar con el seguimiento semanal.'});
+ const ord={Alta:0,Media:1,Baja:2};Rc.sort((a,b)=>ord[a.p]-ord[b.p]);
+ const ctl=[['Horas faltantes',nf(K.falt,0)+' HH',K.falt>0?'Revisar':'OK'],['Horas excedentes',nf(K.exc,0)+' HH',K.exc>0?'Revisar':'OK'],['Registros por validar',String(pend),pend>0?'Revisar':'OK'],['Retrabajo sin causa',String(rsin),rsin?'Revisar':'OK'],['Proyectos activos sin expectativa',String(sinE.length),sinE.length?'Revisar':'OK'],['Proyectos sobre expectativa',String(sob.length),sob.length?'Revisar':'OK'],['Registros con motivo genérico',String(gen.length),gen.length?'Revisar':'OK'],['Alertas críticas abiertas',String(crit),crit?'Revisar':'OK']];
+ const kp=[['Horas registradas',hh(T)+' HH',scope.dias+' días con registros','#14205A'],['En proyectos',hh(D.hp)+' HH',nf(T?D.hp/T*100:0,1)+'% del total','#0EA5E9'],['Fuera de proyectos',hh(D.fu)+' HH',nf(pcF,1)+'% del total','#0F766E'],['Retrabajo',hh(ret)+' HH',nf(pcR,1)+'% de las horas','#D97706'],['Desviación vs. expectativa',(K.dev>0?'+':'')+nf(K.dev,0)+' HH',nf(dvp,1)+'% de '+nf(K.exp,0)+' HH','#7C3AED'],['Improductivas',hh(imp)+' HH','esperas, clima, fallas','#DC2626'],['Horas faltantes',nf(K.falt,0)+' HH',nf(K.exc,0)+' HH excedentes','#475569'],['Proyectos activos',String(act.length),sob.length+' sobre expectativa','#16A34A']];
+ return{K,D,scope,kp,L,Rc,ctl,pr,et,causas,origs,retP,pers,cv,gap,imp,mant,pT,pR,tot,ret,pcF,pcR,dvp,rs,when:new Date()}}
+const repResumen=R=>`${R.scope.proy} · ${R.scope.per}${R.scope.desde?' · del '+R.scope.desde.split('-').reverse().join('/')+' al '+R.scope.hasta.split('-').reverse().join('/'):''}`;
+function repXlsx(R){const K=R.K,D=R.D,pc=(a,b)=>b?r2(a/b*100):0;
+ return[
+ {name:'Resumen',cols:[{h:'Indicador',w:34},{h:'Valor',w:18},{h:'Detalle',w:40}],rows:[['Informe',repResumen(R),''],['Generado',R.when.toLocaleString('es-CO'),U.name||''],...R.kp.map(k=>[k[0],k[1],k[2]])]},
+ {name:'Lectura y decisiones',cols:[{h:'Tipo',w:14},{h:'Prioridad',w:12},{h:'Texto',w:120}],rows:[...R.L.map(t=>['Lectura','',t]),...R.Rc.map(x=>['Decisión sugerida',x.p,x.t])]},
+ {name:'Proyectos',cols:[{h:'Proyecto',w:12},{h:'Cliente',w:22},{h:'Capacidad',w:11},{h:'Etapa actual',w:22},{h:'Estado',w:12},{h:'Expectativa HH',w:15,t:'n'},{h:'Real HH',w:11,t:'n'},{h:'% consumido',w:13,t:'n'},{h:'Desviación HH',w:14,t:'n'},{h:'% del tiempo',w:13,t:'n'},{h:'Entrega',w:12}],rows:R.pr.map(x=>[x.num,x.cliente,x.cap,x.etapa,x.estado,r2(x.exp),r2(x.real),r2(x.pct),r2(x.dev),x.tp==null?'':r2(x.tp),x.entrega])},
+ {name:'Etapas',cols:[{h:'Etapa',w:28},{h:'Expectativa HH',w:15,t:'n'},{h:'Real HH',w:11,t:'n'},{h:'Desviación HH',w:14,t:'n'}],rows:R.et.map(e=>[e.k,r2(e.exp),r2(e.real),r2(e.dev)])},
+ {name:'Retrabajo por causa',cols:[{h:'Causa',w:36},{h:'HH',w:11,t:'n'},{h:'% del retrabajo',w:15,t:'n'}],rows:R.causas.map(c=>[c.k,c.v,pc(c.v,R.ret)])},
+ {name:'Retrabajo por origen',cols:[{h:'Origen',w:36},{h:'HH',w:11,t:'n'},{h:'% del retrabajo',w:15,t:'n'}],rows:R.origs.map(c=>[c.k,c.v,pc(c.v,R.ret)])},
+ {name:'Retrabajo por proyecto',cols:[{h:'Proyecto',w:16},{h:'HH',w:11,t:'n'},{h:'% del retrabajo',w:15,t:'n'}],rows:R.retP.map(c=>[c.k,c.v,pc(c.v,R.ret)])},
+ {name:'Fuera de proyectos',cols:[{h:'Tipo',w:14},{h:'Categoría',w:34},{h:'HH',w:11,t:'n'},{h:'% del total',w:13,t:'n'}],rows:[...D.cat.map(c=>['Otro tiempo',c.k,c.v,pc(c.v,D.T)]),...D.ausC.map(c=>['Ausencia',c.k,c.v,pc(c.v,D.T)])]},
+ {name:'Personas fuera de proyecto',cols:[{h:'Persona',w:30},{h:'HH fuera',w:12,t:'n'},{h:'HH totales',w:12,t:'n'},{h:'% de su tiempo',w:15,t:'n'}],rows:R.pers.map(x=>[x.n,r2(x.f),r2(x.t),r2(x.p)])},
+ {name:'Controles',cols:[{h:'Control',w:40},{h:'Valor',w:16},{h:'Estado',w:12}],rows:R.ctl},
+ {name:'Curva diaria',cols:[{h:'Fecha',w:12,t:'d'},{h:'Expectativa acum.',w:17,t:'n'},{h:'Real acum.',w:13,t:'n'},{h:'Brecha',w:12,t:'n'}],rows:R.cv.labels.map((d,i)=>[d,R.cv.exp[i],R.cv.real[i],r2(R.cv.real[i]-R.cv.exp[i])])},
+ {name:'Registros',cols:[{h:'Fecha',w:12,t:'d'},{h:'Persona',w:24},{h:'Área',w:16},{h:'Proyecto',w:11},{h:'Etapa',w:20},{h:'Tipo',w:26},{h:'Categoría',w:24},{h:'HH',w:8,t:'n'},{h:'Causa',w:22},{h:'Origen',w:20},{h:'Estado',w:11}],rows:R.rs.slice().sort((a,b)=>a.fecha<b.fecha?1:-1).map(r=>[r.fecha,r.nombre,r.area,r.proy||'',r.macro||'',r.tipo,r.cat||r.act||'',r2(r.horas),r.causa||'',r.origen||'',r.estado])}]}
+/* ---- PDF: se dibuja en lienzos y se arma con pdfMulti ---- */
+function repImg(src){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src})}
+async function repPages(R){
+ try{if(document.fonts&&document.fonts.ready)await document.fonts.ready}catch(e){}
+ const logo=await repImg(LOGO),W=1275,H=1650,MX=70,TOP=120,BOT=1585,CW=W-2*MX,NV='#14205A',TX='#1E293B',SB='#64748B',LN='#E2E8F0',BG='#F1F5F9';
+ const pages=[];let c,y;const F=(w,s)=>`${w} ${s}px ${FONT}`;
+ const rr=(x,yy,w,h,r)=>{c.beginPath();c.moveTo(x+r,yy);c.arcTo(x+w,yy,x+w,yy+h,r);c.arcTo(x+w,yy+h,x,yy+h,r);c.arcTo(x,yy+h,x,yy,r);c.arcTo(x,yy,x+w,yy,r);c.closePath()};
+ const tx=(t,x,yy,font,col,al)=>{c.font=font;c.fillStyle=col;c.textAlign=al||'left';c.textBaseline='alphabetic';c.fillText(t,x,yy)};
+ const fit=(t,w,font)=>{c.font=font;t=String(t);if(c.measureText(t).width<=w)return t;while(t.length>1&&c.measureText(t+'…').width>w)t=t.slice(0,-1);return t+'…'};
+ const wrap=(t,w,font)=>{c.font=font;const out=[];String(t).split('\n').forEach(par=>{let l='';par.split(' ').forEach(wd=>{const tt=l?l+' '+wd:wd;if(c.measureText(tt).width>w&&l){out.push(l);l=wd}else l=tt});out.push(l)});return out};
+ const np=()=>{const cv=document.createElement('canvas');cv.width=W;cv.height=H;c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,W,H);pages.push(cv);
+  c.fillStyle=NV;c.fillRect(0,0,W,78);if(logo){const lh=46,lw=lh*logo.width/logo.height;c.drawImage(logo,MX,16,lw,lh)}
+  tx('Informe ejecutivo · Control de horas hombre',MX+(logo?logo.width*46/logo.height+16:0),48,F(700,22),'#fff');tx(fit(R.scope.proy+' · '+R.scope.per,520,F(500,14)),W-MX,48,F(500,14),'rgba(255,255,255,.8)','right');y=TOP};
+ const ens=h=>{if(y+h>BOT)np()};
+ const h2=t=>{ens(300);y+=14;tx(t,MX,y+24,F(800,27),NV);y+=36;c.fillStyle='#0EA5E9';c.fillRect(MX,y,70,4);c.fillStyle=LN;c.fillRect(MX+70,y+1,CW-70,2);y+=24};
+ const h3=(t,m)=>{ens(m||200);tx(t,MX,y+20,F(700,19),TX);y+=32};
+ const para=(t,o={})=>{const s=o.s||19,f=F(o.b?700:500,s),ls=wrap(t,(o.w||CW),f);ens(ls.length*s*1.5+8);ls.forEach(l=>{tx(l,o.x||MX,y+s,f,o.c||TX);y+=s*1.5});y+=8};
+ const bullets=L=>L.forEach(t=>{const f=F(500,19),ls=wrap(t,CW-30,f);ens(ls.length*29+10);c.fillStyle='#0EA5E9';c.beginPath();c.arc(MX+8,y+14,5,0,7);c.fill();ls.forEach(l=>{tx(l,MX+28,y+20,f,TX);y+=29});y+=8});
+ const kpiG=(items,cols)=>{const gw=(CW-(cols-1)*14)/cols,bh=112;for(let i=0;i<items.length;i+=cols){ens(bh+14);items.slice(i,i+cols).forEach((k,j)=>{const x=MX+j*(gw+14);c.fillStyle=BG;rr(x,y,gw,bh,14);c.fill();c.fillStyle=k[3];rr(x,y,6,bh,3);c.fill();tx(fit(k[0],gw-28,F(600,15)),x+20,y+30,F(600,15),SB);tx(fit(k[1],gw-28,F(800,28)),x+20,y+68,F(800,28),TX);tx(fit(k[2],gw-28,F(500,13)),x+20,y+94,F(500,13),SB)});y+=bh+14}};
+ const table=(cols,rows,o={})=>{const rh=o.rh||38,hd=36;ens(hd+rh*Math.min(rows.length,3)+10);const draw=()=>{c.fillStyle=NV;rr(MX,y,CW,hd,8);c.fill();let x=MX;cols.forEach(cl=>{const w=cl.w*CW;tx(fit(cl.h,w-16,F(700,14)),cl.a==='r'?x+w-10:x+10,y+24,F(700,14),'#fff',cl.a==='r'?'right':'left');x+=w});y+=hd};draw();
+  rows.forEach((r,i)=>{if(y+rh>BOT){np();draw()}if(i%2){c.fillStyle='#F8FAFC';c.fillRect(MX,y,CW,rh)}c.fillStyle=LN;c.fillRect(MX,y+rh-1,CW,1);let x=MX;cols.forEach(cl=>{const w=cl.w*CW,v=cl.f(r),col=(cl.c&&cl.c(r))||TX,f=F(cl.b?700:500,15);tx(fit(v,w-16,f),cl.a==='r'?x+w-10:x+10,y+25,f,col,cl.a==='r'?'right':'left');x+=w});y+=rh});y+=14};
+ const hbars=(items,col,unit)=>{const mx=Math.max(...items.map(i=>i.v),.001),lw=330,bw=CW-lw-130;items.forEach(it=>{ens(40);tx(fit(it.k,lw-14,F(500,16)),MX,y+22,F(500,16),TX);c.fillStyle=LN;rr(MX+lw,y+6,bw,18,9);c.fill();if(it.v>0){c.fillStyle=it.c||col;rr(MX+lw,y+6,Math.max(12,bw*it.v/mx),18,9);c.fill()}tx(hh(it.v)+(unit||' HH'),MX+lw+bw+12,y+22,F(700,15),TX);y+=38});y+=8};
+ const pair=items=>{const lw=250,bw=CW-lw-170,mx=Math.max(...items.map(i=>Math.max(i.exp,i.real)),1);items.forEach(it=>{ens(52);tx(fit(it.k,lw-14,F(600,16)),MX,y+26,F(600,16),TX);c.fillStyle=LN;rr(MX+lw,y+6,bw*it.exp/mx,14,7);c.fill();const over=it.exp&&it.real>it.exp*1.1,col=over?'#DC2626':it.exp&&it.real>it.exp?'#D97706':'#16A34A';c.fillStyle=it.exp?col:'#D97706';rr(MX+lw,y+24,Math.max(6,bw*it.real/mx),14,7);c.fill();tx(nf(it.real,0)+' / '+(it.exp?nf(it.exp,0):'sin exp.')+' HH',MX+lw+bw+12,y+28,F(700,15),TX);y+=52});y+=8};
+ const line=(labels,s1,s2)=>{const h=300;ens(h+60);const L=60,B=h-30,ph=B-10,w=CW-L,n=labels.length;if(n<2){para('Aún no hay suficientes días para dibujar la curva.');return}const mx=niceMax(Math.max(...s1,...s2,1));
+  for(let i=0;i<=4;i++){const yy=y+10+ph*(1-i/4);c.fillStyle=LN;c.fillRect(MX+L,yy,w,1);tx(nf(mx*i/4,0),MX+L-8,yy+5,F(500,13),SB,'right')}
+  const P=(s,i)=>[MX+L+w*i/(n-1),y+10+ph*(1-s[i]/mx)];
+  c.beginPath();s2.forEach((v,i)=>{const p=P(s2,i);i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1])});c.lineTo(MX+L+w,y+10+ph);c.lineTo(MX+L,y+10+ph);c.closePath();c.fillStyle='rgba(14,165,233,.18)';c.fill();
+  c.beginPath();s2.forEach((v,i)=>{const p=P(s2,i);i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1])});c.strokeStyle='#0EA5E9';c.lineWidth=3;c.stroke();
+  c.beginPath();c.setLineDash([8,6]);s1.forEach((v,i)=>{const p=P(s1,i);i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1])});c.strokeStyle='#64748B';c.lineWidth=2.5;c.stroke();c.setLineDash([]);
+  const k=Math.ceil(n/8);labels.forEach((d,i)=>{if(i%k===0||i===n-1)tx(dlabel(d),MX+L+w*i/(n-1),y+h-8,F(500,13),SB,'center')});
+  c.fillStyle='#64748B';c.fillRect(MX+L,y+h+10,26,3);tx('Expectativa acumulada',MX+L+34,y+h+16,F(500,14),SB);c.fillStyle='#0EA5E9';c.fillRect(MX+L+250,y+h+10,26,3);tx('HH reales acumuladas',MX+L+284,y+h+16,F(500,14),SB);y+=h+40};
+ const recs=R.Rc,pillC={Alta:'#DC2626',Media:'#D97706',Baja:'#16A34A'};
+ /* ----- construcción ----- */
+ np();
+ tx('Informe ejecutivo',MX,y+34,F(800,42),NV);y+=48;tx('Control de horas hombre · Latamks',MX,y+22,F(600,20),SB);y+=40;
+ c.fillStyle=BG;rr(MX,y,CW,62,12);c.fill();tx(fit(repResumen(R),CW-30,F(600,17)),MX+18,y+27,F(600,17),TX);tx(R.scope.n+' registros · generado el '+R.when.toLocaleDateString('es-CO')+' '+R.when.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})+' por '+(U.name||'—'),MX+18,y+50,F(500,14),SB);y+=84;
+ h2('Resumen ejecutivo');kpiG(R.kp,4);
+ h2('Lectura del periodo');bullets(R.L);
+ h2('Decisiones sugeridas');
+ recs.forEach(x=>{const f=F(500,18),ls=wrap(x.t,CW-130,f),bh=Math.max(52,ls.length*27+22);ens(bh+10);c.fillStyle=BG;rr(MX,y,CW,bh,12);c.fill();c.fillStyle=pillC[x.p];rr(MX+14,y+14,86,26,13);c.fill();tx(x.p,MX+57,y+32,F(700,14),'#fff','center');ls.forEach((l,i)=>tx(l,MX+116,y+32+i*27,f,TX));y+=bh+10});
+ h2('Proyectos y expectativa');
+ if(R.pr.length){table([{h:'Proyecto',w:.09,f:r=>r.num,b:1},{h:'Cliente',w:.17,f:r=>r.cliente},{h:'Etapa actual',w:.17,f:r=>r.etapa},{h:'Expect.',w:.10,a:'r',f:r=>nf(r.exp,0)},{h:'Real',w:.09,a:'r',f:r=>nf(r.real,0)},{h:'% consumo',w:.10,a:'r',f:r=>r.exp?nf(r.pct,0)+'%':'—',c:r=>r.sem==='er'?'#DC2626':r.sem==='wa'?'#D97706':'#16A34A',b:1},{h:'% tiempo',w:.09,a:'r',f:r=>r.tp==null?'—':nf(r.tp,0)+'%'},{h:'Desv. HH',w:.10,a:'r',f:r=>(r.dev>0?'+':'')+nf(r.dev,0)},{h:'Entrega',w:.09,a:'r',f:r=>r.entrega?dlabel(r.entrega):'—'}],R.pr.slice(0,18));para('% consumo = HH reales / expectativa total. % tiempo = días hábiles transcurridos / días hábiles hasta la entrega. Si el consumo va por delante del tiempo, el proyecto corre riesgo de sobrecosto.',{s:15,c:SB})}else para('No hay proyectos con horas en el periodo.');
+ h3('Expectativa vs. real por etapa');if(R.et.length)pair(R.et.map(e=>({k:e.k,exp:e.exp,real:e.real})));else para('Sin etapas con horas o expectativa.');
+ h3('Curva acumulada de producción',440);line(R.cv.labels,R.cv.exp,R.cv.real);para(R.cv.labels.length>1?(R.gap>0.5?`Hoy la curva real está ${nf(R.gap,0)} HH por encima de la expectativa.`:R.gap<-0.5?`Hoy la curva real está ${nf(-R.gap,0)} HH por debajo de la expectativa.`:'La curva real coincide con la expectativa.'):'',{s:17,c:SB});
+ h2('Retrabajo');
+ if(R.ret>0){kpiG([['HH de retrabajo',hh(R.ret)+' HH',nf(R.pcR,1)+'% de las horas','#D97706'],['Causa principal',R.causas[0]?R.causas[0].k:'—',R.causas[0]?nf(R.causas[0].v/R.ret*100,0)+'% del retrabajo':'','#DC2626'],['Origen principal',R.origs[0]?R.origs[0].k:'—',R.origs[0]?nf(R.origs[0].v/R.ret*100,0)+'% del retrabajo':'','#7C3AED'],['Periodo anterior',R.pR!=null?hh(R.pR)+' HH':'n/d',R.pR?(R.ret>R.pR?'subió ':'bajó ')+nf(Math.abs((R.ret-R.pR)/R.pR*100),0)+'%':'','#475569']],4);
+  h3('Por causa');hbars(R.causas.slice(0,8),'#F59E0B');h3('Por origen');hbars(R.origs.slice(0,8),'#8B5CF6');h3('Por proyecto');hbars(R.retP.slice(0,6),'#EF4444')}else para('No hay horas de retrabajo en el periodo.');
+ h2('Uso de las horas: dentro y fuera de proyectos');const D=R.D;
+ hbars([{k:'Horas registradas',v:D.T,c:'#14205A'},{k:'En proyectos',v:D.hp,c:'#0EA5E9'},{k:'Fuera de proyectos',v:D.fu,c:'#0F766E'},{k:'  Otro tiempo',v:D.ho,c:'#14B8A6'},{k:'  Ausencias',v:D.ha,c:'#94A3B8'},{k:'  Improductivas',v:R.imp,c:'#DC2626'}]);
+ if(D.cat.length){h3('Otro tiempo por categoría');hbars(D.cat.slice(0,10),'#14B8A6')}
+ if(D.ausC.length){h3('Ausencias por motivo');hbars(D.ausC.slice(0,10),'#94A3B8')}
+ if(R.pers.length){h3('Personas con más horas fuera de proyectos');table([{h:'Persona',w:.4,f:r=>r.n,b:1},{h:'HH fuera',w:.2,a:'r',f:r=>hh(r.f)},{h:'HH totales',w:.2,a:'r',f:r=>hh(r.t)},{h:'% de su tiempo',w:.2,a:'r',f:r=>nf(r.p,0)+'%',c:r=>r.p>50?'#DC2626':r.p>30?'#D97706':'#16A34A',b:1}],R.pers.slice(0,8))}
+ h2('Controles de auditoría');table([{h:'Control',w:.6,f:r=>r[0]},{h:'Valor',w:.22,a:'r',f:r=>r[1]},{h:'Estado',w:.18,a:'r',f:r=>r[2],c:r=>r[2]==='OK'?'#16A34A':'#D97706',b:1}],R.ctl);
+ h2('Notas del informe');para('Las cifras salen de los registros de horas del sistema con los filtros activos en el panel. «Expectativa» es lo que Gerencia definió por proyecto y etapa. «Retrabajo» son las horas registradas como corrección de trabajo ya hecho. «Fuera de proyectos» agrupa otro tiempo (apoyo, capacitación, mantenimiento, esperas) y ausencias. El detalle completo, con cada registro, está en el archivo Excel del mismo informe.',{s:16,c:SB});
+ /* pies */
+ pages.forEach((cv,i)=>{const g=cv.getContext('2d');g.fillStyle=LN;g.fillRect(MX,H-52,CW,1);g.font=F(500,13);g.fillStyle=SB;g.textAlign='left';g.fillText('Latamks HH · Informe ejecutivo · Confidencial',MX,H-26);g.textAlign='right';g.fillText('Página '+(i+1)+' de '+pages.length,W-MX,H-26)});
+ return pages}
+async function repPdf(R){const pgs=await repPages(R),jp=pgs.map(cv=>{const b=atob(cv.toDataURL('image/jpeg',.9).split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u});return pdfMulti(jp,pgs[0].width,pgs[0].height)}
+const repName=()=>'informe_ejecutivo_latamks_'+today();
+function repOpen(){const R=repBuild();M={type:'rep'};
+ const hi=R.Rc.slice(0,4);
+ openModal(mh('Informe ejecutivo')+`<p class="mut" style="margin:-6px 0 14px">${esc(repResumen(R))}. Usa los filtros activos del panel (periodo, proyecto…).</p>
+ <div class="fckg" style="margin-bottom:14px">${R.kp.slice(0,4).map(k=>`<div class="fck"><div class="fckl">${esc(k[0])}</div><div class="fckv" style="font-size:22px">${esc(k[1])}</div><div class="fcks">${esc(k[2])}</div></div>`).join('')}</div>
+ ${kvLect(R.L.slice(0,5),'Lectura del periodo')}
+ <div style="margin-top:16px">${kvKh('Decisiones sugeridas','Las más importantes; el informe trae todas')}${hi.map(x=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--bd)">${badge(x.p,x.p==='Alta'?'er':x.p==='Media'?'wa':'ok')}<div style="flex:1">${esc(x.t)}</div></div>`).join('')}</div>
+ <p class="mut3" style="font-size:12.5px;margin-top:14px">El PDF tiene resumen, lectura, decisiones, proyectos, retrabajo, uso de horas y controles. El Excel trae cada tabla en una hoja y todos los registros.</p>
+ <div class="mf">${btn(icon('down',16)+' Descargar PDF','repPdf')}${btn(icon('down',16)+' Descargar Excel','repXls','','ghost')}${btn('Ambos','repAmbos','','ghost')}${btn('Cerrar','mClose','','ghost')}</div>`,'xl')}
+async function repDo(pdf,xls){const R=repBuild();toast('Preparando el informe…','ok');
+ try{if(xls)await dlBlob(repName()+'.xlsx',xlsxBlob(repXlsx(R)));if(pdf)await dlBlob(repName()+'.pdf',await repPdf(R));toast('Informe descargado','ok')}catch(e){toast('No se pudo crear el informe: '+(e.message||e),'er')}}
+
+const repBtn=()=>btn(icon('down',16)+' Informe ejecutivo','repOpen','','pri');
 function pDashboard(){
- const tabs=`<div class="tabs" style="margin-bottom:16px"><button class="${U.dtab==='fuera'?'':'on'}" data-act="dtab" data-v="prod">Producción</button><button class="${U.dtab==='fuera'?'on':''}" data-act="dtab" data-v="fuera">Horas fuera de proyectos</button></div>`;
+ const tabs=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><div class="tabs" style="margin-bottom:16px"><button class="${U.dtab==='fuera'?'':'on'}" data-act="dtab" data-v="prod">Producción</button><button class="${U.dtab==='fuera'?'on':''}" data-act="dtab" data-v="fuera">Horas fuera de proyectos</button></div>${repBtn()}</div>`;
  if(U.dtab==='fuera')return tabs+pFuera();
  return tabs+pDashboard0()}
 function pDashboard0(){
@@ -2141,6 +2276,7 @@ function pDashboard0(){
 Object.assign(A,{
  tab:t=>{U.tab=t.dataset.v;renderPage(true)},
  dtab:t=>{U.dtab=t.dataset.v;renderPage(true)},
+ repOpen:()=>repOpen(),repPdf:()=>repDo(1,0),repXls:()=>repDo(0,1),repAmbos:()=>repDo(1,1),
  fcMode:t=>{U.fcMode=t.dataset.v;if(M.type==='fcmax')fcMaxRender();else renderPage(true)},
  dbRefresh:()=>{NB.dbUso=null;NB.dbBusy=false;renderPage(true)},
  fcView:t=>{U.fcView=t.dataset.v;if(M.type==='fcmax')fcMaxRender();else renderPage(true)},
