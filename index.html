@@ -1201,7 +1201,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.8.1';
+const APP_VER='4.8.2';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -2788,7 +2788,7 @@ async function nbCtx(fecha){
 async function nbPersonas(){
  const os=['Calidad','Producción','Ingeniería / Diseño','Almacén / Material'];
  const ar={'Calidad':'Calidad','Producción':'Producción','Ingeniería / Diseño':'Ingeniería / Diseño','Almacén / Material':'Almacén / Recepción'};
- await Promise.all(os.map(async o=>{try{const l=await nbRpc('personas_para_origen',{p_origen:o},false);NB.personas[o]=(l||[]).map(p=>({codigo:p.codigo,nombre:p.nombre,area:ar[o]}))}catch(e){NB.personas[o]=[]}}))}
+ await Promise.all(os.map(async o=>{try{const l=await nbRpc('personas_para_origen',{p_origen:o,p_codigo:NB.cred.code,p_iniciales:NB.cred.ini},false);NB.personas[o]=(l||[]).map(p=>({codigo:p.codigo,nombre:p.nombre,area:ar[o]}))}catch(e){NB.personas[o]=[]}}))}
 async function nbCapLogin(){
  const code=(($('#cid')||{}).value||'').trim().toUpperCase(),ini=(($('#cini')||{}).value||'').trim().toUpperCase();
  if(!code||!ini){toast('Escribe tu código y tus iniciales.','wa');return}
