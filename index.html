@@ -1201,7 +1201,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.8.0';
+const APP_VER='4.8.1';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1793,7 +1793,7 @@ function tecOpen(code){const t=code?S.tecnicos.find(x=>x.codigo===code):null;M={
  openModal(mh(t?'Editar técnico':'Nuevo técnico')+`<div class="two">${fld('Código',`<input class="inp" id="t_cod" value="${t?t.codigo:nx}" ${t?'disabled':''}>`)}${fld('Iniciales',`<input class="inp" id="t_ini" maxlength="4" value="${t?esc(t.ini):''}" style="text-transform:uppercase" oninput="this.dataset.man=1"><small class="mut3" style="display:block;margin-top:4px">${t?'':'Se sugieren solas al escribir el nombre; puedes cambiarlas.'}</small>`)}</div>${fld('Nombre',`<input class="inp" id="t_nom" value="${t?esc(t.nombre):''}" ${t?'':'oninput="tecSugIni(this.value)"'}>`)}<div class="two">${fld('Rol',selM('t_rol',ROLES_P,t?(t.rol||rolDe(t.area)):'Técnico'))}${fld('Estado',selM('t_act',[['1','Activo'],['0','Inactivo']],t&&t.activo===false?'0':'1'))}</div><div class="two">${fld('Área principal',`<input class="inp" id="t_area" list="areas" value="${t?esc(t.area):''}"><datalist id="areas">${uniq([...AREAS0,...S.tecnicos.map(x=>x.area)]).map(a=>`<option value="${esc(a)}">`).join('')}</datalist><small class="mut3" style="display:block;margin-top:4px">Elige de la lista o escribe una nueva.</small>`)}${fld('Cargo / especialidad',`<input class="inp" id="t_esp" list="cargos" value="${t?esc(t.esp):''}"><datalist id="cargos">${uniq([...CARGOS0,...S.tecnicos.map(x=>x.esp)]).map(a=>`<option value="${esc(a)}">`).join('')}</datalist>`)}</div>${fld('Turno por defecto',selM('t_tur',activeTurnos().map(u=>[u.id,u.nombre]),t?t.turno:activeTurnos()[0].id))}<label class="mut" style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="t_reg" ${!t||t.registra?'checked':''}> Registra horas de producción (desmarcar para Calidad, Ingeniería, Almacén…)</label>${mf('Guardar','tecSave')}`)}
 function tecSave(){const o={codigo:(val('t_cod')||'').trim().toUpperCase(),ini:(val('t_ini')||'').trim().toUpperCase(),nombre:(val('t_nom')||'').trim(),area:(val('t_area')||'').trim(),esp:(val('t_esp')||'').trim(),turno:val('t_tur'),rol:val('t_rol'),activo:val('t_act')==='1',registra:!!val('t_reg')};
  if(!o.codigo||!o.ini||!o.nombre){toast('Código, iniciales y nombre son necesarios','wa');return}
- if(M.code){const t=S.tecnicos.find(x=>x.codigo===M.code);['turno','area','esp','nombre','activo'].forEach(k=>{if(t[k]!==o[k])logH('Técnico '+k,t[k],o[k],t.codigo)});Object.assign(t,o,{codigo:t.codigo})}
+ if(M.code){const t=S.tecnicos.find(x=>x.codigo===M.code);['turno','area','esp','nombre','activo'].forEach(k=>{if(t[k]!==o[k])logH('Técnico '+k,t[k],o[k],t.codigo)});const react=t.activo===false&&o.activo;Object.assign(t,o,{codigo:t.codigo});if(react)t.alta=today()}
  else{if(S.tecnicos.some(x=>x.codigo===o.codigo)){toast('Ese código ya existe','er');return}S.tecnicos.push({...o,alta:today()})}
  const nuevo=!M.code;save();closeModal();renderAll(true);toast('Técnico guardado','ok');if(nuevo&&o.registra&&o.activo)setTimeout(()=>tarjetasOpen([o.codigo],true),250)}
 /* --- hallazgo --- */
