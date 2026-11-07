@@ -1201,7 +1201,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.8.2';
+const APP_VER='4.8.3';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -2853,7 +2853,7 @@ async function nbCapSave(){
  }else{if(!c.cat){toast('Selecciona una opción de la lista.','wa');return}it.categoria=c.cat}
  const incompleto=c.modo==='proy'&&c.tipo==='Retrabajo'&&(!c.causa||!c.origen||(personasPara(c.origen).length&&!c.persona));
  NB.saving=true;
- try{await nbRpc('registrar_hh',{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_fecha:c.fecha||today(),p_items:[it]},false);
+ try{const rr=await nbRpc('registrar_hh',{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_fecha:c.fecha||today(),p_items:[it]},false);if(rr&&rr.error)throw new Error(rr.error);
   await nbCtx(c.fecha||today());
   const j=jornadaInfo(tec,c.fecha);let m='Guardado · '+hh(h)+' HH',k='ok';
   if(incompleto){m+='. Quedó incompleto: falta causa, origen o persona del retrabajo.';k='wa'}
@@ -3924,7 +3924,7 @@ async function tlSave(args){
  const a=args||{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_proyecto:val('lf_p'),p_etapa:val('lf_e'),p_descripcion:(val('lf_d')||'').trim(),p_prioridad:val('lf_pr')||'Normal',p_reintento_de:(M&&M.re)||null};
  if(!a.p_proyecto||!a.p_etapa||!a.p_descripcion){toast('Completa proyecto, etapa y qué pides liberar.','wa');return}
  NB.lbusy=true;
- try{const r=await nbRpc('liberacion_solicitar_tec',a,false);await libMisLoad();closeModal();renderPage(true);toast('Solicitud '+r.codigo+' enviada a Calidad','ok')}
+ try{const r=await nbRpc('liberacion_solicitar_tec',a,false);if(r&&r.error)throw new Error(r.error);await libMisLoad();closeModal();renderPage(true);toast('Solicitud '+r.codigo+' enviada a Calidad','ok')}
  catch(e){toast(nbMsg(e),'er')}finally{NB.lbusy=false}}
 Object.assign(A,{tlNew:()=>tlNew(),tlSave:()=>tlSave(),
  tlRe:t=>{const x=NB.libMis.find(z=>z.codigo===t.dataset.c);if(!x)return;
