@@ -1201,7 +1201,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.8.3';
+const APP_VER='4.8.4';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -3008,7 +3008,8 @@ const isGer=()=>!!(NB.perfil&&NB.perfil.rol==='Gerencia'&&!NB.guest&&NB.sess);
 const isBak=()=>!!(NB.perfil&&['Gerencia','Calidad','Supervisor'].includes(NB.perfil.rol)&&!NB.guest&&NB.sess);
 
 /* ---------- Copia de seguridad (archivo .sql que se restaura pegándolo en el Editor SQL de Supabase) ---------- */
-const BAK_TABLAS=[['ajustes','clave'],['turnos','creado.asc,id.asc'],['turno_dias','turno_id.asc,dia.asc'],['tecnicos','codigo.asc'],['proyectos','numero.asc'],['expectativas_etapa','proyecto_id.asc,etapa.asc'],['hallazgos','codigo.asc'],['hallazgo_historial','id.asc'],['hallazgo_fotos','subido_en.asc'],['programacion','semana.asc,tecnico_id.asc,dia.asc'],['registros_hh','registrado_en.asc,id.asc'],['liberaciones','creado_en.asc,codigo.asc'],['liberacion_historial','id.asc'],['historial','id.asc']];
+const BAK_CLAVE={etapas:'nombre',actividades:'codigo',catalogo_causas:'nombre',catalogo_origenes:'nombre',catalogo_otro_tiempo:'nombre',catalogo_ausencias:'nombre',catalogo_esperas:'nombre'};
+const BAK_TABLAS=[['ajustes','clave'],['etapas','orden'],['actividades','orden'],['catalogo_causas','orden'],['catalogo_origenes','orden'],['catalogo_otro_tiempo','orden'],['catalogo_ausencias','orden'],['catalogo_esperas','orden'],['turnos','creado.asc,id.asc'],['turno_dias','turno_id.asc,dia.asc'],['tecnicos','codigo.asc'],['proyectos','numero.asc'],['expectativas_etapa','proyecto_id.asc,etapa.asc'],['hallazgos','codigo.asc'],['hallazgo_historial','id.asc'],['hallazgo_fotos','subido_en.asc'],['programacion','semana.asc,tecnico_id.asc,dia.asc'],['registros_hh','registrado_en.asc,id.asc'],['liberaciones','creado_en.asc,codigo.asc'],['liberacion_historial','id.asc'],['historial','id.asc']];
 async function nbBackup(){
  if(!isBak()){toast('Tu rol no puede descargar la copia de seguridad.','wa');return}
  if(NB.bak)return;NB.bak=true;toast('Preparando la copia de seguridad… puede tardar unos segundos.','ok');
@@ -3021,8 +3022,11 @@ async function nbBackup(){
    cuenta[t]=rows.length;
    for(let i=0;i<rows.length;i+=400){
     let js=JSON.stringify(rows.slice(i,i+400));let tag='j';while(js.includes('$'+tag+'$'))tag+='x';
+    if(BAK_CLAVE[t]){const k=BAK_CLAVE[t];partes.push(`insert into public.${t} select r.* from jsonb_populate_recordset(null::public.${t}, $${tag}$${js}$${tag}$::jsonb) r where not exists (select 1 from public.${t} x where x.${k} = r.${k});`);continue}
     partes.push(`insert into public.${t}${(t==='historial'||t==='hallazgo_historial'||t==='liberacion_historial')?' overriding system value':''} select * from jsonb_populate_recordset(null::public.${t}, $${tag}$${js}$${tag}$::jsonb) on conflict do nothing;`)}}
-  const cab=`-- LATAMKS HH · COPIA DE SEGURIDAD · ${hoy}\n-- Filas: ${BAK_TABLAS.map(([t])=>t+' '+cuenta[t]).join(' · ')}\n-- Para restaurar: Supabase > SQL Editor > pegar este archivo completo > Run. Es seguro repetirlo (no duplica nada).\n-- Las cuentas de acceso (correos y contraseñas) no van en este archivo: se vuelven a crear en Authentication.\nbegin;\n`;
+  let cuentas='';
+  if(isGer()){try{const ps=await nbSel('perfiles','select=*&order=nombre.asc');cuentas='-- CUENTAS (solo referencia, NO se restauran solas): vuelve a crearlas en Authentication y asígnales el mismo rol.\n'+ps.map(p=>'-- '+[p.nombre,p.correo||'sin correo',p.rol,p.activo===false?'inactiva':'activa',p.cuenta_compartida?'compartida':''].filter(Boolean).join(' · ').replace(/[\r\n]+/g,' ')).join('\n')+'\n'}catch(e){cuentas=''}}
+  const cab=`-- LATAMKS HH · COPIA DE SEGURIDAD · ${hoy}\n-- Filas: ${BAK_TABLAS.map(([t])=>t+' '+cuenta[t]).join(' · ')}\n-- Para restaurar: Supabase > SQL Editor > pegar este archivo completo > Run. Es seguro repetirlo (no duplica nada).\n-- Las contraseñas no van en este archivo. Las cuentas se vuelven a crear en Authentication (si la descargó Gerencia, abajo hay una lista de referencia).\n-- Este archivo trae los DATOS: las tablas y funciones deben existir antes (archivo de estructura).\n${cuentas}begin;\n`;
   const pie=`\nselect setval(pg_get_serial_sequence('public.historial','id'), (select coalesce(max(id),1) from public.historial));\nselect setval(pg_get_serial_sequence('public.hallazgo_historial','id'), (select coalesce(max(id),1) from public.hallazgo_historial));\nselect setval(pg_get_serial_sequence('public.liberacion_historial','id'), (select coalesce(max(id),1) from public.liberacion_historial));\ncommit;\n`;
   nbDownload('latamks-hh_copia-seguridad_'+hoy+'.sql',new Blob([cab+partes.join('\n')+pie],{type:'text/plain;charset=utf-8'}));
   S.settings.respaldo=hoy;save();nbBakCheck();if(U.page==='ajustes')renderPage(true);
