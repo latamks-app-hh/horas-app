@@ -458,8 +458,13 @@ async function catFetch(){
 const actName=id=>(ACT.find(a=>a[0]==id)||[0,'—'])[1];
 const TIPOS=['Fabricación normal','Retrabajo','Cambio de alcance solicitado por cliente','Actividad no planificada','Espera / tiempo improductivo','Inspección / liberación','Apoyo a producción'];
 const TIPO_CL={'Fabricación normal':'normal','Retrabajo':'retrabajo','Cambio de alcance solicitado por cliente':'alcance','Actividad no planificada':'noplan','Espera / tiempo improductivo':'improd','Inspección / liberación':'insp','Apoyo a producción':'apoyo'};
-const OTROS=[['Apoyo a producción','apoyo'],['Apoyo a otra área','apoyo'],['Orden y aseo','apoyo'],['Actividad adicional','apoyo'],['Capacitación','capac'],['Charla','capac'],['Seminario','capac'],['Espera por material','improd'],['Espera por instrucción','improd'],['Espera por herramienta/equipo','improd'],['Clima','improd'],['Falla mecánica','improd'],['Accidente laboral','improd'],['Soporte a mantenimiento','mant'],['Mantenimiento','mant'],['Otra','capac']];
-const AUS=['Incapacidad','Calamidad','Permiso laboral','Compensación de horas','Horas taller','Vacaciones','Suspensión','Remunerada','No remunerada','Licencia de paternidad','Licencia de maternidad','Licencia por luto','Día compensado','Ausencia','Otro'];
+const APOYO_OA='Apoyo a otra área';
+const OTROS=[['Orden y aseo','apoyo'],['Charla / Capacitación','capac'],['Espera en almacén por material / equipo / herramienta / EPP','improd'],['Espera por liberación de calidad','improd'],['Daño de equipo o herramienta / Falla mecánica','improd'],['Falla eléctrica','improd'],['Espera por instrucción del supervisor','improd'],['Soporte a mantenimiento','mant'],['Horas de mantenimiento','mant'],['Incidente laboral','improd'],[APOYO_OA,'apoyo']];
+/* Nombres antiguos: ya no se ofrecen, pero los registros históricos que los usan se siguen clasificando bien */
+const OTROS_OLD=[['Apoyo a producción','apoyo'],['Actividad adicional','apoyo'],['Capacitación','capac'],['Charla','capac'],['Seminario','capac'],['Espera por material','improd'],['Espera por instrucción','improd'],['Espera por herramienta/equipo','improd'],['Clima','improd'],['Falla mecánica','improd'],['Accidente laboral','improd'],['Mantenimiento','mant'],['Otra','capac']];
+const OTROS_LEG=[...OTROS,...OTROS_OLD];
+const AUS=['Incapacidad','Calamidad','Permiso laboral','Compensación de horas','Vacaciones','Suspensión','Licencia de paternidad','Licencia de maternidad','Licencia por luto','Día compensado','Ausencia'];
+const AUS_OLD=['Horas taller','Remunerada','No remunerada','Otro'];
 const ESPERAS=OTROS.filter(o=>o[1]==='improd').map(o=>o[0]);
 const CAUSAS=['Hallazgo de Calidad','Error evidenciado por Supervisor','Error de ejecución','Error de fabricación','Error de trazado','Error de medida','Error de soldadura','Material defectuoso','Plano o diseño','Cambio de ingeniería','Falta de información','Equipo/herramienta','Procedimiento','Liberación incorrecta','Daño durante manipulación','Otro'];
 const ORIG=['Calidad','Producción','Ingeniería / Diseño','Almacén / Material','Proveedor / Material','Equipo / Herramienta','Cliente','Otro'];
@@ -569,7 +574,7 @@ function buildReg(o){
  const tec=S.tecnicos.find(t=>t.codigo===o.tec)||{};const p=S.proyectos.find(x=>x.num===o.proy)||{};
  let clase,tipo,macro=o.macro||'',act=o.actId?actName(o.actId):'',causa=o.causa||'';
  if(o.kind==='aus'){clase='aus';tipo='Ausencia';causa=o.cat;}
- else if(o.kind==='otro'){clase=(OTROS.find(x=>x[0]===o.cat)||[0,'capac'])[1];tipo='Tiempo no ligado a proyecto';act=o.cat;if(clase==='improd')causa=o.cat;}
+ else if(o.kind==='otro'){clase=(OTROS_LEG.find(x=>x[0]===o.cat)||[0,'capac'])[1];tipo='Tiempo no ligado a proyecto';act=o.cat;if(clase==='improd')causa=o.cat;}
  else{tipo=o.tipo;clase=macro===ALM?'fuera':(TIPO_CL[tipo]||'normal');}
  const r={id:o.id||uid(),fecha:o.fecha,tec:tec.codigo||o.tec,ini:tec.ini||'',nombre:tec.nombre||'',area:tec.area||'',esp:tec.esp||'',turno:tec.codigo?turnoDe(tec,o.fecha):'',
   proy:o.proy||'',cap:p.cap||'',cli:p.cliente||'',macro,act,actId:o.actId||'',horas:r2(o.horas),tipo,clase,kind:o.kind||'proy',cat:o.cat||'',causa,origen:o.origen||'',persona:o.persona||'',
@@ -620,14 +625,14 @@ function genDemo(){
   if(opt.target==null&&!opt.calm){const q=rng();if(q<.06)target=H-pick([.5,1,1.5,2]);else if(q<.09)target=H+.5}
   let rem=target;
   const extra=(p,o)=>{if(!opt.calm&&rng()<p&&rem>3){R.push(o);rem-=o.horas}};
-  extra(.06,{kind:'otro',cat:'Capacitación',horas:1});
-  extra(.12,{kind:'otro',cat:'Espera por material',horas:pick([.5,1,1.5])});
-  extra(.05,{kind:'otro',cat:'Apoyo a producción',horas:1});
-  extra(.05,{kind:'otro',cat:'Falla mecánica',horas:1});
+  extra(.06,{kind:'otro',cat:'Charla / Capacitación',horas:1});
+  extra(.12,{kind:'otro',cat:'Espera en almacén por material / equipo / herramienta / EPP',horas:pick([.5,1,1.5])});
+  extra(.05,{kind:'otro',cat:'Orden y aseo',horas:1});
+  extra(.05,{kind:'otro',cat:'Daño de equipo o herramienta / Falla mecánica',horas:1});
   extra(.03,{kind:'aus',cat:'Permiso laboral',horas:2});
   const pools=(POOL[tec.codigo]||[]).filter(p=>off>=p[3]&&off<=p[4]);
   if(rem>0){
-   if(!pools.length)R.push({kind:'otro',cat:'Apoyo a producción',horas:rem});
+   if(!pools.length)R.push({kind:'otro',cat:'Orden y aseo',horas:rem});
    else{
     const picks=pools.length>2?[...pools].sort(()=>rng()-.5).slice(0,2):pools;const ws=picks.reduce((a,p)=>a+p[5],0);let left=rem;
     picks.forEach((p,i)=>{const h=i===picks.length-1?left:Math.min(left,Math.round(rem*p[5]/ws*2)/2);left=r2(left-h);if(h>0)R.push({kind:'proy',proy:p[0],macro:p[1],actId:pick(p[2]),horas:h,tipo:TIPOS[0]})});
@@ -943,7 +948,7 @@ function capForm(tec){
  }else{
   body=fld('Motivo de la ausencia',sel('c.cat',AUS,c.cat,{ph:'Seleccionar…',cls:'big'}))+horas;
  }
- const desc=fld('Descripción (opcional)',`<textarea class="inp" data-f="c.desc" data-nr placeholder="Solo si hace falta aclarar algo">${esc(c.desc)}</textarea>`);
+ const _oa=c.modo==='otro'&&c.cat===APOYO_OA;const desc=fld(_oa?'Descripción (obligatoria)':'Descripción (opcional)',`<textarea class="inp" data-f="c.desc" data-nr placeholder="${_oa?'Indica en qué área y qué tarea realizaste':'Solo si hace falta aclarar algo'}">${esc(c.desc)}</textarea>`);
  const mine=j.rs.slice().sort((a,b)=>a.ts<b.ts?1:-1);
  const list=mine.length?`<div class="card flat" style="margin-top:16px"><div class="ch"><div><h3>Registros del ${dlabel(c.fecha)}</h3><p>${mine.length} registro${mine.length>1?'s':''} · ${hh(j.g)} HH</p></div></div>${mine.map(r=>`<div style="display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--bd)"><span style="width:8px;height:8px;border-radius:50%;background:${CL[r.clase].c};flex:none"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">${r.proy?r.proy+' · ':''}${esc(r.act||r.tipo)}</div><div class="mut3" style="font-size:12px">${esc(r.macro||r.tipo)} · ${esc(CL[r.clase].n)}${r.estado==='Incompleto'?' · incompleto':''}</div></div><b>${hh(r.horas)}</b>${can(['Gerencia','Supervisor'])?`<button class="ib" style="width:30px;height:30px" data-act="editReg" data-id="${r.id}" aria-label="Editar">${icon('edit',15)}</button>`:''}</div>`).join('')}</div>`:'';
  return `<div class="cap">${head}<div class="card flat" style="margin-top:16px"><div class="lb" style="margin-bottom:10px">¿Qué vas a registrar?</div>${modes}${body}${desc}${btn(icon('check',20)+' Guardar registro','capSave','','big')}</div>${list}</div>`;
@@ -966,7 +971,7 @@ function capSave(){if(NB.kiosk)return nbCapSave();
   if(c.tipo==='Retrabajo'){Object.assign(o,{causa:c.causa,origen:c.origen,persona:c.persona,hallazgo:(c.hallazgo||'').trim().toUpperCase()});
    if(o.hallazgo&&!S.hallazgos.find(x=>x.codigo===o.hallazgo))S.hallazgos.push({codigo:o.hallazgo,proy:c.proy,desc:(c.hdesc||'').trim(),estado:'Abierto',fecha:o.fecha})}
   if(c.tipo===TIPOS[4])o.causa=c.espera;
- }else{if(!c.cat){toast('Selecciona una opción de la lista.','wa');return}o.cat=c.cat}
+ }else{if(!c.cat){toast('Selecciona una opción de la lista.','wa');return}o.cat=c.cat;if(c.modo==='otro'&&c.cat===APOYO_OA&&o.desc.length<8){toast('En «Apoyo a otra área» escribe en la descripción el área y la tarea (mínimo 8 letras).','wa');return}}
  const r=buildReg(o);
  if(r.clase==='retrabajo'&&r.origen&&personasPara(r.origen).length&&!r.persona)r.estado='Incompleto';
  S.registros.push(r);save();syncSoon();
@@ -1201,7 +1206,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.8.4';
+const APP_VER='4.8.5';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1418,16 +1423,16 @@ KVC.ret={key:'ret',title:'HH de retrabajo',col:'#F59E0B',pick:r=>r.clase==='retr
   +kvCtl(!(e&&tt&&e.v/tt>=.4),e&&tt&&e.v/tt>=.4?`Una sola etapa concentra el ${kvPct(e.v,tt)} del retrabajo: ${esc(e.k)}`:'El retrabajo no se concentra en una sola etapa','Concentración de 40% o más se marca para revisión.')}};
 KVC.normal={key:'normal',title:'HH de fabricación normal',col:'#38BDF8',pick:r=>r.clase==='normal',tipo:r=>r.macro||'Sin etapa',tipoT:'Por etapa',extra:[['Por proyecto','',r=>r.proy||'Sin proyecto'],['Por área','',r=>r.area||'Sin área']],ctl:(all)=>kvLarga(all,10)};
 KVC.improd={key:'improd',title:'HH improductivas',col:'#EF4444',pick:r=>r.clase==='improd',tipo:r=>r.causa||r.act||'Sin causa',tipoT:'Por causa de la espera',extra:[['Por área','',r=>r.area||'Sin área']],
- ctl:(all)=>{const acc=all.filter(r=>r.causa==='Accidente laboral'||r.act==='Accidente laboral'),t=kvGrp(all,r=>r.causa||r.act||'Sin causa')[0],tt=sum(all),fm=all.filter(r=>(r.causa||r.act)==='Falla mecánica'),l=kvLong(all,2);
-  return kvCtl(!acc.length,acc.length?`${acc.length} registro${acc.length>1?'s':''} por accidente laboral (${hh(sum(acc))} HH)`:'Sin accidentes laborales registrados','Un accidente requiere seguimiento aparte del tiempo perdido.')
+ ctl:(all)=>{const acc=all.filter(r=>['Accidente laboral','Incidente laboral'].includes(r.causa)||['Accidente laboral','Incidente laboral'].includes(r.act)),t=kvGrp(all,r=>r.causa||r.act||'Sin causa')[0],tt=sum(all),fm=all.filter(r=>['Falla mecánica','Daño de equipo o herramienta / Falla mecánica'].includes(r.causa||r.act)),l=kvLong(all,2);
+  return kvCtl(!acc.length,acc.length?`${acc.length} registro${acc.length>1?'s':''} por incidente laboral (${hh(sum(acc))} HH)`:'Sin incidentes laborales registrados','Un incidente requiere seguimiento aparte del tiempo perdido.')
   +kvCtl(!(t&&tt&&t.v/tt>=.5&&all.length>2),t&&tt&&t.v/tt>=.5&&all.length>2?`Una causa concentra el ${kvPct(t.v,tt)}: ${esc(t.k)}`:'Ninguna causa domina las esperas','Si una sola causa pasa del 50%, conviene atacarla primero.')
   +kvCtl(fm.length<3,fm.length>=3?`Falla mecánica repetida: ${fm.length} registros (${hh(sum(fm))} HH)`:'Sin fallas mecánicas repetidas','Tres o más registros se marcan para revisar mantenimiento.')
   +kvCtl(!l.length,l.length?`${l.length} persona-día con más de 2 HH improductivas`:'Ninguna persona supera 2 HH improductivas en un día',l.length?l.slice(0,5).map(x=>`${esc(x.n)} · ${dlabel(x.f)} · ${hh(x.h)} HH`).join('<br>'):'')}};
 KVC.apoyo={key:'apoyo',title:'HH de apoyo',col:'#5F7A99',pick:r=>r.clase==='apoyo',tipo:r=>r.act||r.cat||'Sin tipo',tipoT:'Por tipo de apoyo',extra:[['Por área','',r=>r.area||'Sin área']],
  ctl:(all,K)=>{const t={};K.rs.filter(r=>r.clase!=='aus').forEach(r=>{t[r.tec]=(t[r.tec]||0)+(+r.horas||0)});const a={};all.forEach(r=>{(a[r.tec]=a[r.tec]||{n:r.nombre,h:0}).h+=+r.horas||0});
-  const hi=Object.entries(a).filter(([k,o])=>t[k]&&o.h/t[k]>.25&&o.h>=4).map(([k,o])=>({n:o.n,p:o.h/t[k]*100,h:o.h})).sort((x,y)=>y.p-x.p),ad=all.filter(r=>r.act==='Actividad adicional'&&!(r.desc||'').trim());
+  const hi=Object.entries(a).filter(([k,o])=>t[k]&&o.h/t[k]>.25&&o.h>=4).map(([k,o])=>({n:o.n,p:o.h/t[k]*100,h:o.h})).sort((x,y)=>y.p-x.p),ad=all.filter(r=>(r.act==='Actividad adicional'||r.act===APOYO_OA||r.cat===APOYO_OA)&&!(r.desc||'').trim());
   return kvCtl(!hi.length,hi.length?`${hi.length} persona${hi.length>1?'s':''} dedican más del 25% de su tiempo a apoyo`:'Nadie dedica más del 25% de su tiempo a apoyo',hi.length?hi.slice(0,5).map(x=>`${esc(x.n)} · ${nf(x.p,0)}% (${hh(x.h)} HH)`).join('<br>'):'Se ignoran quienes tienen menos de 4 HH de apoyo.')
-  +kvCtl(!ad.length,ad.length?`${ad.length} «Actividad adicional» sin descripción`:'Las actividades adicionales tienen descripción','No se sabe qué se hizo si no se describe.')}};
+  +kvCtl(!ad.length,ad.length?`${ad.length} «Apoyo a otra área / Actividad adicional» sin descripción`:'Los apoyos a otra área tienen descripción','No se sabe qué se hizo si no se describe.')}};
 KVC.capac={key:'capac',title:'Capacitación / no productivas',col:'#94A3B8',pick:r=>r.clase==='capac'||r.clase==='fuera',tipo:capKey,tipoT:'Por tipo',extra:[['Por área','',r=>r.area||'Sin área']],
  cols:[['Fecha',r=>dlabel(r.fecha)],['Persona',r=>esc(r.nombre)],['Tipo',r=>esc(capKey(r))+(r.act==='Otra'?' '+badge('por clasificar','wa'):'')],['HH',r=>hh(r.horas),'r'],['Descripción',r=>`<span class="mut3">${esc(r.desc||'—')}</span>`]],
  read:(all,tot,K,t,p)=>p.length>1&&p[0].v/tot>=.4?['Una sola persona concentra buena parte de las horas: conviene revisar si la capacitación se reparte entre el personal.']:[],
@@ -1751,24 +1756,25 @@ const val=id=>{const e=$('#'+id);return e?(e.type==='checkbox'?e.checked:e.value
 function confirmM(t,txt,ok,cb,danger){M={cb};openModal(mh(t)+`<p class="mut">${txt}</p><div class="mf">${btn('Cancelar','mClose','','ghost')}${btn(ok,'mOk','',danger?'dng':'')}</div>`,'s')}
 function logH(campo,antes,despues,ref){S.historial.push({ts:new Date().toISOString(),por:U.name+' ('+U.role+')',campo,antes:String(antes??''),despues:String(despues??''),ref:ref||''})}
 /* --- faltantes --- */
-const FCATS=[...OTROS.map(o=>o[0]),...AUS.map(a=>a==='Otro'?'Ausencia · Otro':a)];
+const FCATS=[...OTROS_LEG.map(o=>o[0]),...[...AUS,...AUS_OLD].map(a=>a==='Otro'?'Ausencia · Otro':a)];
 function faltOpen(code,fecha){const t=S.tecnicos.find(x=>x.codigo===code);if(!t)return;const j=jornadaInfo(t,fecha);M={type:'falt',tec:code,fecha,rows:[{cat:'',h:String(Math.max(0,-j.df)).replace('.',',')}]};faltRender()}
 function faltRender(){const t=S.tecnicos.find(x=>x.codigo===M.tec),j=jornadaInfo(t,M.fecha);const falta=Math.max(0,-j.df);
- const opts=[['Dentro de la jornada',OTROS.map(o=>o[0])],['Ausencia',AUS.map(a=>a==='Otro'?'Ausencia · Otro':a)]];
+ const opts=[['Dentro de la jornada',OTROS.map(o=>o[0])],['Ausencia',AUS]];
  openModal(mh('¿Dónde estuvieron esas horas?')+`<p class="mut" style="margin-bottom:14px">${esc(t.nombre)} · ${dfull(M.fecha)} · faltan <b>${hh(falta)} HH</b> de ${hh(j.p)}. Puedes repartirlas entre varias opciones.</p>
- <div id="fRows">${M.rows.map((r,i)=>`<div style="display:grid;grid-template-columns:1fr 100px 36px;gap:8px;margin-bottom:8px"><select class="sel" data-fr="${i}.cat"><option value="">Seleccionar…</option>${opts.map(g=>`<optgroup label="${g[0]}">${g[1].map(c=>`<option ${c===r.cat?'selected':''}>${c}</option>`).join('')}</optgroup>`).join('')}</select><input class="inp" inputmode="decimal" data-fr="${i}.h" value="${esc(r.h)}" placeholder="HH"><button class="ib" data-act="fDel" data-i="${i}" aria-label="Quitar" style="width:36px;height:40px">${icon('x',16)}</button></div>`).join('')}</div>
+ <div id="fRows">${M.rows.map((r,i)=>`<div style="margin-bottom:8px"><div style="display:grid;grid-template-columns:1fr 100px 36px;gap:8px"><select class="sel" data-fr="${i}.cat"><option value="">Seleccionar…</option>${opts.map(g=>`<optgroup label="${g[0]}">${g[1].map(c=>`<option ${c===r.cat?'selected':''}>${c}</option>`).join('')}</optgroup>`).join('')}</select><input class="inp" inputmode="decimal" data-fr="${i}.h" value="${esc(r.h)}" placeholder="HH"><button class="ib" data-act="fDel" data-i="${i}" aria-label="Quitar" style="width:36px;height:40px">${icon('x',16)}</button></div>${r.cat===APOYO_OA?`<input class="inp" style="margin-top:6px" data-fr="${i}.d" value="${esc(r.d||'')}" placeholder="Obligatorio: ¿en qué área y qué tarea?">`:''}</div>`).join('')}</div>
  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">${btn(icon('plus',15)+' Agregar otra opción','fAdd','','sm ghost')}<span id="fSum" class="mut"></span></div>${mf('Guardar distribución','fSave')}`);faltSum()}
 function faltRead(){$$('[data-fr]').forEach(e=>{const [i,k]=e.dataset.fr.split('.');if(M.rows[i])M.rows[i][k]=e.value})}
 function faltSum(){faltRead();const t=S.tecnicos.find(x=>x.codigo===M.tec),j=jornadaInfo(t,M.fecha);const s=M.rows.reduce((a,r)=>a+num(r.h),0);const rest=r2(Math.max(0,-j.df)-s);const e=$('#fSum');if(e)e.innerHTML=`Distribuido ${hh(s)} HH · ${Math.abs(rest)<.01?'<b class="up">Jornada completa</b>':rest>0?'<b style="color:#fbbf24">Aún faltan '+hh(rest)+'</b>':'<b style="color:#fbbf24">Excede en '+hh(-rest)+'</b>'}`}
 function faltSave(){faltRead();const rows=M.rows.filter(r=>r.cat&&num(r.h)>0);if(!rows.length){toast('Elige una opción y las horas','wa');return}
- rows.forEach(r=>{const aus=r.cat==='Ausencia · Otro'||AUS.includes(r.cat);S.registros.push(buildReg({tec:M.tec,fecha:M.fecha,horas:num(r.h),kind:aus?'aus':'otro',cat:r.cat==='Ausencia · Otro'?'Otro':r.cat,por:U.name+' ('+U.role+')'}))});
+ if(rows.some(r=>r.cat===APOYO_OA&&(r.d||'').trim().length<8)){toast('En «Apoyo a otra área» escribe el área y la tarea (mínimo 8 letras).','wa');return}
+ rows.forEach(r=>{const aus=AUS.includes(r.cat);S.registros.push(buildReg({tec:M.tec,fecha:M.fecha,horas:num(r.h),kind:aus?'aus':'otro',cat:r.cat,desc:(r.d||'').trim(),por:U.name+' ('+U.role+')'}))});
  save();syncSoon();const t=S.tecnicos.find(x=>x.codigo===M.tec),j=jornadaInfo(t,M.fecha);closeModal();renderAll(true);toast(Math.abs(j.df)<.01?'Jornada completa':j.df<0?'Guardado. Aún faltan '+hh(-j.df)+' HH':'Guardado. Hay '+hh(j.df)+' HH por encima de la jornada',Math.abs(j.df)<.01?'ok':'wa')}
 /* --- editar registro --- */
 function editRegOpen(id){if(!can(['Gerencia','Supervisor','Auditoría'])){toast('Tu rol solo puede consultar los registros','wa');return}const r=S.registros.find(x=>x.id===id);if(!r)return;M={type:'reg',id};const ret=r.clase==='retrabajo';const ps=personasPara(r.origen);
  openModal(mh('Registro de '+esc(r.nombre))+`<p class="mut" style="margin-bottom:14px">${dfull(r.fecha)} · ${r.proy?r.proy+' · ':''}${esc(r.macro||r.tipo)} · ${esc(r.act)}</p><div class="two">${fld('Horas',`<input class="inp" id="e_h" inputmode="decimal" value="${String(r.horas).replace('.',',')}">`)}${fld('Estado',`<div class="inp" style="display:flex;align-items:center">${badge(r.estado,r.estado==='Completo'?'ok':r.estado==='Anulado'?'n':'wa')}</div>`)}</div>
  ${ret?`<div class="two">${fld('Causa',selM('e_causa',CAUSAS,r.causa,'Sin causa'))}${fld('Origen',`<select class="sel" id="e_origen" data-mo="1"><option value="">Sin origen</option>${ORIG.map(o=>`<option ${o===r.origen?'selected':''}>${o}</option>`).join('')}</select>`)}</div><div class="two" id="e_pw">${fld('Persona relacionada',selM('e_persona',ps.map(t=>[t.codigo,t.nombre]),r.persona,'No aplica / no identificada'))}${fld('Código de hallazgo',`<input class="inp" id="e_hall" list="hl2" value="${esc(r.hallazgo)}" style="text-transform:uppercase"><datalist id="hl2">${S.hallazgos.filter(h=>h.proy===r.proy).map(h=>`<option value="${esc(h.codigo)}">`).join('')}</datalist>`)}</div>`:''}
  ${fld('Descripción',`<textarea class="inp" id="e_desc">${esc(r.desc)}</textarea>`)}<p class="mut3" style="font-size:12px;margin-top:10px">Los cambios quedan en el historial con valor anterior, nuevo, fecha y usuario.</p>${mf('Guardar cambios','regSave',r.estado!=='Anulado'?btn('Anular registro','regVoid','','dng'):btn('Restaurar','regRestore','','ghost'))}`)}
-function regSave(){if(!can(['Gerencia','Supervisor'])){toast('Tu rol solo puede consultar los registros','wa');return}const r=S.registros.find(x=>x.id===M.id);if(!r)return;const ch=(k,l,n)=>{if(String(r[k]??'')!==String(n??'')){logH(l,r[k],n,r.id.slice(-6)+' '+r.nombre);r[k]=n}};
+function regSave(){if(!can(['Gerencia','Supervisor'])){toast('Tu rol solo puede consultar los registros','wa');return}const r=S.registros.find(x=>x.id===M.id);if(!r)return;if(r.cat===APOYO_OA&&r.kind==='otro'&&(val('e_desc')||'').trim().length<8){toast('«Apoyo a otra área» necesita descripción: área y tarea (mínimo 8 letras).','wa');return}const ch=(k,l,n)=>{if(String(r[k]??'')!==String(n??'')){logH(l,r[k],n,r.id.slice(-6)+' '+r.nombre);r[k]=n}};
  ch('horas','Horas',r2(num(val('e_h'))||r.horas));ch('desc','Descripción',(val('e_desc')||'').trim());
  if(r.clase==='retrabajo'){ch('causa','Causa',val('e_causa'));ch('origen','Origen',val('e_origen'));ch('persona','Persona relacionada',val('e_persona'));ch('hallazgo','Hallazgo',(val('e_hall')||'').trim().toUpperCase());
   if(r.hallazgo&&!S.hallazgos.find(h=>h.codigo===r.hallazgo))S.hallazgos.push({codigo:r.hallazgo,proy:r.proy,desc:'',estado:'Abierto',fecha:r.fecha});
@@ -1790,9 +1796,10 @@ function expSave(){const p=S.proyectos.find(x=>x.num===M.num);const e=p.exp||{to
  p.exp={total:t,et,dias,cerradas:ETAPAS.filter((x,i)=>$(`[data-xc="${i}"]`).checked),mod:{ts:new Date().toISOString(),por:U.name+' ('+U.role+')'}};save();closeModal();renderAll(true);toast('Expectativa guardada','ok')}
 /* --- técnicos --- */
 function tecOpen(code){const t=code?S.tecnicos.find(x=>x.codigo===code):null;M={type:'tec',code};const nx='TEC'+String(S.tecnicos.reduce((m,x)=>Math.max(m,parseInt(x.codigo.slice(3),10)||0),0)+1).padStart(3,'0');
- openModal(mh(t?'Editar técnico':'Nuevo técnico')+`<div class="two">${fld('Código',`<input class="inp" id="t_cod" value="${t?t.codigo:nx}" ${t?'disabled':''}>`)}${fld('Iniciales',`<input class="inp" id="t_ini" maxlength="4" value="${t?esc(t.ini):''}" style="text-transform:uppercase" oninput="this.dataset.man=1"><small class="mut3" style="display:block;margin-top:4px">${t?'':'Se sugieren solas al escribir el nombre; puedes cambiarlas.'}</small>`)}</div>${fld('Nombre',`<input class="inp" id="t_nom" value="${t?esc(t.nombre):''}" ${t?'':'oninput="tecSugIni(this.value)"'}>`)}<div class="two">${fld('Rol',selM('t_rol',ROLES_P,t?(t.rol||rolDe(t.area)):'Técnico'))}${fld('Estado',selM('t_act',[['1','Activo'],['0','Inactivo']],t&&t.activo===false?'0':'1'))}</div><div class="two">${fld('Área principal',`<input class="inp" id="t_area" list="areas" value="${t?esc(t.area):''}"><datalist id="areas">${uniq([...AREAS0,...S.tecnicos.map(x=>x.area)]).map(a=>`<option value="${esc(a)}">`).join('')}</datalist><small class="mut3" style="display:block;margin-top:4px">Elige de la lista o escribe una nueva.</small>`)}${fld('Cargo / especialidad',`<input class="inp" id="t_esp" list="cargos" value="${t?esc(t.esp):''}"><datalist id="cargos">${uniq([...CARGOS0,...S.tecnicos.map(x=>x.esp)]).map(a=>`<option value="${esc(a)}">`).join('')}</datalist>`)}</div>${fld('Turno por defecto',selM('t_tur',activeTurnos().map(u=>[u.id,u.nombre]),t?t.turno:activeTurnos()[0].id))}<label class="mut" style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="t_reg" ${!t||t.registra?'checked':''}> Registra horas de producción (desmarcar para Calidad, Ingeniería, Almacén…)</label>${mf('Guardar','tecSave')}`)}
+ openModal(mh(t?'Editar técnico':'Nuevo técnico')+`<div class="two">${fld('Código',`<input class="inp" id="t_cod" maxlength="20" value="${esc(t?t.codigo:nx)}" ${t?'disabled':''}>`)}${fld('Iniciales',`<input class="inp" id="t_ini" maxlength="4" value="${t?esc(t.ini):''}" style="text-transform:uppercase" oninput="this.dataset.man=1"><small class="mut3" style="display:block;margin-top:4px">${t?'':'Se sugieren solas al escribir el nombre; puedes cambiarlas.'}</small>`)}</div>${fld('Nombre',`<input class="inp" id="t_nom" value="${t?esc(t.nombre):''}" ${t?'':'oninput="tecSugIni(this.value)"'}>`)}<div class="two">${fld('Rol',selM('t_rol',ROLES_P,t?(t.rol||rolDe(t.area)):'Técnico'))}${fld('Estado',selM('t_act',[['1','Activo'],['0','Inactivo']],t&&t.activo===false?'0':'1'))}</div><div class="two">${fld('Área principal',`<input class="inp" id="t_area" list="areas" value="${t?esc(t.area):''}"><datalist id="areas">${uniq([...AREAS0,...S.tecnicos.map(x=>x.area)]).map(a=>`<option value="${esc(a)}">`).join('')}</datalist><small class="mut3" style="display:block;margin-top:4px">Elige de la lista o escribe una nueva.</small>`)}${fld('Cargo / especialidad',`<input class="inp" id="t_esp" list="cargos" value="${t?esc(t.esp):''}"><datalist id="cargos">${uniq([...CARGOS0,...S.tecnicos.map(x=>x.esp)]).map(a=>`<option value="${esc(a)}">`).join('')}</datalist>`)}</div>${fld('Turno por defecto',selM('t_tur',activeTurnos().map(u=>[u.id,u.nombre]),t?t.turno:activeTurnos()[0].id))}<label class="mut" style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="t_reg" ${!t||t.registra?'checked':''}> Registra horas de producción (desmarcar para Calidad, Ingeniería, Almacén…)</label>${mf('Guardar','tecSave')}`)}
 function tecSave(){const o={codigo:(val('t_cod')||'').trim().toUpperCase(),ini:(val('t_ini')||'').trim().toUpperCase(),nombre:(val('t_nom')||'').trim(),area:(val('t_area')||'').trim(),esp:(val('t_esp')||'').trim(),turno:val('t_tur'),rol:val('t_rol'),activo:val('t_act')==='1',registra:!!val('t_reg')};
  if(!o.codigo||!o.ini||!o.nombre){toast('Código, iniciales y nombre son necesarios','wa');return}
+ if(!M.code&&!/^[A-Z0-9][A-Z0-9._-]{0,19}$/.test(o.codigo)){toast('El código solo puede llevar letras, números, punto o guion (máximo 20). Ej.: TEC015','er');return}
  if(M.code){const t=S.tecnicos.find(x=>x.codigo===M.code);['turno','area','esp','nombre','activo'].forEach(k=>{if(t[k]!==o[k])logH('Técnico '+k,t[k],o[k],t.codigo)});const react=t.activo===false&&o.activo;Object.assign(t,o,{codigo:t.codigo});if(react)t.alta=today()}
  else{if(S.tecnicos.some(x=>x.codigo===o.codigo)){toast('Ese código ya existe','er');return}S.tecnicos.push({...o,alta:today()})}
  const nuevo=!M.code;save();closeModal();renderAll(true);toast('Técnico guardado','ok');if(nuevo&&o.registra&&o.activo)setTimeout(()=>tarjetasOpen([o.codigo],true),250)}
@@ -1880,7 +1887,7 @@ document.addEventListener('change',e=>{const t=e.target;
 });
 document.addEventListener('input',e=>{const t=e.target;
  if(t.dataset.f&&t.hasAttribute('data-nr'))setPath(t.dataset.f,t.value);
- if(t.dataset.fr!==undefined)faltSum();
+ if(t.dataset.fr!==undefined){const _fk=t.dataset.fr.split('.'),_pv=M.rows[_fk[0]]&&M.rows[_fk[0]].cat;faltSum();if(_fk[1]==='cat'&&M.rows[_fk[0]]&&((_pv===APOYO_OA)!==(M.rows[_fk[0]].cat===APOYO_OA)))faltRender()}
  if(t.id==='x_tot'||t.dataset.xe!==undefined)expLive();
  if(t.id==='palIn'){U.pal.q=t.value;U.pal.i=0;palList()}
 });
@@ -1945,9 +1952,10 @@ function capForm(tec){
   else if(c.tipo===TIPOS[4])s3=sec(3,'Causa de la espera','',sel('c.espera',ESPERAS,c.espera,{ph:'Seleccionar causa…'}));
  }else if(c.modo==='otro')s2=fld('¿En qué se usó el tiempo?',sel('c.cat',OTROS.map(o=>o[0]),c.cat,{ph:'Seleccionar…',cls:'big'}))+horas;
  else s2=fld('Motivo de la ausencia',sel('c.cat',AUS,c.cat,{ph:'Seleccionar…',cls:'big'}))+horas;
- const desc=sec(s3?4:3,'Descripción','Opcional: solo si hace falta aclarar algo',`<textarea class="inp" data-f="c.desc" data-nr placeholder="Escribe una nota corta">${esc(c.desc)}</textarea>`);
+ const _oa=c.modo==='otro'&&c.cat===APOYO_OA;const desc=sec(s3?4:3,'Descripción',_oa?'Obligatoria: indica en qué área y qué tarea':'Opcional: solo si hace falta aclarar algo',`<textarea class="inp" data-f="c.desc" data-nr placeholder="${_oa?'Área y tarea que realizaste':'Escribe una nota corta'}">${esc(c.desc)}</textarea>`);
  const miss=[],soft=[];const h=num(c.horas);
  if(c.modo==='proy'){if(!c.proy)miss.push('proyecto');if(!c.macro)miss.push('macroetapa');if(!c.act)miss.push('actividad')}else if(!c.cat)miss.push(c.modo==='aus'?'motivo':'opción');
+ if(c.modo==='otro'&&c.cat===APOYO_OA&&(c.desc||'').trim().length<8)miss.push('descripción (área y tarea)');
  if(h<=0)miss.push('horas');
  if(c.modo==='proy'&&c.tipo==='Retrabajo'){if(!c.causa)soft.push('causa');if(!c.origen)soft.push('origen');else if(personasPara(c.origen).length&&!c.persona)soft.push('persona')}
  const bar=`<div class="savebar"><div class="sv-t"><span class="stat" style="--c:${miss.length?'#F59E0B':'#22C55E'}"></span><div><b>${miss.length?'Completa los campos obligatorios':'Listo para guardar'}</b><small>${miss.length?'Falta: '+miss.join(', '):esc(tec.nombre.split(' ')[0])+' · '+esc(c.modo==='proy'?c.tipo:c.modo==='aus'?'Ausencia':'Otro tiempo')+' · '+hh(h)+' HH'+(soft.length?' · retrabajo incompleto: '+soft.join(', '):'')}</small></div></div><button class="btn" data-act="capSave">${icon('check',18)} Guardar</button></div>`;
@@ -2471,10 +2479,10 @@ Object.assign(A,{
  rotaCSV:()=>{const w=U.semW,cols=[1,2,3,4,5,6,0];const rows=S.tecnicos.filter(t=>t.registra&&t.activo!==false).map(t=>{let tot=0;const cs=cols.map(k=>{const tu=S.turnos.find(x=>x.id===turnoDe(t,dateOfK(w,k))),d=tu&&tu.dias[k];const h=d&&d.on?horasDia(d):0;tot+=h;return h?tCorto(tu)+' '+rango(d)+' ('+hh(h)+' h)':''});return [t.codigo,t.nombre,...cs,hh(tot)]});const hd=['Código','Nombre',...cols.map(k=>DN[k]+' '+dCorta(dateOfK(w,k))),'Total HH'];dl('programacion_'+w+'.csv',csvOf(hd,rows),tsvOf(hd,rows))},
  progTodos:()=>progAbrir(''),progUno:t=>progAbrir(t.dataset.c),semShare:()=>progAbrir(''),shareOne:t=>progAbrir(t.dataset.c),
  progTheme:t=>{M.theme=t.dataset.v;progRender()},
- msgApply:()=>{if(!can('Gerencia'))return;msgGuardar(($('#pm_mot').value||'').trim(),($('#pm_tec').value||'').trim());M.msgOpen=true;progRender();toast('Mensajes aplicados a la imagen','ok')},
- msgClear:()=>{if(!can('Gerencia'))return;msgGuardar('','');M.msgOpen=true;progRender();toast('Mensajes quitados','ok')},
- frSave:()=>{if(!can('Gerencia'))return;const v=($('#pm_mot').value||'').trim();if(!v){toast('Escribe primero la frase.','wa');return}const cur=frasesLista();if(cur.includes(v)){toast('Esa frase ya está en la lista.','wa');return}S.settings.frases=[...cur,v];logH('Frases motivacionales','',v.slice(0,60),'Programación');const t=($('#pm_tec').value||'').trim();M.msgOpen=true;msgGuardar(v,t);progRender();toast('Frase guardada en la lista','ok')},
- frDel:()=>{if(!can('Gerencia'))return;const i=$('#pm_pick').value;if(i===''){toast('Elige primero la frase de la lista.','wa');return}const cur=frasesLista();const v=cur[+i];if(cur.length<=1){toast('Debe quedar al menos una frase.','wa');return}S.settings.frases=cur.filter((_,k)=>k!==+i);logH('Frases motivacionales',v.slice(0,60),'','Programación');save();M.msgOpen=true;progRender();toast('Frase quitada','ok')},
+ msgApply:()=>{if(!can(GA))return;msgGuardar(($('#pm_mot').value||'').trim(),($('#pm_tec').value||'').trim());M.msgOpen=true;progRender();toast('Mensajes aplicados a la imagen','ok')},
+ msgClear:()=>{if(!can(GA))return;msgGuardar('','');M.msgOpen=true;progRender();toast('Mensajes quitados','ok')},
+ frSave:()=>{if(!can(GA))return;const v=($('#pm_mot').value||'').trim();if(!v){toast('Escribe primero la frase.','wa');return}const cur=frasesLista();if(cur.includes(v)){toast('Esa frase ya está en la lista.','wa');return}S.settings.frases=[...cur,v];logH('Frases motivacionales','',v.slice(0,60),'Programación');const t=($('#pm_tec').value||'').trim();M.msgOpen=true;msgGuardar(v,t);progRender();toast('Frase guardada en la lista','ok')},
+ frDel:()=>{if(!can(GA))return;const i=$('#pm_pick').value;if(i===''){toast('Elige primero la frase de la lista.','wa');return}const cur=frasesLista();const v=cur[+i];if(cur.length<=1){toast('Debe quedar al menos una frase.','wa');return}S.settings.frases=cur.filter((_,k)=>k!==+i);logH('Frases motivacionales',v.slice(0,60),'','Programación');save();M.msgOpen=true;progRender();toast('Frase quitada','ok')},
  progPNG:async()=>{const b=await blobDe(M.cv,'image/png');dlBlob(progNombre('png'),b)},
  progPDF:async()=>{const j=M.cv.toDataURL('image/jpeg',.92).split(',')[1];const bin=atob(j),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);dlBlob(progNombre('pdf'),pdfDesdeJpeg(u,M.cv.width,M.cv.height))},
  progShare:async()=>{try{const b=await blobDe(M.cv,'image/png');const f=new File([b],progNombre('png'),{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Programación de turnos LATAMKS',text:progMsg(M.code)})}else toast('Compartir directo no está disponible aquí. Descarga la imagen y adjúntala.','wa')}catch(e){if(!e||e.name!=='AbortError')toast('No se pudo abrir “Compartir”. Descarga la imagen y adjúntala.','wa')}},
@@ -2850,7 +2858,7 @@ async function nbCapSave(){
   Object.assign(it,{proyecto:c.proy,macroetapa:c.macro,actividad:String(c.act),tipo_trabajo:c.tipo});
   if(c.tipo==='Retrabajo')Object.assign(it,{causa:c.causa||'',origen:c.origen||'',persona:c.persona||'',hallazgo:(c.hallazgo||'').trim().toUpperCase(),hallazgo_desc:(c.hdesc||'').trim()});
   if(c.tipo===TIPOS[4])it.causa=c.espera||'';
- }else{if(!c.cat){toast('Selecciona una opción de la lista.','wa');return}it.categoria=c.cat}
+ }else{if(!c.cat){toast('Selecciona una opción de la lista.','wa');return}it.categoria=c.cat;if(c.modo==='otro'&&c.cat===APOYO_OA&&it.descripcion.length<8){toast('En «Apoyo a otra área» escribe en la descripción el área y la tarea (mínimo 8 letras).','wa');return}}
  const incompleto=c.modo==='proy'&&c.tipo==='Retrabajo'&&(!c.causa||!c.origen||(personasPara(c.origen).length&&!c.persona));
  NB.saving=true;
  try{const rr=await nbRpc('registrar_hh',{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_fecha:c.fecha||today(),p_items:[it]},false);if(rr&&rr.error)throw new Error(rr.error);
@@ -3072,8 +3080,8 @@ function invModal(inv){
  setTimeout(()=>qrInto('#invqr',link,200),30)}
 function qrInto(sel,text,size){const el=$(sel);if(!el)return;el.innerHTML='';try{if(window.QRCode){new QRCode(el,{text,width:size,height:size,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});qrLogo(el)}else el.innerHTML='<p class="mut3" style="padding:30px">No se pudo dibujar el QR (sin internet). Usa el enlace.</p>'}catch(e){}}
 
-/* ---------- Perfil Auditoría y revisiones: ver, filtrar, imprimir y descargar; nunca modificar ---------- */
-const AUD_BLOCK=['capSave','fSave','regSave','mOk','expSave','tDay','tSave','ntSave','rtSave','saveMeta','saveUrl','saveWeb','syncNow','_delDemo','_loadDemo','semReset','tActive','tDel','tecToggle','tecSave','hallQuick','hallToggle','frSave','frDel','capAdd','capDel','linAdd','linDel','guardarPass','nbDiscard','perNomSave','invCrear','invRev','unasgDo','regVoid','regRestore','impJSON','hallSave','delDemo','loadDemo','catUp','catDn','catNewE','catRenE','catTogE','catNewA','catRenA','catTogA','backup','fotosBorrar','valReg','valDia','hallDo','hfAdd','hfQuitar','lDo','lSave','tlSave','tlRe'];const AUD_OK={includes:a=>!AUD_BLOCK.includes(a)};
+/* ---------- Perfil Auditoría: revisa todo y puede gestionar turnos, programación semanal y técnicos (crear, editar, activar/desactivar); no registra horas ni cambia proyectos ---------- */
+const AUD_BLOCK=['capSave','fSave','regSave','mOk','expSave','saveMeta','saveUrl','saveWeb','_delDemo','_loadDemo','hallQuick','hallToggle','capAdd','capDel','linAdd','linDel','perNomSave','invCrear','invRev','unasgDo','regVoid','regRestore','impJSON','hallSave','delDemo','loadDemo','catUp','catDn','catNewE','catRenE','catTogE','catNewA','catRenA','catTogA','backup','fotosBorrar','valReg','valDia','hallDo','hfAdd','hfQuitar','lDo','lSave','tlSave','tlRe'];const AUD_OK={includes:a=>!AUD_BLOCK.includes(a)};
 function nbAudOn(){
  document.body.classList.add('audit');
  if(!document.getElementById('audCss')){const st=document.createElement('style');st.id='audCss';
@@ -3082,7 +3090,7 @@ function nbAudOn(){
  if(NB.audGuard)return;NB.audGuard=true;
  window.addEventListener('click',e=>{if(!document.body.classList.contains('audit'))return;const t=e.target.closest&&e.target.closest('[data-act]');if(!t)return;
   if(!AUD_OK.includes(t.dataset.act)){e.stopPropagation();e.preventDefault();toast('Perfil de Auditoría: puedes abrir y revisar todo, pero no guardar cambios.','wa')}},true);
- window.addEventListener('change',e=>{if(!document.body.classList.contains('audit'))return;const d=(e.target&&e.target.dataset)||{};if(d.tur!==undefined||d.tf!==undefined||d.rd!==undefined){e.stopPropagation();e.preventDefault();toast('Perfil de Auditoría: solo lectura.','wa');renderPage(true)}},true)}
+}
 /* Modo invitado */
 async function nbStartGuest(){
  document.body.classList.add('guest');
