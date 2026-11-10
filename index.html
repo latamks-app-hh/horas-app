@@ -456,13 +456,32 @@ function catApply(et,ac,nosave){
 async function catFetch(){
  try{const [e,a]=await Promise.all([nbSel('etapas','select=*&order=orden.asc'),nbSel('actividades','select=*&order=orden.asc')]);return catApply(e,a)}catch(x){return false}}
 const actName=id=>(ACT.find(a=>a[0]==id)||[0,'—'])[1];
-const TIPOS=['Fabricación normal','Retrabajo','Cambio de alcance solicitado por cliente','Actividad no planificada','Espera / tiempo improductivo','Inspección / liberación','Apoyo a producción'];
+const TIPOS=['Fabricación normal','Retrabajo','Cambio de alcance solicitado por cliente','Actividad no planificada','Espera / tiempo improductivo','Inspección / liberación'];
 const TIPO_CL={'Fabricación normal':'normal','Retrabajo':'retrabajo','Cambio de alcance solicitado por cliente':'alcance','Actividad no planificada':'noplan','Espera / tiempo improductivo':'improd','Inspección / liberación':'insp','Apoyo a producción':'apoyo'};
 const APOYO_OA='Apoyo a otra área';
-const OTROS=[['Orden y aseo','apoyo'],['Charla / Capacitación','capac'],['Espera en almacén por material / equipo / herramienta / EPP','improd'],['Espera por liberación de calidad','improd'],['Daño de equipo o herramienta / Falla mecánica','improd'],['Falla eléctrica','improd'],['Espera por instrucción del supervisor','improd'],['Soporte a mantenimiento','mant'],['Horas de mantenimiento','mant'],['Incidente laboral','improd'],[APOYO_OA,'apoyo']];
+const OTROS=[['Orden y aseo','apoyo'],['Charla / Capacitación','capac'],['Espera en almacén por material / equipo / herramienta / EPP','improd'],['Espera por liberación de calidad','improd'],['Daño de equipo o herramienta / Falla mecánica','improd'],['Falla eléctrica','improd'],['Espera por instrucción del supervisor','improd'],['Soporte a mantenimiento','mant'],['Horas de mantenimiento','mant'],['Incidente laboral','improd'],['Montaje de línea','montaje']];
 /* Nombres antiguos: ya no se ofrecen, pero los registros históricos que los usan se siguen clasificando bien */
-const OTROS_OLD=[['Apoyo a producción','apoyo'],['Actividad adicional','apoyo'],['Capacitación','capac'],['Charla','capac'],['Seminario','capac'],['Espera por material','improd'],['Espera por instrucción','improd'],['Espera por herramienta/equipo','improd'],['Clima','improd'],['Falla mecánica','improd'],['Accidente laboral','improd'],['Mantenimiento','mant'],['Otra','capac']];
+const OTROS_OLD=[['Apoyo a otra área','apoyo'],['Apoyo a producción','apoyo'],['Actividad adicional','apoyo'],['Capacitación','capac'],['Charla','capac'],['Seminario','capac'],['Espera por material','improd'],['Espera por instrucción','improd'],['Espera por herramienta/equipo','improd'],['Clima','improd'],['Falla mecánica','improd'],['Accidente laboral','improd'],['Mantenimiento','mant'],['Otra','capac']];
 const OTROS_LEG=[...OTROS,...OTROS_OLD];
+/* v4.9: las listas de «Otro tiempo» y de líneas en montaje viven en la nube y las edita Gerencia/Auditoría (Ajustes → Otro tiempo y líneas en montaje) */
+const OTROS_CAT=OTROS.map((o,i)=>({nombre:o[0],clase:o[1],orden:i+1,activa:true}));
+const LINEAS_M=[],LINEAS_M_ALL=[];
+const OT_CLASES=['apoyo','capac','improd','mant','montaje'];
+const esMontaje=cat=>((OTROS_LEG.find(x=>x[0]===cat)||[])[1])==='montaje';
+const lineaFld=c=>(c.modo==='otro'&&esMontaje(c.cat))?fld('¿Qué línea?',sel('c.linea',LINEAS_M,c.linea,{ph:'Seleccionar línea…',cls:'big'})):'';
+function listasApply(ot,lm,nosave){
+ if(!Array.isArray(ot)||!ot.length)return false;
+ const rows=ot.map(o=>({nombre:o.nombre,clase:o.clase,orden:+o.orden||0,activa:o.activa!==false})).sort((a,b)=>a.orden-b.orden);
+ OTROS_CAT.length=0;rows.forEach(r=>OTROS_CAT.push(r));
+ OTROS.length=0;rows.filter(r=>r.activa).forEach(r=>OTROS.push([r.nombre,r.clase]));
+ OTROS_LEG.length=0;[...OTROS,...rows.filter(r=>!r.activa).map(r=>[r.nombre,r.clase]),...OTROS_OLD].forEach(x=>OTROS_LEG.push(x));
+ ESPERAS.length=0;OTROS.filter(o=>o[1]==='improd').forEach(o=>ESPERAS.push(o[0]));
+ if(typeof FCATS!=='undefined'){FCATS.length=0;[...OTROS_LEG.map(o=>o[0]),...[...AUS,...AUS_OLD].map(a=>a==='Otro'?'Ausencia · Otro':a)].forEach(x=>FCATS.push(x))}
+ if(Array.isArray(lm)){const l=lm.map(x=>({nombre:x.nombre,activa:x.activa!==false,orden:+x.orden||0})).sort((a,b)=>a.orden-b.orden);LINEAS_M_ALL.length=0;l.forEach(x=>LINEAS_M_ALL.push(x));LINEAS_M.length=0;l.filter(x=>x.activa).forEach(x=>LINEAS_M.push(x.nombre))}
+ if(!nosave){try{localStorage.setItem('hh_listas_v49',JSON.stringify({o:ot,l:lm}))}catch(e){}}
+ return true}
+async function listasFetch(){
+ try{const [o,l]=await Promise.all([nbSel('catalogo_otro_tiempo','select=*&order=orden.asc'),nbSel('catalogo_lineas_montaje','select=*&order=orden.asc')]);return listasApply(o,l)}catch(x){return false}}
 const AUS=['Incapacidad','Calamidad','Permiso laboral','Compensación de horas','Vacaciones','Suspensión','Licencia de paternidad','Licencia de maternidad','Licencia por luto','Día compensado','Ausencia'];
 const AUS_OLD=['Horas taller','Remunerada','No remunerada','Otro'];
 const ESPERAS=OTROS.filter(o=>o[1]==='improd').map(o=>o[0]);
@@ -472,7 +491,7 @@ const AREAS_ND=['Calidad','Ingeniería / Diseño','Almacén / Recepción'];
 const CL={
 normal:{n:'Fabricación normal',c:'#38BDF8'},retrabajo:{n:'Retrabajo',c:'#F59E0B'},alcance:{n:'Cambio de alcance',c:'#8B5CF6'},
 noplan:{n:'Actividad no planificada',c:'#22D3EE'},insp:{n:'Inspección / liberación',c:'#6366F1'},apoyo:{n:'Apoyo',c:'#5F7A99'},
-capac:{n:'Capacitación / no productivas',c:'#94A3B8'},fuera:{n:'Fuera de producción (almacén)',c:'#64748B'},improd:{n:'Improductivo (esperas)',c:'#EF4444'},aus:{n:'Ausencia',c:'#3b4658'},mant:{n:'Mantenimiento',c:'#14B8A6'}};
+capac:{n:'Capacitación / no productivas',c:'#94A3B8'},fuera:{n:'Fuera de producción (almacén)',c:'#64748B'},improd:{n:'Improductivo (esperas)',c:'#EF4444'},aus:{n:'Ausencia',c:'#3b4658'},mant:{n:'Mantenimiento',c:'#14B8A6'},montaje:{n:'Montaje de línea',c:'#10B981'}};
 const DN=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const ROLES=['Gerencia','Supervisor','Técnico','Calidad'];
@@ -578,7 +597,7 @@ function buildReg(o){
  else{tipo=o.tipo;clase=macro===ALM?'fuera':(TIPO_CL[tipo]||'normal');}
  const r={id:o.id||uid(),fecha:o.fecha,tec:tec.codigo||o.tec,ini:tec.ini||'',nombre:tec.nombre||'',area:tec.area||'',esp:tec.esp||'',turno:tec.codigo?turnoDe(tec,o.fecha):'',
   proy:o.proy||'',cap:p.cap||'',cli:p.cliente||'',macro,act,actId:o.actId||'',horas:r2(o.horas),tipo,clase,kind:o.kind||'proy',cat:o.cat||'',causa,origen:o.origen||'',persona:o.persona||'',
-  hallazgo:o.hallazgo||'',desc:o.desc||'',ts:o.ts||new Date().toISOString(),por:o.por||'',estado:'Completo',sync:o.sync?1:0,demo:o.demo?1:0};
+  hallazgo:o.hallazgo||'',desc:o.desc||'',linea:o.linea||'',ts:o.ts||new Date().toISOString(),por:o.por||'',estado:'Completo',sync:o.sync?1:0,demo:o.demo?1:0};
  if(r.clase==='retrabajo'&&(!r.causa||!r.origen))r.estado='Incompleto';
  return r;
 }
@@ -674,7 +693,7 @@ function genDemo(){
 function initState(){S=load();if(!S||!S.v){S=baseState();genDemo();save()}
  if(!S.rota)S.rota={};S.turnos.forEach(t=>{if(t.activo==null)t.activo=1});S.tecnicos.forEach(t=>{if(!t.rol)t.rol=rolDe(t.area)})}
 /* ================= Estado de interfaz ================= */
-const newC=()=>({tec:'',fecha:today(),modo:'proy',proy:'',macro:'',act:'',horas:'',tipo:TIPOS[0],causa:'',origen:'',persona:'',hallazgo:'',hdesc:'',desc:'',cat:'',espera:''});
+const newC=()=>({tec:'',fecha:today(),modo:'proy',proy:'',macro:'',act:'',horas:'',tipo:TIPOS[0],causa:'',origen:'',persona:'',hallazgo:'',hdesc:'',desc:'',cat:'',linea:'',espera:''});
 const newF=()=>({per:'0',proy:'',cli:'',cap:'',desde:'',hasta:'',sem:'',mes:'',tec:'',area:'',esp:'',macro:'',act:'',tipo:'',causa:'',origen:''});
 const U={page:'dashboard',collapsed:null,role:'Gerencia',name:'Usuario demo',f:newF(),showF:false,c:newC(),trend:'dia',etapa:'',supF:today(),supT:'',tsel:'T1',rlim:80,kiosk:false,menu:false,pal:{q:'',i:0}};
 function loadUI(){try{const j=JSON.parse(localStorage.getItem(KEYUI)||'{}');if(j.role)U.role=j.role;if(j.name)U.name=j.name;if(j.collapsed!=null)U.collapsed=j.collapsed}catch(e){}}
@@ -944,7 +963,7 @@ function capForm(tec){
    ${fld('Descripción breve del hallazgo (solo si es nuevo)',`<input class="inp" data-f="c.hdesc" data-nr value="${esc(c.hdesc)}" placeholder="Opcional">`)}</div>`:'')+
   (c.tipo===TIPOS[4]?`<div class="sub-panel"><div class="ttl">${icon('clock',18)} Espera: ¿cuál fue la causa?</div>${sel('c.espera',ESPERAS,c.espera,{ph:'Seleccionar causa…'})}</div>`:'');
  }else if(c.modo==='otro'){
-  body=fld('¿En qué se usó el tiempo?',sel('c.cat',OTROS.map(o=>o[0]),c.cat,{ph:'Seleccionar…',cls:'big'}))+horas;
+  body=fld('¿En qué se usó el tiempo?',sel('c.cat',OTROS.map(o=>o[0]),c.cat,{ph:'Seleccionar…',cls:'big'}))+lineaFld(c)+horas;
  }else{
   body=fld('Motivo de la ausencia',sel('c.cat',AUS,c.cat,{ph:'Seleccionar…',cls:'big'}))+horas;
  }
@@ -971,14 +990,14 @@ function capSave(){if(NB.kiosk)return nbCapSave();
   if(c.tipo==='Retrabajo'){Object.assign(o,{causa:c.causa,origen:c.origen,persona:c.persona,hallazgo:(c.hallazgo||'').trim().toUpperCase()});
    if(o.hallazgo&&!S.hallazgos.find(x=>x.codigo===o.hallazgo))S.hallazgos.push({codigo:o.hallazgo,proy:c.proy,desc:(c.hdesc||'').trim(),estado:'Abierto',fecha:o.fecha})}
   if(c.tipo===TIPOS[4])o.causa=c.espera;
- }else{if(!c.cat){toast('Selecciona una opción de la lista.','wa');return}o.cat=c.cat;if(c.modo==='otro'&&c.cat===APOYO_OA&&o.desc.length<8){toast('En «Apoyo a otra área» escribe en la descripción el área y la tarea (mínimo 8 letras).','wa');return}}
+ }else{if(!c.cat){toast('Selecciona una opción de la lista.','wa');return}o.cat=c.cat;if(c.modo==='otro'&&esMontaje(c.cat)){if(!c.linea){toast('Elige la línea del montaje.','wa');return}o.linea=c.linea}if(c.modo==='otro'&&c.cat===APOYO_OA&&o.desc.length<8){toast('En «Apoyo a otra área» escribe en la descripción el área y la tarea (mínimo 8 letras).','wa');return}}
  const r=buildReg(o);
  if(r.clase==='retrabajo'&&r.origen&&personasPara(r.origen).length&&!r.persona)r.estado='Incompleto';
  S.registros.push(r);save();syncSoon();
  const j=jornadaInfo(tec,c.fecha);let m='Guardado · '+hh(h)+' HH',k='ok';
  if(r.estado==='Incompleto'){m+='. Quedó incompleto: falta causa, origen o persona del retrabajo.';k='wa'}
  else if(Math.abs(j.df)<.01)m+='. ¡Jornada completa!';else if(j.df<0)m+='. Faltan '+hh(-j.df)+' HH de la jornada.';else{m+='. Hay '+hh(j.df)+' HH por encima de la jornada.';k='wa'}
- Object.assign(U.c,{macro:'',act:'',horas:'',tipo:TIPOS[0],causa:'',origen:'',persona:'',hallazgo:'',hdesc:'',desc:'',cat:'',espera:''});
+ Object.assign(U.c,{macro:'',act:'',horas:'',tipo:TIPOS[0],causa:'',origen:'',persona:'',hallazgo:'',hdesc:'',desc:'',cat:'',linea:'',espera:''});
  renderAll();toast(m,k);
 }
 /* ================= Panel de supervisor ================= */
@@ -1206,7 +1225,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.8.5';
+const APP_VER='4.9.0';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1311,9 +1330,9 @@ const NAV=[
 {g:'Operación',items:[['captura','Captura rápida','clock',['Gerencia','Supervisor','Técnico',AU]],['faltantes','Horas faltantes','warn',['Gerencia','Supervisor','Técnico',AU]],['supervisor','Panel de supervisor','users',GS],['registros','Registros','db',GSC],['alertas','Alertas','bell',GS]]},
 {g:'Análisis',items:[['dashboard','Panel de Gerencia','dash',GS],['etapas','Comparar etapas','layers',GS],['retrabajo','Retrabajo','redo',GSC],['auditoria','Auditoría','search',['Gerencia',AU]]]},
 {g:'Gestión',items:[['proyectos','Proyectos','folder',GSC],['expectativas','Expectativas','sliders',GS],['tecnicos','Técnicos','user',GA],['turnos','Turnos','cal',GS],['hallazgos','Hallazgos','flag',GSC],['liberaciones','Liberaciones','check',GSC],['calidad','Gestión de Calidad','trend',GSC]]},
-{g:'Sistema',items:[['respaldo','Copia de seguridad','down',['Gerencia','Supervisor','Calidad']],['catalogo','Etapas y actividades','layers',GA],['ajustes','Ajustes y QR','qr',G_]]}];
+{g:'Sistema',items:[['respaldo','Copia de seguridad','down',['Gerencia','Supervisor','Calidad']],['catalogo','Etapas y actividades','layers',GA],['listas','Otro tiempo y líneas','sliders',GA],['ajustes','Ajustes y QR','qr',G_]]}];
 const ALLN=NAV.flatMap(g=>g.items.map(i=>({id:i[0],t:i[1],ic:i[2],r:i[3],g:g.g})));
-const PAGES={auditoria:pAuditoria,faltantes:pFaltantes,expectativas:pExpectativas,captura:pCaptura,supervisor:pSupervisor,registros:pRegistros,alertas:pAlertas,respaldo:pRespaldo,dashboard:pDashboard,etapas:pEtapas,retrabajo:pRetrabajo,proyectos:pProyectos,tecnicos:pTecnicos,turnos:pTurnos,hallazgos:pHallazgos,ajustes:pAjustes,catalogo:pCatalogo};
+const PAGES={auditoria:pAuditoria,faltantes:pFaltantes,expectativas:pExpectativas,captura:pCaptura,supervisor:pSupervisor,registros:pRegistros,alertas:pAlertas,respaldo:pRespaldo,dashboard:pDashboard,etapas:pEtapas,retrabajo:pRetrabajo,proyectos:pProyectos,tecnicos:pTecnicos,turnos:pTurnos,hallazgos:pHallazgos,ajustes:pAjustes,catalogo:pCatalogo,listas:pListas};
 const DEFP={Gerencia:'dashboard',Supervisor:'supervisor','Técnico':'captura',Calidad:'hallazgos','Auditoría':'dashboard'};
 const app=()=>$('#app');
 const isMob=()=>innerWidth<=820;
@@ -1761,21 +1780,22 @@ function faltOpen(code,fecha){const t=S.tecnicos.find(x=>x.codigo===code);if(!t)
 function faltRender(){const t=S.tecnicos.find(x=>x.codigo===M.tec),j=jornadaInfo(t,M.fecha);const falta=Math.max(0,-j.df);
  const opts=[['Dentro de la jornada',OTROS.map(o=>o[0])],['Ausencia',AUS]];
  openModal(mh('¿Dónde estuvieron esas horas?')+`<p class="mut" style="margin-bottom:14px">${esc(t.nombre)} · ${dfull(M.fecha)} · faltan <b>${hh(falta)} HH</b> de ${hh(j.p)}. Puedes repartirlas entre varias opciones.</p>
- <div id="fRows">${M.rows.map((r,i)=>`<div style="margin-bottom:8px"><div style="display:grid;grid-template-columns:1fr 100px 36px;gap:8px"><select class="sel" data-fr="${i}.cat"><option value="">Seleccionar…</option>${opts.map(g=>`<optgroup label="${g[0]}">${g[1].map(c=>`<option ${c===r.cat?'selected':''}>${c}</option>`).join('')}</optgroup>`).join('')}</select><input class="inp" inputmode="decimal" data-fr="${i}.h" value="${esc(r.h)}" placeholder="HH"><button class="ib" data-act="fDel" data-i="${i}" aria-label="Quitar" style="width:36px;height:40px">${icon('x',16)}</button></div>${r.cat===APOYO_OA?`<input class="inp" style="margin-top:6px" data-fr="${i}.d" value="${esc(r.d||'')}" placeholder="Obligatorio: ¿en qué área y qué tarea?">`:''}</div>`).join('')}</div>
+ <div id="fRows">${M.rows.map((r,i)=>`<div style="margin-bottom:8px"><div style="display:grid;grid-template-columns:1fr 100px 36px;gap:8px"><select class="sel" data-fr="${i}.cat"><option value="">Seleccionar…</option>${opts.map(g=>`<optgroup label="${g[0]}">${g[1].map(c=>`<option ${c===r.cat?'selected':''}>${c}</option>`).join('')}</optgroup>`).join('')}</select><input class="inp" inputmode="decimal" data-fr="${i}.h" value="${esc(r.h)}" placeholder="HH"><button class="ib" data-act="fDel" data-i="${i}" aria-label="Quitar" style="width:36px;height:40px">${icon('x',16)}</button></div>${r.cat===APOYO_OA?`<input class="inp" style="margin-top:6px" data-fr="${i}.d" value="${esc(r.d||'')}" placeholder="Obligatorio: ¿en qué área y qué tarea?">`:''}${esMontaje(r.cat)?`<select class="sel" style="margin-top:6px" data-fr="${i}.l"><option value="">¿Qué línea?</option>${LINEAS_M.map(l=>`<option ${l===r.l?'selected':''}>${esc(l)}</option>`).join('')}</select>`:''}</div>`).join('')}</div>
  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">${btn(icon('plus',15)+' Agregar otra opción','fAdd','','sm ghost')}<span id="fSum" class="mut"></span></div>${mf('Guardar distribución','fSave')}`);faltSum()}
 function faltRead(){$$('[data-fr]').forEach(e=>{const [i,k]=e.dataset.fr.split('.');if(M.rows[i])M.rows[i][k]=e.value})}
 function faltSum(){faltRead();const t=S.tecnicos.find(x=>x.codigo===M.tec),j=jornadaInfo(t,M.fecha);const s=M.rows.reduce((a,r)=>a+num(r.h),0);const rest=r2(Math.max(0,-j.df)-s);const e=$('#fSum');if(e)e.innerHTML=`Distribuido ${hh(s)} HH · ${Math.abs(rest)<.01?'<b class="up">Jornada completa</b>':rest>0?'<b style="color:#fbbf24">Aún faltan '+hh(rest)+'</b>':'<b style="color:#fbbf24">Excede en '+hh(-rest)+'</b>'}`}
 function faltSave(){faltRead();const rows=M.rows.filter(r=>r.cat&&num(r.h)>0);if(!rows.length){toast('Elige una opción y las horas','wa');return}
  if(rows.some(r=>r.cat===APOYO_OA&&(r.d||'').trim().length<8)){toast('En «Apoyo a otra área» escribe el área y la tarea (mínimo 8 letras).','wa');return}
- rows.forEach(r=>{const aus=AUS.includes(r.cat);S.registros.push(buildReg({tec:M.tec,fecha:M.fecha,horas:num(r.h),kind:aus?'aus':'otro',cat:r.cat,desc:(r.d||'').trim(),por:U.name+' ('+U.role+')'}))});
+ if(rows.some(r=>esMontaje(r.cat)&&!r.l)){toast('Elige la línea del montaje.','wa');return}
+ rows.forEach(r=>{const aus=AUS.includes(r.cat);S.registros.push(buildReg({tec:M.tec,fecha:M.fecha,horas:num(r.h),kind:aus?'aus':'otro',cat:r.cat,linea:esMontaje(r.cat)?r.l:'',desc:(r.d||'').trim(),por:U.name+' ('+U.role+')'}))});
  save();syncSoon();const t=S.tecnicos.find(x=>x.codigo===M.tec),j=jornadaInfo(t,M.fecha);closeModal();renderAll(true);toast(Math.abs(j.df)<.01?'Jornada completa':j.df<0?'Guardado. Aún faltan '+hh(-j.df)+' HH':'Guardado. Hay '+hh(j.df)+' HH por encima de la jornada',Math.abs(j.df)<.01?'ok':'wa')}
 /* --- editar registro --- */
 function editRegOpen(id){if(!can(['Gerencia','Supervisor','Auditoría'])){toast('Tu rol solo puede consultar los registros','wa');return}const r=S.registros.find(x=>x.id===id);if(!r)return;M={type:'reg',id};const ret=r.clase==='retrabajo';const ps=personasPara(r.origen);
  openModal(mh('Registro de '+esc(r.nombre))+`<p class="mut" style="margin-bottom:14px">${dfull(r.fecha)} · ${r.proy?r.proy+' · ':''}${esc(r.macro||r.tipo)} · ${esc(r.act)}</p><div class="two">${fld('Horas',`<input class="inp" id="e_h" inputmode="decimal" value="${String(r.horas).replace('.',',')}">`)}${fld('Estado',`<div class="inp" style="display:flex;align-items:center">${badge(r.estado,r.estado==='Completo'?'ok':r.estado==='Anulado'?'n':'wa')}</div>`)}</div>
  ${ret?`<div class="two">${fld('Causa',selM('e_causa',CAUSAS,r.causa,'Sin causa'))}${fld('Origen',`<select class="sel" id="e_origen" data-mo="1"><option value="">Sin origen</option>${ORIG.map(o=>`<option ${o===r.origen?'selected':''}>${o}</option>`).join('')}</select>`)}</div><div class="two" id="e_pw">${fld('Persona relacionada',selM('e_persona',ps.map(t=>[t.codigo,t.nombre]),r.persona,'No aplica / no identificada'))}${fld('Código de hallazgo',`<input class="inp" id="e_hall" list="hl2" value="${esc(r.hallazgo)}" style="text-transform:uppercase"><datalist id="hl2">${S.hallazgos.filter(h=>h.proy===r.proy).map(h=>`<option value="${esc(h.codigo)}">`).join('')}</datalist>`)}</div>`:''}
- ${fld('Descripción',`<textarea class="inp" id="e_desc">${esc(r.desc)}</textarea>`)}<p class="mut3" style="font-size:12px;margin-top:10px">Los cambios quedan en el historial con valor anterior, nuevo, fecha y usuario.</p>${mf('Guardar cambios','regSave',r.estado!=='Anulado'?btn('Anular registro','regVoid','','dng'):btn('Restaurar','regRestore','','ghost'))}`)}
+ ${r.clase==='montaje'?fld('Línea del montaje',selM('e_lin',LINEAS_M_ALL.map(l=>l.nombre),r.linea,'Sin línea')):''}${fld('Descripción',`<textarea class="inp" id="e_desc">${esc(r.desc)}</textarea>`)}<p class="mut3" style="font-size:12px;margin-top:10px">Los cambios quedan en el historial con valor anterior, nuevo, fecha y usuario.</p>${mf('Guardar cambios','regSave',r.estado!=='Anulado'?btn('Anular registro','regVoid','','dng'):btn('Restaurar','regRestore','','ghost'))}`)}
 function regSave(){if(!can(['Gerencia','Supervisor'])){toast('Tu rol solo puede consultar los registros','wa');return}const r=S.registros.find(x=>x.id===M.id);if(!r)return;if(r.cat===APOYO_OA&&r.kind==='otro'&&(val('e_desc')||'').trim().length<8){toast('«Apoyo a otra área» necesita descripción: área y tarea (mínimo 8 letras).','wa');return}const ch=(k,l,n)=>{if(String(r[k]??'')!==String(n??'')){logH(l,r[k],n,r.id.slice(-6)+' '+r.nombre);r[k]=n}};
- ch('horas','Horas',r2(num(val('e_h'))||r.horas));ch('desc','Descripción',(val('e_desc')||'').trim());
+ ch('horas','Horas',r2(num(val('e_h'))||r.horas));ch('desc','Descripción',(val('e_desc')||'').trim());if(r.clase==='montaje')ch('linea','Línea del montaje',val('e_lin')||r.linea);
  if(r.clase==='retrabajo'){ch('causa','Causa',val('e_causa'));ch('origen','Origen',val('e_origen'));ch('persona','Persona relacionada',val('e_persona'));ch('hallazgo','Hallazgo',(val('e_hall')||'').trim().toUpperCase());
   if(r.hallazgo&&!S.hallazgos.find(h=>h.codigo===r.hallazgo))S.hallazgos.push({codigo:r.hallazgo,proy:r.proy,desc:'',estado:'Abierto',fecha:r.fecha});
   if(r.estado!=='Anulado')r.estado=(r.causa&&r.origen&&(!personasPara(r.origen).length||r.persona))?'Completo':'Incompleto'}
@@ -1880,6 +1900,7 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{const t=e.target;
  if(t.id==='impFile'){const f=t.files[0];if(!f)return;f.text().then(x=>{try{const o=JSON.parse(x);if(!o.registros||!o.tecnicos)throw 0;S=o;save();renderAll();toast('Respaldo importado','ok')}catch(_){toast('Ese archivo no es un respaldo válido','er')}});return}
  if(t.dataset.f){setPath(t.dataset.f,t.type==='checkbox'?t.checked:t.value);if(t.hasAttribute('data-nr'))return;if(t.dataset.f==='f.per'){renderAll(true);return}renderPage(true);return}
+ if(t.dataset.ot!==undefined){const o=OTROS_CAT.find(x=>x.nombre===t.dataset.ot);if(o&&o.clase!==t.value){logH('Lista Otro tiempo',o.nombre+' · '+(CL[o.clase]||{n:o.clase}).n,o.nombre+' · '+(CL[t.value]||{n:t.value}).n,'Ajustes');otSave([{...o,clase:t.value}],'catalogo_otro_tiempo','nombre','Cambio guardado')}return}
  if(t.dataset.tur){const c=S.tecnicos.find(x=>x.codigo===t.dataset.tur);logH('Turno de '+c.nombre,turnoName(c.turno),turnoName(t.value),c.codigo);c.turno=t.value;save();renderPage(true);toast('Turno asignado','ok');return}
  if(t.dataset.tf){const [k,f]=t.dataset.tf.split('.');const tu=S.turnos.find(x=>x.id===U.tsel),d=tu.dias[k];const nv=(f==='ini'||f==='fin')?t.value:Math.max(0,+t.value||0);logH('Turno '+tu.nombre+' · '+DN[k]+' '+f,d[f],nv);d[f]=nv;tu.mod={ts:new Date().toISOString(),por:U.name+' ('+U.role+')'};save();renderPage(true);return}
  if(t.dataset.hp){const c=$('#h_c');if(c)c.value=hallNext(t.value);return}
@@ -1887,7 +1908,7 @@ document.addEventListener('change',e=>{const t=e.target;
 });
 document.addEventListener('input',e=>{const t=e.target;
  if(t.dataset.f&&t.hasAttribute('data-nr'))setPath(t.dataset.f,t.value);
- if(t.dataset.fr!==undefined){const _fk=t.dataset.fr.split('.'),_pv=M.rows[_fk[0]]&&M.rows[_fk[0]].cat;faltSum();if(_fk[1]==='cat'&&M.rows[_fk[0]]&&((_pv===APOYO_OA)!==(M.rows[_fk[0]].cat===APOYO_OA)))faltRender()}
+ if(t.dataset.fr!==undefined){const _fk=t.dataset.fr.split('.'),_pv=M.rows[_fk[0]]&&M.rows[_fk[0]].cat;faltSum();if(_fk[1]==='cat'&&M.rows[_fk[0]]&&(((_pv===APOYO_OA)!==(M.rows[_fk[0]].cat===APOYO_OA))||(esMontaje(_pv)!==esMontaje(M.rows[_fk[0]].cat))))faltRender()}
  if(t.id==='x_tot'||t.dataset.xe!==undefined)expLive();
  if(t.id==='palIn'){U.pal.q=t.value;U.pal.i=0;palList()}
 });
@@ -1917,6 +1938,7 @@ addEventListener('resize',()=>{app().classList.toggle('col',!!U.collapsed&&!isMo
 function boot(){
  loadUI();initState();
  try{const c=JSON.parse(localStorage.getItem('hh_cat_v42')||'null');if(c)catApply(c.et,c.ac,true)}catch(e){}
+ try{const c=JSON.parse(localStorage.getItem('hh_listas_v49')||'null');if(c)listasApply(c.o,c.l,true)}catch(e){}
  if(U.collapsed==null)U.collapsed=innerWidth<1100&&innerWidth>820;
  if(location.hash==='#captura'){U.kiosk=true;U.role='Técnico';U.name='Técnico';U.page='captura'}
  else{U.page=DEFP[U.role]||'dashboard'}
@@ -1950,11 +1972,12 @@ function capForm(tec){
    ${c.origen?(ps.length?fld('¿Quién estuvo relacionado?',sel('c.persona',ps.map(t=>[t.codigo,t.nombre+' · '+t.area]),c.persona,{ph:'Seleccionar persona…'})):`<p class="mut3" style="font-size:12.5px;margin-bottom:12px">Para este origen no se pide persona relacionada.</p>`):''}
    <div class="two">${fld('Código de hallazgo (opcional)',`<input class="inp" list="hlist" data-f="c.hallazgo" data-nr placeholder="LQ-00034-0012" value="${esc(c.hallazgo)}" autocomplete="off" style="text-transform:uppercase"><datalist id="hlist">${hl.map(h=>`<option value="${esc(h.codigo)}">${esc(h.desc||'')}</option>`).join('')}</datalist>`)}${fld('Descripción del hallazgo (si es nuevo)',`<input class="inp" data-f="c.hdesc" data-nr value="${esc(c.hdesc)}" placeholder="Opcional">`)}</div>`);
   else if(c.tipo===TIPOS[4])s3=sec(3,'Causa de la espera','',sel('c.espera',ESPERAS,c.espera,{ph:'Seleccionar causa…'}));
- }else if(c.modo==='otro')s2=fld('¿En qué se usó el tiempo?',sel('c.cat',OTROS.map(o=>o[0]),c.cat,{ph:'Seleccionar…',cls:'big'}))+horas;
+ }else if(c.modo==='otro')s2=fld('¿En qué se usó el tiempo?',sel('c.cat',OTROS.map(o=>o[0]),c.cat,{ph:'Seleccionar…',cls:'big'}))+lineaFld(c)+horas;
  else s2=fld('Motivo de la ausencia',sel('c.cat',AUS,c.cat,{ph:'Seleccionar…',cls:'big'}))+horas;
  const _oa=c.modo==='otro'&&c.cat===APOYO_OA;const desc=sec(s3?4:3,'Descripción',_oa?'Obligatoria: indica en qué área y qué tarea':'Opcional: solo si hace falta aclarar algo',`<textarea class="inp" data-f="c.desc" data-nr placeholder="${_oa?'Área y tarea que realizaste':'Escribe una nota corta'}">${esc(c.desc)}</textarea>`);
  const miss=[],soft=[];const h=num(c.horas);
  if(c.modo==='proy'){if(!c.proy)miss.push('proyecto');if(!c.macro)miss.push('macroetapa');if(!c.act)miss.push('actividad')}else if(!c.cat)miss.push(c.modo==='aus'?'motivo':'opción');
+ if(c.modo==='otro'&&esMontaje(c.cat)&&!c.linea)miss.push('línea');
  if(c.modo==='otro'&&c.cat===APOYO_OA&&(c.desc||'').trim().length<8)miss.push('descripción (área y tarea)');
  if(h<=0)miss.push('horas');
  if(c.modo==='proy'&&c.tipo==='Retrabajo'){if(!c.causa)soft.push('causa');if(!c.origen)soft.push('origen');else if(personasPara(c.origen).length&&!c.persona)soft.push('persona')}
@@ -2194,7 +2217,7 @@ function repXlsx(R){const K=R.K,D=R.D,pc=(a,b)=>b?r2(a/b*100):0;
  {name:'Personas fuera de proyecto',cols:[{h:'Persona',w:30},{h:'HH fuera',w:12,t:'n'},{h:'HH totales',w:12,t:'n'},{h:'% de su tiempo',w:15,t:'n'}],rows:R.pers.map(x=>[x.n,r2(x.f),r2(x.t),r2(x.p)])},
  {name:'Controles',cols:[{h:'Control',w:40},{h:'Valor',w:16},{h:'Estado',w:12}],rows:R.ctl},
  {name:'Curva diaria',cols:[{h:'Fecha',w:12,t:'d'},{h:'Expectativa acum.',w:17,t:'n'},{h:'Real acum.',w:13,t:'n'},{h:'Brecha',w:12,t:'n'}],rows:R.cv.labels.map((d,i)=>[d,R.cv.exp[i],R.cv.real[i],r2(R.cv.real[i]-R.cv.exp[i])])},
- {name:'Registros',cols:[{h:'Fecha',w:12,t:'d'},{h:'Persona',w:24},{h:'Área',w:16},{h:'Proyecto',w:11},{h:'Etapa',w:20},{h:'Tipo',w:26},{h:'Categoría',w:24},{h:'HH',w:8,t:'n'},{h:'Causa',w:22},{h:'Origen',w:20},{h:'Estado',w:11}],rows:R.rs.slice().sort((a,b)=>a.fecha<b.fecha?1:-1).map(r=>[r.fecha,r.nombre,r.area,r.proy||'',r.macro||'',r.tipo,r.cat||r.act||'',r2(r.horas),r.causa||'',r.origen||'',r.estado])}]}
+ {name:'Registros',cols:[{h:'Fecha',w:12,t:'d'},{h:'Persona',w:24},{h:'Área',w:16},{h:'Proyecto',w:11},{h:'Etapa',w:20},{h:'Tipo',w:26},{h:'Categoría',w:24},{h:'Línea en montaje',w:16},{h:'HH',w:8,t:'n'},{h:'Causa',w:22},{h:'Origen',w:20},{h:'Estado',w:11}],rows:R.rs.slice().sort((a,b)=>a.fecha<b.fecha?1:-1).map(r=>[r.fecha,r.nombre,r.area,r.proy||'',r.macro||'',r.tipo,r.cat||r.act||'',r.linea||'',r2(r.horas),r.causa||'',r.origen||'',r.estado])}]}
 /* ---- PDF: se dibuja en lienzos y se arma con pdfMulti ---- */
 function repImg(src){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src})}
 async function repPages(R){
@@ -2525,7 +2548,7 @@ async function nbReq(method,path,o={}){
  const auth=o.auth!==false;const h={apikey:NUBE.key,...(o.headers||{})};
  if(o.body!==undefined)h['Content-Type']='application/json';
  if(auth&&NB.sess){if(Date.now()>NB.sess.exp-60000)await nbRefresh();h.Authorization='Bearer '+NB.sess.access_token}
- if(isAud()&&method!=='GET'&&path.startsWith('/rest/v1/')&&!/^\/rest\/v1\/rpc\/(contexto_captura|personas_para_origen|invitado_datos|liberacion_mis|hh_firma|fotos_candidatas)\b/.test(path))throw new Error('Perfil de Auditoría: solo lectura');
+ if(isAud()&&method!=='GET'&&path.startsWith('/rest/v1/')&&!/^\/rest\/v1\/rpc\/(contexto_captura|personas_para_origen|invitado_datos|liberacion_mis|hh_firma|fotos_candidatas)\b/.test(path)&&!/^\/rest\/v1\/(turnos|turno_dias|programacion|tecnicos|ajustes|catalogo_otro_tiempo|catalogo_lineas_montaje)(\?|$)/.test(path))throw new Error('Perfil de Auditoría: solo lectura');
  let r;try{r=await fetch(NUBE.url+path,{method,headers:h,body:o.body!==undefined?JSON.stringify(o.body):undefined})}catch(e){throw new Error('Sin conexión con la nube')}
  const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){}
  if(r.status===401&&auth&&NB.sess&&!o.retried){if(await nbRefresh())return nbReq(method,path,{...o,retried:true})}
@@ -2572,14 +2595,14 @@ function nbRows(){
  S.registros.forEach(r=>{const tu=S.turnos.find(x=>x.id===r.turno);
   out.registros_hh.set(r.id,nbJ({id:r.id,fecha:r.fecha,tecnico_id:M.tecUuid[r.tec]||null,codigo_tecnico:r.tec,iniciales:r.ini||'',nombre:r.nombre||'',area:r.area||null,especialidad:r.esp||null,turno:tu?tu.nombre:null,
    proyecto_id:M.projUuid[r.proy]||null,numero_proyecto:r.proy||null,capacidad_gal:r.cap||null,cliente:r.cli||null,kind:r.kind||'proy',macroetapa:r.macro||null,
-   actividad_codigo:(r.actId!==''&&r.actId!=null)?String(r.actId):null,actividad:r.act||null,categoria:r.cat||null,horas:+r.horas,tipo_trabajo:r.tipo,clase:r.clase,causa:r.causa||null,origen:r.origen||null,
+   actividad_codigo:(r.actId!==''&&r.actId!=null)?String(r.actId):null,actividad:r.act||null,categoria:r.cat||null,...(r.linea?{linea_montaje:r.linea}:{}),horas:+r.horas,tipo_trabajo:r.tipo,clase:r.clase,causa:r.causa||null,origen:r.origen||null,
    persona_relacionada_id:M.tecUuid[r.persona]||null,codigo_hallazgo:r.hallazgo||null,descripcion:r.desc||null,registrado_por:r.por||null,registrado_en:r.ts,estado:r.estado,es_demo:!!r.demo,
    pendiente_validacion:!!r.pend,validado_por:r.valPor||null,validado_en:r.valTs||null}))});
  return out}
 const NB_ORDER=[['ajustes','clave'],['turnos','id'],['turno_dias','turno_id,dia'],['tecnicos','id'],['proyectos','id'],['expectativas_etapa','proyecto_id,etapa'],['programacion','semana,tecnico_id,dia'],['registros_hh','id']];
 
 function nbFromReg(d,M){return{id:d.id,fecha:d.fecha,tec:d.codigo_tecnico,ini:d.iniciales||'',nombre:d.nombre||'',area:d.area||'',esp:d.especialidad||'',turno:(M&&M.turnoByName&&M.turnoByName[d.turno])||'',
- proy:d.numero_proyecto||'',cap:d.capacidad_gal||'',cli:d.cliente||'',macro:d.macroetapa||'',act:d.actividad||'',actId:d.actividad_codigo||'',horas:+d.horas,tipo:d.tipo_trabajo,clase:d.clase,kind:d.kind||'proy',cat:d.categoria||'',
+ proy:d.numero_proyecto||'',cap:d.capacidad_gal||'',cli:d.cliente||'',macro:d.macroetapa||'',act:d.actividad||'',actId:d.actividad_codigo||'',horas:+d.horas,tipo:d.tipo_trabajo,clase:d.clase,kind:d.kind||'proy',cat:d.categoria||'',linea:d.linea_montaje||'',
  causa:d.causa||'',origen:d.origen||'',persona:(M&&M.codeByUuid&&M.codeByUuid[d.persona_relacionada_id])||'',hallazgo:d.codigo_hallazgo||'',desc:d.descripcion||'',ts:d.registrado_en,por:d.registrado_por||'',estado:d.estado,sync:1,demo:d.es_demo?1:0,
  pend:!!d.pendiente_validacion,valPor:d.validado_por||'',valTs:d.validado_en||''}}
 
@@ -2607,7 +2630,7 @@ async function nbLoad(){
    safe(nbSel('proyectos','select=*&order=numero.asc'),[]),safe(nbSel('expectativas_etapa'),[]),safe(nbSel('hallazgos','select=*&order=codigo.asc'),[]),
    safe(nbSel('programacion'),[]),safe(nbSel('hallazgo_historial','select=*&order=id.asc'),[]),safe(nbSel('hallazgo_fotos','select=*&order=subido_en.asc'),[])]);
   [lb,lbh]=await Promise.all([safe(nbSel('liberaciones','select=*&order=creado_en.asc'),[]),safe(nbSel('liberacion_historial','select=*&order=id.asc'),[])]);
-  await catFetch();
+  await catFetch();await listasFetch();
   const since=nbSince(pr);NB.since=since;
   rg=await nbSel('registros_hh','select=*&order=registrado_en.asc,id.asc'+(since?'&fecha=gte.'+since:''));
   if(NB.perfil&&(NB.perfil.rol==='Gerencia'||NB.perfil.rol==='Auditoría')){[his,per,pnh]=await Promise.all([safe(nbSel('historial','select=*&order=id.desc'),[]).then(x=>x.slice(0,400)),safe(nbSel('perfiles'),[]),safe(nbSel('perfil_nombres','select=*&order=desde.asc'),[])]);NB.perfs=per;NB.pnh=pnh}}
@@ -2641,7 +2664,7 @@ function nbSig(){let h=0;const s=ETAPAS.join()+JSON.stringify(ETINFO)+ACT.map(a=
  for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return s.length+':'+h}
 
 /* ---------- Guardado en la nube (solo cambios) ---------- */
-function nbSave(){if(NB.kiosk||!NB.sess||isAud())return;NB.dirty=true;clearTimeout(NB.pt);NB.pt=setTimeout(nbPush,500)}
+function nbSave(){if(NB.kiosk||!NB.sess)return;NB.dirty=true;clearTimeout(NB.pt);NB.pt=setTimeout(nbPush,500)}
 async function nbPush(){
  if(NB.busy){NB.again=true;return}
  NB.busy=true;
@@ -2658,7 +2681,7 @@ async function nbPushInner(){
   for(const g of Object.values(grp))await nbReq('DELETE',`/rest/v1/programacion?semana=eq.${g.semana}&tecnico_id=eq.${g.tec}&dia=in.(${g.dias.join(',')})`);
   gp.forEach(k=>snap.programacion.delete(k))}
  /* 2) guardar lo nuevo o modificado, en orden de dependencia */
- for(const [c,conf] of NB_ORDER){const up=diff(c);if(!up.length)continue;
+ for(const [c,conf] of NB_ORDER){if(isAud()&&!['turnos','turno_dias','programacion','tecnicos','ajustes'].includes(c))continue;let up=diff(c);if(isAud()&&c==='ajustes')up=up.filter(x=>['msgsem','frases'].includes(JSON.parse(x[1]).clave));if(!up.length)continue;
   if(c==='registros_hh'&&!NB.kiosk){const need=new Set();up.forEach(([k,j])=>{const cd=JSON.parse(j).codigo_hallazgo;if(cd&&!(NB.hallKnown&&NB.hallKnown.has(cd)))need.add(cd)});
    for(const cd of need){const h=S.hallazgos.find(x=>x.codigo===cd)||{};await nbRpc('hallazgo_asegurar',{p_codigo:cd,p_proyecto:h.proy||(S.registros.find(r=>r.hallazgo===cd)||{}).proy||'',p_desc:h.desc||null});NB.hallKnown.add(cd)}}
   await nbUp(c,up.map(x=>JSON.parse(x[1])),conf);up.forEach(([k,j])=>snap[c].set(k,j))}
@@ -2809,7 +2832,7 @@ async function nbCapEnter(r){
  try{NB.consent=null;NB.cred={code:r.codigo,ini:r.iniciales};
   S.tecnicos=[{codigo:r.codigo,ini:r.iniciales,nombre:r.nombre,area:r.area||'',esp:r.especialidad||'',turno:'K',rol:'Técnico',activo:true,registra:true}];
   U.c={...newC(),tec:r.codigo,fecha:today()};
-  await catFetch();await nbCtx(U.c.fecha);await nbPersonas();await libMisLoad();
+  await catFetch();await listasFetch();await nbCtx(U.c.fecha);await nbPersonas();await libMisLoad();
   renderAll();toast('Hola, '+r.nombre.split(' ')[0]+'. Ya puedes registrar tus horas.','ok')}
  catch(e){toast(nbMsg(e),'er')}}
 /* ---------- Consentimiento de datos (una sola vez, desde el QR) ---------- */
@@ -2858,7 +2881,7 @@ async function nbCapSave(){
   Object.assign(it,{proyecto:c.proy,macroetapa:c.macro,actividad:String(c.act),tipo_trabajo:c.tipo});
   if(c.tipo==='Retrabajo')Object.assign(it,{causa:c.causa||'',origen:c.origen||'',persona:c.persona||'',hallazgo:(c.hallazgo||'').trim().toUpperCase(),hallazgo_desc:(c.hdesc||'').trim()});
   if(c.tipo===TIPOS[4])it.causa=c.espera||'';
- }else{if(!c.cat){toast('Selecciona una opción de la lista.','wa');return}it.categoria=c.cat;if(c.modo==='otro'&&c.cat===APOYO_OA&&it.descripcion.length<8){toast('En «Apoyo a otra área» escribe en la descripción el área y la tarea (mínimo 8 letras).','wa');return}}
+ }else{if(!c.cat){toast('Selecciona una opción de la lista.','wa');return}it.categoria=c.cat;if(c.modo==='otro'&&esMontaje(c.cat)){if(!c.linea){toast('Elige la línea del montaje.','wa');return}it.linea=c.linea}if(c.modo==='otro'&&c.cat===APOYO_OA&&it.descripcion.length<8){toast('En «Apoyo a otra área» escribe en la descripción el área y la tarea (mínimo 8 letras).','wa');return}}
  const incompleto=c.modo==='proy'&&c.tipo==='Retrabajo'&&(!c.causa||!c.origen||(personasPara(c.origen).length&&!c.persona));
  NB.saving=true;
  try{const rr=await nbRpc('registrar_hh',{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_fecha:c.fecha||today(),p_items:[it]},false);if(rr&&rr.error)throw new Error(rr.error);
@@ -2867,7 +2890,7 @@ async function nbCapSave(){
   if(incompleto){m+='. Quedó incompleto: falta causa, origen o persona del retrabajo.';k='wa'}
   else if(Math.abs(j.df)<.01)m+='. ¡Jornada completa!';else if(j.df<0)m+='. Faltan '+hh(-j.df)+' HH de la jornada.';else{m+='. Hay '+hh(j.df)+' HH por encima de la jornada.';k='wa'}
   m+=' Tu supervisor lo validará.';
-  Object.assign(U.c,{macro:'',act:'',horas:'',tipo:TIPOS[0],causa:'',origen:'',persona:'',hallazgo:'',hdesc:'',desc:'',cat:'',espera:''});
+  Object.assign(U.c,{macro:'',act:'',horas:'',tipo:TIPOS[0],causa:'',origen:'',persona:'',hallazgo:'',hdesc:'',desc:'',cat:'',linea:'',espera:''});
   renderAll();toast(m,k)}
  catch(e){toast('No se guardó: '+nbMsg(e),'er')}
  finally{NB.saving=false}}
@@ -2958,6 +2981,21 @@ function projSave(edit){
    else if(p.estado==='En pausa'&&p.pausaDesde){p.diasPausa=(+p.diasPausa||0)+Math.max(0,daysB(p.pausaDesde,today()));p.pausaDesde=''}}
   Object.assign(p,o,{num,estado:e});save();closeModal();renderAll(true);toast('Proyecto actualizado','ok')}
  else{S.proyectos.push({num,...o,estado:'Activo',creado:today(),exp:{total:0,et:{},cerradas:[],mod:{ts:new Date().toISOString(),por:U.name}}});save();toast('Proyecto '+num+' creado','ok');expOpen(num)}}
+function pListas(){return otroCard()}
+function otroCard(){
+ if(!can(GA))return '';
+ const cn=c=>CL[c]?CL[c].n:c;
+ const rows=OTROS_CAT.map(o=>`<tr style="border-top:1px solid var(--bd);${o.activa?'':'opacity:.55'}"><td style="padding:8px 6px">${esc(o.nombre)}</td><td style="padding:8px 6px"><select class="sel" data-ot="${esc(o.nombre)}" style="min-width:210px">${OT_CLASES.map(c=>`<option value="${c}"${c===o.clase?' selected':''}>${esc(cn(c))}</option>`).join('')}</select></td><td style="padding:8px 6px;text-align:right">${btn(o.activa?'Desactivar':'Activar','otTog','','sm ghost').replace('<button','<button data-n="'+esc(o.nombre)+'"')}</td></tr>`).join('');
+ const lm=LINEAS_M_ALL.map(l=>`<span style="display:inline-flex;align-items:center;gap:8px;margin:0 8px 8px 0;padding:6px 10px;border:1px solid var(--bd);border-radius:10px;${l.activa?'':'opacity:.55'}"><b>${esc(l.nombre)}</b><span class="mut3" style="font-size:12px">${l.activa?'activa':'desactivada'}</span>${btn(l.activa?'Desactivar':'Activar','lmTog','','sm ghost').replace('<button','<button data-n="'+esc(l.nombre)+'"')}</span>`).join('');
+ return `<div class="g12"><div class="c6">${card('Otro tiempo','Opciones que ve el técnico en «¿En qué se usó el tiempo?»',`<table style="width:100%;border-collapse:collapse;font-size:13.5px"><thead><tr class="mut3" style="font-size:12px;text-align:left"><th style="padding:4px 6px">Opción</th><th style="padding:4px 6px">Cómo cuenta</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+  <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center"><input class="inp" id="otNew" placeholder="Nueva opción" maxlength="80" style="max-width:260px"><select class="sel" id="otNewC" style="max-width:230px">${OT_CLASES.map(c=>`<option value="${c}">${esc(cn(c))}</option>`).join('')}</select>${btn('Agregar','otAdd','','sm')}</div>
+  <p class="mut3" style="font-size:12.5px;margin-top:10px">«Cómo cuenta» define en qué grupo entran esas horas en los gráficos e informes. Para cambiar un nombre, crea la opción nueva y desactiva la anterior: las horas ya cargadas conservan el nombre con el que se registraron.</p>`)}</div>
+ <div class="c6">${card('Líneas en montaje','Se eligen al cargar horas en «Montaje de línea»',`<div>${lm||'<span class="mut3">Aún no hay líneas.</span>'}</div>
+  <div style="display:flex;gap:8px;margin-top:10px;align-items:center"><input class="inp" id="lmNew" placeholder="Ej. Línea 4" maxlength="40" style="max-width:220px">${btn('Agregar','lmAdd','','sm')}</div>
+  <p class="mut3" style="font-size:12.5px;margin-top:10px">Una línea desactivada deja de salir en el menú, pero sus horas se conservan.</p>`)}</div></div>`}
+async function otSave(rows,tabla,conf,msg){
+ try{await nbUp(tabla,rows,conf);await listasFetch();renderPage(true);if(msg)toast(msg,'ok')}
+ catch(e){toast(nbMsg(e),'er')}}
 function listasCard(){
  const lin=(S.settings.lineas&&S.settings.lineas.length)?S.settings.lineas:['Tanques'];
  const chips=(arr,del,fmt)=>arr.map(v=>badge(`<span style="display:inline-flex;align-items:center;gap:6px">${esc(fmt?fmt(v):String(v))}<button class="ib" style="width:20px;height:20px" data-act="${del}" data-v="${esc(String(v))}" aria-label="Quitar ${esc(String(v))}">${icon('x',12)}</button></span>`,'n')).join(' ');
@@ -2978,6 +3016,15 @@ Object.assign(A,{
  linDel:t=>{const v=t.dataset.v;if(S.proyectos.some(p=>(p.linea||'Tanques')===v)){toast('Hay proyectos en esa línea; no se puede quitar.','wa');return}
   const cur=(S.settings.lineas&&S.settings.lineas.length)?S.settings.lineas:['Tanques'];if(cur.length<=1){toast('Debe quedar al menos una línea.','wa');return}
   S.settings.lineas=cur.filter(x=>x!==v);logH('Líneas de producción',v,'','Ajustes');save();renderPage(true)},
+ otAdd:()=>{const n=(val('otNew')||'').trim(),c=val('otNewC');if(!n||n.length>80){toast('Escribe el nombre de la opción.','er');return}
+  if(OTROS_LEG.some(x=>x[0].toLowerCase()===n.toLowerCase())){toast('Ya existe una opción con ese nombre.','wa');return}
+  const ord=Math.max(0,...OTROS_CAT.map(o=>o.orden))+1;logH('Lista Otro tiempo','',n+' ('+(CL[c]||{n:c}).n+')','Ajustes');otSave([{nombre:n,clase:c,orden:ord,activa:true}],'catalogo_otro_tiempo','nombre','Opción agregada')},
+ otTog:t=>{const o=OTROS_CAT.find(x=>x.nombre===t.dataset.n);if(!o)return;if(o.activa&&OTROS_CAT.filter(x=>x.activa).length<=1){toast('Debe quedar al menos una opción.','wa');return}
+  logH('Lista Otro tiempo',o.nombre+(o.activa?' activa':' desactivada'),o.nombre+(o.activa?' desactivada':' activa'),'Ajustes');otSave([{...o,activa:!o.activa}],'catalogo_otro_tiempo','nombre',o.activa?'Opción desactivada':'Opción activada')},
+ lmAdd:()=>{const n=(val('lmNew')||'').trim();if(!n||n.length>40){toast('Escribe el nombre de la línea.','er');return}
+  if(LINEAS_M_ALL.some(x=>x.nombre.toLowerCase()===n.toLowerCase())){toast('Esa línea ya existe.','wa');return}
+  const ord=Math.max(0,...LINEAS_M_ALL.map(x=>x.orden))+1;logH('Líneas en montaje','',n,'Ajustes');otSave([{nombre:n,activa:true,orden:ord}],'catalogo_lineas_montaje','nombre','Línea agregada')},
+ lmTog:t=>{const l=LINEAS_M_ALL.find(x=>x.nombre===t.dataset.n);if(!l)return;logH('Líneas en montaje',l.nombre+(l.activa?' activa':' desactivada'),l.nombre+(l.activa?' desactivada':' activa'),'Ajustes');otSave([{...l,activa:!l.activa}],'catalogo_lineas_montaje','nombre',l.activa?'Línea desactivada':'Línea activada')},
  capAcepta:()=>nbConsentAccept(),capNoAcepta:()=>nbConsentDecline(),
  login:()=>nbLogin(),logout:()=>nbLogout(),chPass:()=>chPassOpen(),chPassSave:()=>chPassSave(),
  verPass:t=>{const i=document.getElementById(t.dataset.for);if(!i)return;const v=i.type==='password';i.type=v?'text':'password';t.textContent=v?'Ocultar':'Ver'},
@@ -3016,8 +3063,8 @@ const isGer=()=>!!(NB.perfil&&NB.perfil.rol==='Gerencia'&&!NB.guest&&NB.sess);
 const isBak=()=>!!(NB.perfil&&['Gerencia','Calidad','Supervisor'].includes(NB.perfil.rol)&&!NB.guest&&NB.sess);
 
 /* ---------- Copia de seguridad (archivo .sql que se restaura pegándolo en el Editor SQL de Supabase) ---------- */
-const BAK_CLAVE={etapas:'nombre',actividades:'codigo',catalogo_causas:'nombre',catalogo_origenes:'nombre',catalogo_otro_tiempo:'nombre',catalogo_ausencias:'nombre',catalogo_esperas:'nombre'};
-const BAK_TABLAS=[['ajustes','clave'],['etapas','orden'],['actividades','orden'],['catalogo_causas','orden'],['catalogo_origenes','orden'],['catalogo_otro_tiempo','orden'],['catalogo_ausencias','orden'],['catalogo_esperas','orden'],['turnos','creado.asc,id.asc'],['turno_dias','turno_id.asc,dia.asc'],['tecnicos','codigo.asc'],['proyectos','numero.asc'],['expectativas_etapa','proyecto_id.asc,etapa.asc'],['hallazgos','codigo.asc'],['hallazgo_historial','id.asc'],['hallazgo_fotos','subido_en.asc'],['programacion','semana.asc,tecnico_id.asc,dia.asc'],['registros_hh','registrado_en.asc,id.asc'],['liberaciones','creado_en.asc,codigo.asc'],['liberacion_historial','id.asc'],['historial','id.asc']];
+const BAK_CLAVE={etapas:'nombre',actividades:'codigo',catalogo_causas:'nombre',catalogo_origenes:'nombre',catalogo_otro_tiempo:'nombre',catalogo_ausencias:'nombre',catalogo_esperas:'nombre',catalogo_lineas_montaje:'nombre'};
+const BAK_TABLAS=[['ajustes','clave'],['etapas','orden'],['actividades','orden'],['catalogo_causas','orden'],['catalogo_origenes','orden'],['catalogo_otro_tiempo','orden'],['catalogo_ausencias','orden'],['catalogo_esperas','orden'],['catalogo_lineas_montaje','orden'],['turnos','creado.asc,id.asc'],['turno_dias','turno_id.asc,dia.asc'],['tecnicos','codigo.asc'],['proyectos','numero.asc'],['expectativas_etapa','proyecto_id.asc,etapa.asc'],['hallazgos','codigo.asc'],['hallazgo_historial','id.asc'],['hallazgo_fotos','subido_en.asc'],['programacion','semana.asc,tecnico_id.asc,dia.asc'],['registros_hh','registrado_en.asc,id.asc'],['liberaciones','creado_en.asc,codigo.asc'],['liberacion_historial','id.asc'],['historial','id.asc']];
 async function nbBackup(){
  if(!isBak()){toast('Tu rol no puede descargar la copia de seguridad.','wa');return}
  if(NB.bak)return;NB.bak=true;toast('Preparando la copia de seguridad… puede tardar unos segundos.','ok');
