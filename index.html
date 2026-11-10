@@ -1225,7 +1225,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.9.0';
+const APP_VER='4.9.1';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1841,6 +1841,7 @@ async function sync(silent){const url=S.settings.webapp;if(!url){toast('Primero 
 /* ================= Acciones ================= */
 const A={
  go:t=>go(t.dataset.p),none:()=>{},
+ prodOpen:t=>prodOpen(t.dataset.v),prodTab:t=>{CALC.tab=t.dataset.v;prodRender()},calcInc:()=>{CALC.inc=!CALC.inc;prodRender()},metaOpen:()=>metaOpen(),metaSave:()=>metaSave(),
  drawer:()=>app().classList.toggle('open'),closeDrawer:()=>app().classList.remove('open'),
  collapse:()=>{if(isMob()){app().classList.remove('open');return}U.collapsed=!U.collapsed;saveUI();app().classList.toggle('col',U.collapsed);renderSide()},
  menu:()=>{U.menu=!U.menu;renderSide()},
@@ -1907,6 +1908,7 @@ document.addEventListener('change',e=>{const t=e.target;
  if(t.dataset.mo){const r=S.registros.find(x=>x.id===M.id);const ps=personasPara(t.value);const w=$('#e_persona');if(w)w.innerHTML=`<option value="">No aplica / no identificada</option>`+ps.map(p=>`<option value="${p.codigo}">${esc(p.nombre)}</option>`).join('')}
 });
 document.addEventListener('input',e=>{const t=e.target;
+ if(t.dataset.tar!==undefined){calcInput(t);return}
  if(t.dataset.f&&t.hasAttribute('data-nr'))setPath(t.dataset.f,t.value);
  if(t.dataset.fr!==undefined){const _fk=t.dataset.fr.split('.'),_pv=M.rows[_fk[0]]&&M.rows[_fk[0]].cat;faltSum();if(_fk[1]==='cat'&&M.rows[_fk[0]]&&(((_pv===APOYO_OA)!==(M.rows[_fk[0]].cat===APOYO_OA))||(esMontaje(_pv)!==esMontaje(M.rows[_fk[0]].cat))))faltRender()}
  if(t.id==='x_tot'||t.dataset.xe!==undefined)expLive();
@@ -2156,6 +2158,163 @@ function pFaltantes(){
 /* ---------- Dashboard: se añaden Rendimiento por área y Proyectos activos ---------- */
 
 /* ===== v4.8.0 · Informe ejecutivo (PDF + Excel) ===== */
+/* ================= Productividad y eficiencia (v4.9.1) =================
+   PRODUCTIVIDAD = HH de proyectos (fabricación normal y cambios de alcance) + HH de montaje de línea, ÷ HH registradas (sin ausencias).
+   EFICIENCIA   = HH ganadas ÷ HH reales de los proyectos (las HH de cambios de alcance no penalizan: no estaban en lo esperado).
+   La calculadora de costos solo vive en la memoria de la pantalla: nada de lo que se digita se guarda. */
+const META_D=75,UMB_D=5;
+const metaProd=()=>{const m=+S.settings.metaProd;return m>0&&m<=100?m:META_D};
+const umbAlc=()=>{const m=+S.settings.umbAlc;return m>0&&m<=100?m:UMB_D};
+const esProdH=r=>r.clase==='normal'||r.clase==='alcance'||r.clase==='montaje';
+const CALC={perfil:{},inc:true,tab:'det'};
+const calcCan=()=>can(GA);
+const calcHas=()=>Object.values(CALC.perfil).some(v=>v>0);
+const money=v=>(v<-0.5?'-':'')+'$ '+nf(Math.abs(v),0);
+const semP=(p,meta)=>p==null?'#94A3B8':p>=meta?'#22C55E':p>=meta-10?'#F59E0B':'#EF4444';
+const semE=i=>i==null?{c:'n',t:'Sin datos',col:'#94A3B8'}:i>=.95?{c:'ok',t:'Eficiente',col:'#22C55E'}:i>=.85?{c:'wa',t:'En riesgo',col:'#F59E0B'}:{c:'er',t:'Ineficiente',col:'#EF4444'};
+const GRP=[['Fabricación normal',['normal']],['Cambios de alcance',['alcance']],['Montaje de línea',['montaje']],['Retrabajo',['retrabajo']],['Esperas / improductivo',['improd']],['No planificado',['noplan']],['Apoyo, mantenimiento y otros',['apoyo','mant','capac','fuera','insp']]];
+
+function tarTm(){return new Map(S.tecnicos.map(t=>[t.codigo,t]))}
+function tarRate(r,tm){const t=tm.get(r.tec),p=t?(t.rol||rolDe(t.area)):'Técnico';return CALC.perfil[p]>0?CALC.perfil[p]:null}
+function costOf(rs,tm){tm=tm||tarTm();let c=0,h=0,sin=0;rs.forEach(r=>{const x=+r.horas||0,k=tarRate(r,tm);if(k==null)sin+=x;else{c+=x*k;h+=x}});return{c,h,sin,avg:h?c/h:0}}
+/* ---- productividad del periodo ---- */
+function prodCalc(rs){
+ const nd=rs.filter(r=>r.clase!=='aus'),tot=sum(nd),g=cl=>sum(nd.filter(r=>cl.includes(r.clase)));
+ const by={};GRP.forEach(x=>{by[x[0]]=g(x[1])});
+ const prod=by['Fabricación normal']+by['Cambios de alcance']+by['Montaje de línea'];
+ return{nd,tot,prod,pct:tot>0?prod/tot*100:null,by,pers:new Set(nd.map(r=>r.tec)).size}}
+function prodPrevRows(){
+ const f=U.f;let d=f.desde,h=f.hasta;
+ if(!d&&+f.per){d=addDays(today(),-(+f.per)+1);h=today()}
+ if(!d||f.sem||f.mes)return null;
+ const n=daysB(d,h||today())+1,keep=U.f;
+ U.f={...keep,per:'0',desde:addDays(d,-n),hasta:addDays(d,-1),sem:'',mes:''};
+ try{return filt(live())}finally{U.f=keep}}
+function prodWeeks(rn){
+ const g={};rn.filter(r=>r.clase!=='aus').forEach(r=>{const w=wk(r.fecha),o=g[w]=g[w]||{t:0,p:0},h=+r.horas||0;o.t+=h;if(esProdH(r))o.p+=h});
+ return Object.keys(g).sort().slice(-8).map(w=>({w:w.slice(5),pct:g[w].t>0?g[w].p/g[w].t*100:null}))}
+function prodAreas(P){
+ const g={};P.nd.forEach(r=>{const a=r.area||'Sin área',o=g[a]=g[a]||{k:a,t:0,p:0},h=+r.horas||0;o.t+=h;if(esProdH(r))o.p+=h});
+ return Object.values(g).filter(o=>o.t>0).map(o=>({k:o.k,pct:o.p/o.t*100,perd:o.t-o.p,t:o.t})).sort((a,b)=>a.pct-b.pct)}
+function prodLineas(P,cost){
+ const g={};P.nd.filter(r=>r.clase==='montaje').forEach(r=>{const l=r.linea||'Sin línea';(g[l]=g[l]||[]).push(r)});
+ return Object.entries(g).map(([k,a])=>({k,h:sum(a),c:cost?costOf(a).c:null,pc:P.tot>0?sum(a)/P.tot*100:0})).sort((x,y)=>y.h-x.h)}
+function prodImpact(P,meta,avg){
+ const need=P.tot*meta/100,gap=Math.max(0,need-P.prod),perPt=P.tot/100,hpp=P.pers?P.tot/P.pers:0;
+ return{need,gap,perPt,tec:hpp>0?gap/hpp:0,hpp,money:avg>0?gap*avg:null,perPtMoney:avg>0?perPt*avg:null}}
+function prodCost(P){
+ const all=costOf(P.nd),rows=GRP.map(x=>{const a=P.nd.filter(r=>x[1].includes(r.clase));return{k:x[0],h:sum(a),c:costOf(a).c}}).filter(x=>x.h>0);
+ const ineff=['Retrabajo','Esperas / improductivo','No planificado'].reduce((s,k)=>s+((rows.find(x=>x.k===k)||{}).c||0),0);
+ return{avg:all.avg,sin:all.sin,total:all.c,rows,ineff}}
+/* ---- eficiencia (HH ganadas ÷ HH reales) por proyecto ---- */
+function effCalc(K){
+ const f=U.f,idx=new Map();
+ K.rn.forEach(r=>{if(!r.proy||!r.macro||!isProd(r))return;const k=r.proy+'|'+r.macro;let a=idx.get(k);if(!a)idx.set(k,a=[]);a.push(r)});
+ const allp=new Map();K.rn.filter(r=>r.proy&&r.clase!=='aus').forEach(r=>{let a=allp.get(r.proy);if(!a)allp.set(r.proy,a=[]);a.push(r)});
+ const rows=[],sinExp=[],T={bac:0,ev:0,real:0,alc:0,ret:0};
+ K.P.forEach(p=>{const ex=(p.exp&&p.exp.et)||{},cer=(p.exp&&p.exp.cerradas)||[];
+  const o={num:p.num,cliente:p.cliente||'',estado:p.estado,bac:0,ev:0,real:0,alc:0,ret:0};
+  ETAPAS.forEach(e=>{if(f.macro&&f.macro!==e)return;const x=+ex[e]||0,rr=idx.get(p.num+'|'+e)||[],al=sum(rr.filter(r=>r.clase==='alcance')),re=sum(rr)-al;
+   o.bac+=x;o.real+=re;o.alc+=al;o.ret+=sum(rr.filter(r=>r.clase==='retrabajo'));o.ev+=cer.includes(e)?x:Math.min(re,x)});
+  const pa=allp.get(p.num)||[],pt=sum(pa);o.prodP=pt>0?sum(pa.filter(r=>r.clase==='normal'||r.clase==='alcance'))/pt*100:null;o.retP=pt>0?o.ret/pt*100:null;
+  if(!(o.bac>0)){if(o.real+o.alc>0&&p.estado==='Activo')sinExp.push(p);return}
+  o.ieo=o.real>0?o.ev/o.real:null;o.alcP=o.alc/o.bac*100;
+  rows.push(o);['bac','ev','real','alc','ret'].forEach(k=>{T[k]+=o[k]})});
+ T.ieo=T.real>0?T.ev/T.real:null;
+ rows.sort((a,b)=>(a.ieo==null)-(b.ieo==null)||(a.ieo||0)-(b.ieo||0));
+ return{rows,T,sinExp,hay:rows.length>0&&T.real>0,alertas:rows.filter(o=>o.alcP>umbAlc()&&o.alc>0).sort((a,b)=>b.alcP-a.alcP)}}
+/* ---- todo junto (panel, ventana e informe usan lo mismo) ---- */
+function prodAll(K){
+ K=K||kpis();const meta=metaProd(),P=prodCalc(K.rs),pv=prodPrevRows(),Pp=pv?prodCalc(pv):null,E=effCalc(K);
+ const cost=(calcCan()&&calcHas()&&P.tot>0)?prodCost(P):null,I=prodImpact(P,meta,cost?cost.avg:0);
+ return{K,meta,P,Pp,E,cost,I,delta:(Pp&&Pp.pct!=null&&P.pct!=null)?P.pct-Pp.pct:null,weeks:prodWeeks(K.rn),areas:prodAreas(P),lineas:prodLineas(P,!!cost)}}
+function prodLoss(X){const P=X.P;return GRP.filter(x=>!['Fabricación normal','Cambios de alcance','Montaje de línea'].includes(x[0])).map(x=>({k:x[0],h:P.by[x[0]]||0,pts:P.tot>0?(P.by[x[0]]||0)/P.tot*100:0})).filter(x=>x.h>0).sort((a,b)=>b.h-a.h)}
+function prodTexts(X){
+ const{P,E,I,Pp,cost,meta}=X,L=[];
+ if(!(P.tot>0)){L.push('Aún no hay horas registradas en el periodo para calcular la productividad.');return L}
+ L.push(`La planta fue productiva el ${nf(P.pct,0)} % de las horas registradas (${hh(P.prod)} de ${hh(P.tot)} HH fueron fabricación en proyectos o montaje de línea). La meta es ${nf(meta,0)} %.`);
+ if(X.delta!=null)L.push(`Frente al periodo anterior (${nf(Pp.pct,0)} %): ${X.delta>=0?'subió':'bajó'} ${nf(Math.abs(X.delta),1)} puntos.`);
+ const ls=prodLoss(X).slice(0,3);if(ls.length)L.push('Lo que más le quita productividad: '+ls.map(x=>`${x.k.toLowerCase()} (${hh(x.h)} HH, ${nf(x.pts,1)} puntos)`).join('; ')+'.');
+ if(I.gap>0)L.push(`Llegar a la meta equivale a ${hh(I.gap)} HH recuperadas en este periodo (${nf(I.tec,1)} técnicos trabajando todo el periodo)`+(I.money!=null?` y a ${money(I.money)} con los valores de hora digitados.`:'.'));
+ else L.push('La productividad alcanza o supera la meta.');
+ if(E.hay)L.push(`Eficiencia de los proyectos: ${nf(E.T.ieo*100,0)} % (${semE(E.T.ieo).t.toLowerCase()}): se ganaron ${hh(E.T.ev)} HH con ${hh(E.T.real)} HH gastadas. Los cambios de alcance (${hh(E.T.alc)} HH) no se descuentan de la eficiencia.`);
+ if(E.alertas.length)L.push(`Cambios de alcance por encima de ${umbAlc()} % de lo esperado: ${E.alertas.slice(0,4).map(o=>o.num+' ('+nf(o.alcP,0)+' %, '+hh(o.alc)+' HH)').join(', ')}. Documentarlos y validarlos con el cliente para ajustar el presupuesto de HH.`);
+ if(X.lineas.length)L.push('Inversión en montaje de líneas: '+X.lineas.map(l=>`${l.k} ${hh(l.h)} HH`+(l.c!=null?` (${money(l.c)})`:'')).join('; ')+'.');
+ return L}
+/* ---- tarjeta del Panel de gerencia ---- */
+function prodCard(){
+ const X=prodAll(),{P,E,I,meta}=X;
+ if(!(P.tot>0))return '';
+ const col=semP(P.pct,meta),se=semE(E.hay?E.T.ieo:null);
+ const st=(l,v,sub)=>`<div class="fck"><div class="fckl">${l}</div><div class="fckv" style="font-size:26px">${v}</div><div class="fcks">${sub||''}</div></div>`;
+ const bar=`<div style="position:relative;height:12px;background:rgba(148,163,184,.18);border-radius:6px;margin:10px 0 6px"><i style="display:block;height:100%;width:${Math.min(100,P.pct)}%;background:${col};border-radius:6px"></i><span style="position:absolute;top:-5px;left:${meta}%;width:3px;height:22px;background:var(--tx)"></span></div>`;
+ const dl=X.delta==null?`<span class="mut3">Elige 7 o 30 días para comparar con el periodo anterior</span>`:`<span style="color:${X.delta>=0?'#22C55E':'#EF4444'};font-weight:700">${X.delta>=0?'▲ +':'▼ '}${nf(X.delta,1)} pts</span> <span class="mut3">antes ${nf(X.Pp.pct,0)} %</span>`;
+ const wk=X.weeks.filter(w=>w.pct!=null);
+ let svg='';if(wk.length>1){const W=460,H=150,px=i=>30+i*(W-50)/(wk.length-1),py=v=>H-30-Math.min(100,v)/100*(H-50);
+  svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:520px" role="img" aria-label="Productividad por semana"><line x1="30" x2="${W-10}" y1="${py(meta)}" y2="${py(meta)}" stroke="currentColor" stroke-dasharray="4 4" opacity=".5"/><text x="${W-10}" y="${py(meta)+14}" text-anchor="end" font-size="11" fill="currentColor" opacity=".7">meta ${nf(meta,0)} %</text><polyline fill="none" stroke="#38BDF8" stroke-width="3" points="${wk.map((w,i)=>px(i)+','+py(w.pct)).join(' ')}"/>${wk.map((w,i)=>`<circle cx="${px(i)}" cy="${py(w.pct)}" r="4" fill="#38BDF8"/><text x="${px(i)}" y="${py(w.pct)-9}" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">${nf(w.pct,0)}%</text><text x="${px(i)}" y="${H-10}" font-size="11" text-anchor="middle" fill="currentColor" opacity=".7">${esc(w.w)}</text>`).join('')}</svg>`}
+ const ar=X.areas.slice(0,6).map(a=>`<tr><td>${esc(a.k)}</td><td class="num" style="color:${semP(a.pct,meta)};font-weight:700">${nf(a.pct,0)} %</td><td class="num">${nf(a.perd,0)}</td></tr>`).join('');
+ const ls=prodLoss(X),mx=Math.max(1,...ls.map(x=>x.pts)),
+  lb=ls.map(x=>`<div style="display:flex;gap:10px;align-items:center;margin:6px 0"><span style="width:200px;font-size:13px">${x.k}</span><div class="hbt" style="flex:1"><i style="width:${Math.max(3,x.pts/mx*100)}%;background:var(--pri)"></i></div><b style="min-width:150px;text-align:right;font-size:13px">${nf(x.pts,1)} pts · ${nf(x.h,0)} HH</b></div>`).join('');
+ const imp=I.gap>0?`<div class="sub-panel" style="border-color:rgba(56,189,248,.45);background:rgba(56,189,248,.07);margin:14px 0"><div class="ttl">El impacto: si llegamos a la meta del ${nf(meta,0)} %</div><div style="font-size:22px;font-weight:800;color:#38BDF8">${nf(I.gap,0)} HH recuperadas${I.money!=null?` · ${money(I.money)}`:''}</div><p class="mut" style="font-size:13px;margin-top:4px">En este periodo equivale a ${nf(I.tec,1)} técnicos trabajando todo el periodo. Cada punto de productividad vale ${nf(I.perPt,0)} HH${I.perPtMoney!=null?' ≈ '+money(I.perPtMoney):''}.${I.money==null&&calcCan()?' Para verlo en pesos, escribe los valores de hora en la calculadora.':''}</p></div>`
+  :`<div class="sub-panel" style="margin:14px 0"><div class="ttl" style="color:#86efac">${icon('check',16)} La productividad alcanza la meta del ${nf(meta,0)} %</div></div>`;
+ return `<div class="g12"><div class="c12">${card('Productividad de la planta','Qué parte de las horas registradas fue fabricación en proyectos o montaje de línea · respeta los filtros del panel',`
+  <div class="fckg">${st('Productividad',`<span style="color:${col}">${nf(P.pct,0)} %</span>`,`Meta ${nf(meta,0)} % · ${P.pct>=meta?'meta alcanzada':'faltan '+nf(meta-P.pct,0)+' puntos'}`)}${st('Frente al periodo anterior',dl,'')}${st('Eficiencia de proyectos',E.hay?`<span style="color:${se.col}">${nf(E.T.ieo*100,0)} %</span>`:'—',E.hay?badge(se.t,se.c)+' '+hh(E.T.ev)+' HH ganadas con '+hh(E.T.real)+' gastadas':'Aún no hay proyectos con expectativa')}${st('Horas que no fueron productivas',nf(P.tot-P.prod,0)+' HH',nf(100-P.pct,0)+' % de '+nf(P.tot,0)+' HH registradas')}</div>
+  ${bar}${imp}
+  <div class="two" style="gap:18px;align-items:start"><div><div style="font-weight:700;margin-bottom:4px">Tendencia semanal</div>${svg||'<p class="mut3">Se necesitan al menos 2 semanas de datos.</p>'}</div>
+   <div><div style="font-weight:700;margin-bottom:4px">Por área</div>${ar?`<table class="t"><thead><tr><th>Área</th><th class="r">Productividad</th><th class="r">HH no productivas</th></tr></thead><tbody>${ar}</tbody></table>`:'<p class="mut3">Sin datos.</p>'}</div></div>
+  <div style="margin:14px 0 4px"><div style="font-weight:700;margin-bottom:2px">¿Qué le quita productividad?</div>${lb||'<p class="mut3">Nada que reportar.</p>'}</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${btn('Detalle por proyecto y líneas','prodOpen','data-v="det"','pri')}${calcCan()?btn('Calculadora de costos','prodOpen','data-v="calc"'):''}${can(['Gerencia'])?btn('Fijar meta','metaOpen','','ghost'):''}</div>`)}</div></div>`}
+/* ---- ventana: detalle y calculadora ---- */
+function prodOpen(tab){CALC.tab=tab==='calc'&&calcCan()?'calc':'det';M={type:'prod'};prodRender()}
+function prodRender(){
+ const X=prodAll(),tabs=`<div class="tabs" style="margin-bottom:14px"><button class="${CALC.tab==='det'?'on':''}" data-act="prodTab" data-v="det">Detalle</button>${calcCan()?`<button class="${CALC.tab==='calc'?'on':''}" data-act="prodTab" data-v="calc">Calculadora de costos</button>`:''}</div>`;
+ const sc=$('#modal .mbox'),y=sc?sc.scrollTop:0;
+ openModal(mh('Productividad y eficiencia')+`<p class="mut" style="margin:-6px 0 12px">Periodo y filtros del panel. Productividad = (HH de proyectos y de montaje de línea) ÷ HH registradas, sin ausencias.</p>`+tabs+(CALC.tab==='calc'&&calcCan()?calcBody(X):detBody(X)),'xl');
+ const nb=$('#modal .mbox');if(nb&&y)nb.scrollTop=y}
+function detBody(X){
+ const{E,P,meta}=X,tx=prodTexts(X);
+ const rows=E.rows.map(o=>{const s=semE(o.ieo);return `<tr><td class="ttl">${esc(o.num)}</td><td class="r" style="color:${s.col};font-weight:700">${o.ieo==null?'—':nf(o.ieo*100,0)+' %'}</td><td class="r">${o.prodP==null?'—':nf(o.prodP,0)+' %'}</td><td class="r">${o.retP==null?'—':nf(o.retP,0)+' %'}</td><td class="r"${o.alcP>umbAlc()&&o.alc>0?' style="color:#F59E0B;font-weight:700"':''}>${nf(o.alc,0)} HH · ${nf(o.alcP,0)} %</td><td class="r">${nf(o.ev,0)} / ${nf(o.real,0)}</td></tr>`}).join('');
+ const lin=X.lineas.length?`<table class="t"><thead><tr><th>Línea</th><th class="r">HH</th><th class="r">% de las HH registradas</th>${X.cost?'<th class="r">Costo</th>':''}</tr></thead><tbody>${X.lineas.map(l=>`<tr><td class="ttl">${esc(l.k)}</td><td class="num">${nf(l.h,1)}</td><td class="num">${nf(l.pc,1)} %</td>${X.cost?`<td class="num">${money(l.c)}</td>`:''}</tr>`).join('')}</tbody></table>`:'<p class="mut3">No hay horas de montaje de línea en este periodo.</p>';
+ return `${kvLect(tx.map(esc),'Lectura')}
+ ${kvKh('Cómo se calcula','')}<ul class="mut" style="padding-left:18px;line-height:1.8;margin:0 0 14px"><li><b style="color:var(--tx)">Productivas:</b> fabricación normal y cambios de alcance en proyectos, más montaje de línea.</li><li><b style="color:var(--tx)">Contraste:</b> retrabajo, esperas, no planificado, apoyo, mantenimiento, capacitación, inspección y almacén.</li><li><b style="color:var(--tx)">Eficiencia:</b> una etapa cerrada gana todas sus HH esperadas; una abierta gana lo consumido hasta su expectativa. Eficiencia = HH ganadas ÷ HH reales (95 % o más eficiente, 85 a 95 % en riesgo, menos de 85 % ineficiente).</li><li><b style="color:var(--tx)">Cambios de alcance:</b> son productivos y no bajan la eficiencia. Si pasan de ${umbAlc()} % de lo esperado de un proyecto se marcan para validarlos con el cliente.</li></ul>
+ ${kvKh('Inversión en montaje de líneas','HH de «Montaje de línea» por línea en el periodo')}${lin}
+ ${kvKh('Por proyecto','Acumulado de cada proyecto (no depende del filtro de fechas)')}${rows?`<div class="tw"><table class="t"><thead><tr><th>Proyecto</th><th class="r">Eficiencia</th><th class="r">Productividad</th><th class="r">Retrabajo</th><th class="r">Cambios de alcance</th><th class="r">HH ganadas / reales</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<p class="mut3">Aún no hay proyectos con expectativa y horas.</p>'}
+ ${E.sinExp.length?`<p class="mut3" style="margin-top:8px">Proyectos activos con horas pero sin expectativa (no se mide su eficiencia): ${E.sinExp.slice(0,6).map(p=>esc(p.num)).join(', ')}.</p>`:''}`}
+function calcRes(X){
+ const{P,I,meta}=X,C=X.cost;
+ if(!(P.tot>0))return '<p class="mut3">No hay horas en el periodo.</p>';
+ if(!C)return '<p class="mut" style="margin-top:6px">Escribe el valor de la hora de al menos un perfil para ver el costo.</p>';
+ const stp=(a,b)=>`<div class="sub-panel" style="margin-bottom:8px"><b style="color:#38bdf8">${a}</b> ${b}</div>`;
+ return `<div class="fckg" style="margin-top:6px"><div class="fck"><div class="fckl">Costo de las ${nf(P.tot,0)} HH del periodo</div><div class="fckv" style="font-size:24px">${money(C.total)}</div><div class="fcks">valor promedio ${money(C.avg)} por hora</div></div><div class="fck"><div class="fckl">Costo de la ineficiencia</div><div class="fckv" style="font-size:24px;color:#EF4444">${money(C.ineff)}</div><div class="fcks">retrabajo + esperas + no planificado · ${C.total>0?nf(C.ineff/C.total*100,0):0} % del costo</div></div>${I.money!=null?`<div class="fck"><div class="fckl">Impacto de llegar a la meta</div><div class="fckv" style="font-size:24px;color:#38BDF8">${money(I.money)}</div><div class="fcks">${nf(I.gap,0)} HH recuperadas</div></div>`:''}</div>
+ <div class="tw" style="margin-top:12px"><table class="t"><thead><tr><th>Tipo de hora</th><th class="r">HH</th><th class="r">Costo</th></tr></thead><tbody>${C.rows.map(r=>`<tr><td class="ttl">${r.k}</td><td class="num">${nf(r.h,1)}</td><td class="num">${money(r.c)}</td></tr>`).join('')}<tr style="font-weight:700"><td>Total</td><td class="num">${nf(P.tot,1)}</td><td class="num">${money(C.total)}</td></tr></tbody></table></div>
+ ${C.sin>0.5?`<p class="mut3" style="margin-top:6px">${nf(C.sin,0)} HH sin valor de hora no están incluidas en los costos.</p>`:''}
+ <div style="margin-top:14px;font-weight:700">Cómo se llega al impacto</div>
+ ${stp('1.',`Productividad actual: ${nf(P.prod,0)} ÷ ${nf(P.tot,0)} = <b>${nf(P.pct,0)} %</b>`)}
+ ${stp('2.',`Meta ${nf(meta,0)} %: ${nf(P.tot,0)} × ${nf(meta,0)} % = ${nf(I.need,0)} HH deberían ser productivas; hoy son ${nf(P.prod,0)} → faltan <b>${nf(I.gap,0)} HH</b> (cada punto vale ${nf(I.perPt,0)} HH)`)}
+ ${I.money!=null?stp('3.',`En pesos: ${nf(I.gap,0)} HH × valor promedio de la hora ${money(C.avg)} = <b>${money(I.money)}</b>`):''}
+ ${stp(I.money!=null?'4.':'3.',`En personas: ${nf(I.gap,0)} HH ÷ ${nf(I.hpp,0)} HH que trabajó en promedio cada una de las ${P.pers} personas con horas = <b>${nf(I.tec,1)} técnicos</b> trabajando todo el periodo`)}`}
+function calcBody(X){
+ const tm=S.tecnicos.filter(t=>t.activo!==false),roles=[...new Set(tm.map(t=>t.rol||rolDe(t.area)))].sort();
+ const inp=(k,n)=>`<div class="fld" style="margin:0"><label>Valor hora ${esc(k)} <span class="mut3">· ${n} persona${n===1?'':'s'}</span></label><div style="display:flex;gap:8px;align-items:center"><input class="inp" inputmode="numeric" data-tar="${esc(k)}" value="${CALC.perfil[k]>0?CALC.perfil[k]:''}" placeholder="Ej. 25000"><span class="tarf mut3" style="min-width:90px">${CALC.perfil[k]>0?money(CALC.perfil[k])+'/h':''}</span></div></div>`;
+ return `<p class="mut" style="margin:0 0 12px">Escribe el valor de la hora de cada perfil y verás cuánto cuestan las horas del periodo. <b>No se guarda nada:</b> al cerrar o recargar, los valores se borran.</p>
+ <div class="two" style="gap:10px;margin-bottom:12px">${roles.map(r=>inp(r,tm.filter(t=>(t.rol||rolDe(t.area))===r).length)).join('')}</div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px"><button class="btn ${CALC.inc?'':'ghost'}" data-act="calcInc">${CALC.inc?icon('check',15)+' ':''}Incluir costos en el informe</button><span class="mut3">Si un perfil queda vacío, sus horas salen como «sin valor».</span></div>
+ <div id="calcRes">${calcRes(X)}</div>`}
+function calcInput(t){
+ const k=t.dataset.tar,v=Math.max(0,parseInt(String(t.value).replace(/\D/g,''),10)||0);
+ if(v>0)CALC.perfil[k]=v;else delete CALC.perfil[k];
+ const s=t.parentElement.querySelector('.tarf');if(s)s.textContent=v?money(v)+'/h':'';
+ clearTimeout(CALC.tm);CALC.tm=setTimeout(()=>{const el=$('#calcRes');if(!el)return;el.innerHTML=calcRes(prodAll())},250)}
+/* ---- meta ---- */
+function metaOpen(){
+ M={type:'meta'};openModal(mh('Meta de productividad')+`<p class="mut" style="margin-bottom:12px">La meta es el porcentaje de las horas registradas que debería ser productivo (fabricación en proyectos y montaje de línea).</p>
+ <div class="two">${fld('Meta de productividad (%)',`<input class="inp" id="mp_meta" type="number" min="1" max="100" value="${metaProd()}">`)}${fld('Alerta de cambios de alcance (% de lo esperado del proyecto)',`<input class="inp" id="mp_umb" type="number" min="1" max="100" value="${umbAlc()}">`)}</div>${mf('Guardar','metaSave')}`)}
+function metaSave(){
+ const m=Math.round(+val('mp_meta')),u=Math.round(+val('mp_umb'));
+ if(!(m>=1&&m<=100)||!(u>=1&&u<=100)){toast('Escribe valores entre 1 y 100.','er');return}
+ if(m!==metaProd())logH('Meta de productividad',metaProd()+' %',m+' %','Panel');if(u!==umbAlc())logH('Alerta de cambios de alcance',umbAlc()+' %',u+' %','Panel');
+ S.settings.metaProd=m;S.settings.umbAlc=u;save();closeModal();renderAll(true);toast('Meta guardada','ok')}
+
 function repBuild(){
  const K=kpis(),D=fcData(),f=U.f,rs=K.rs,T=D.T,np=+f.per,t0=today(),ds=rs.map(r=>r.fecha).sort();
  const scope={per:(f.desde||f.hasta)?'Rango elegido':(!f.per||f.per==='0')?'Todo el histórico':'Últimos '+f.per+' días',proy:f.proy?'Proyecto '+f.proy:'Todos los proyectos (activos y cerrados)',desde:ds[0]||'',hasta:ds[ds.length-1]||'',n:rs.length,dias:new Set(ds).size};
@@ -2202,9 +2361,16 @@ function repBuild(){
  const ord={Alta:0,Media:1,Baja:2};Rc.sort((a,b)=>ord[a.p]-ord[b.p]);
  const ctl=[['Horas faltantes',nf(K.falt,0)+' HH',K.falt>0?'Revisar':'OK'],['Horas excedentes',nf(K.exc,0)+' HH',K.exc>0?'Revisar':'OK'],['Registros por validar',String(pend),pend>0?'Revisar':'OK'],['Retrabajo sin causa',String(rsin),rsin?'Revisar':'OK'],['Proyectos activos sin expectativa',String(sinE.length),sinE.length?'Revisar':'OK'],['Proyectos sobre expectativa',String(sob.length),sob.length?'Revisar':'OK'],['Registros con motivo genérico',String(gen.length),gen.length?'Revisar':'OK'],['Alertas críticas abiertas',String(crit),crit?'Revisar':'OK']];
  const kp=[['Horas registradas',hh(T)+' HH',scope.dias+' días con registros','#14205A'],['En proyectos',hh(D.hp)+' HH',nf(T?D.hp/T*100:0,1)+'% del total','#0EA5E9'],['Fuera de proyectos',hh(D.fu)+' HH',nf(pcF,1)+'% del total','#0F766E'],['Retrabajo',hh(ret)+' HH',nf(pcR,1)+'% de las horas','#D97706'],['Desviación vs. expectativa',(K.dev>0?'+':'')+nf(K.dev,0)+' HH',nf(dvp,1)+'% de '+nf(K.exp,0)+' HH','#7C3AED'],['Improductivas',hh(imp)+' HH','esperas, clima, fallas','#DC2626'],['Horas faltantes',nf(K.falt,0)+' HH',nf(K.exc,0)+' HH excedentes','#475569'],['Proyectos activos',String(act.length),sob.length+' sobre expectativa','#16A34A']];
- return{K,D,scope,kp,L,Rc,ctl,pr,et,causas,origs,retP,pers,cv,gap,imp,mant,pT,pR,tot,ret,pcF,pcR,dvp,rs,when:new Date()}}
+ return{K,D,scope,kp,L,Rc,ctl,pr,et,causas,origs,retP,pers,cv,gap,imp,mant,pT,pR,tot,ret,pcF,pcR,dvp,rs,PX:prodAll(K),when:new Date()}}
 const repResumen=R=>`${R.scope.proy} · ${R.scope.per}${R.scope.desde?' · del '+R.scope.desde.split('-').reverse().join('/')+' al '+R.scope.hasta.split('-').reverse().join('/'):''}`;
-function repXlsx(R){const K=R.K,D=R.D,pc=(a,b)=>b?r2(a/b*100):0;
+function repXlsxProd(R){const X=R.PX;if(!X||!(X.P.tot>0))return[];const P=X.P,E=X.E,cs=!!(X.cost&&CALC.inc),out=[];
+ out.push({name:'Productividad',cols:[{h:'Concepto',w:40},{h:'HH',w:14,t:'n'},{h:'% de HH registradas',w:20,t:'n'}],rows:[['Productividad (meta '+X.meta+' %)',r2(P.prod),r2(P.pct)],...GRP.map(g=>[g[0],r2(P.by[g[0]]||0),P.tot?r2((P.by[g[0]]||0)/P.tot*100):0]),['Total HH registradas (sin ausencias)',r2(P.tot),100],['HH recuperadas si se llega a la meta',r2(X.I.gap),'']]});
+ out.push({name:'Eficiencia por proyecto',cols:[{h:'Proyecto',w:12},{h:'Cliente',w:22},{h:'Estado',w:12},{h:'HH esperadas',w:14,t:'n'},{h:'HH ganadas',w:13,t:'n'},{h:'HH reales',w:12,t:'n'},{h:'Eficiencia %',w:14,t:'n'},{h:'Productividad %',w:16,t:'n'},{h:'Retrabajo %',w:13,t:'n'},{h:'HH cambios de alcance',w:20,t:'n'},{h:'Alcance % de lo esperado',w:22,t:'n'}],rows:E.rows.map(o=>[o.num,o.cliente,o.estado,r2(o.bac),r2(o.ev),r2(o.real),o.ieo==null?'':r2(o.ieo*100),o.prodP==null?'':r2(o.prodP),o.retP==null?'':r2(o.retP),r2(o.alc),r2(o.alcP)])});
+ out.push({name:'Montaje de líneas',cols:[{h:'Línea',w:20},{h:'HH',w:12,t:'n'},{h:'% de HH registradas',w:20,t:'n'},...(cs?[{h:'Costo $',w:18,t:'n'}]:[])],rows:X.lineas.map(l=>[l.k,r2(l.h),r2(l.pc),...(cs?[Math.round(l.c)]:[])])});
+ if(cs)out.push({name:'Costos del periodo',cols:[{h:'Tipo de hora',w:34},{h:'HH',w:12,t:'n'},{h:'Costo $',w:20,t:'n'}],rows:[...X.cost.rows.map(r=>[r.k,r2(r.h),Math.round(r.c)]),['Total',r2(P.tot),Math.round(X.cost.total)],['Costo de la ineficiencia','',Math.round(X.cost.ineff)]]});
+ return out}
+function repXlsx(R){const S0=repXlsx0(R),PS=repXlsxProd(R);S0.splice(2,0,...PS);return S0}
+function repXlsx0(R){const K=R.K,D=R.D,pc=(a,b)=>b?r2(a/b*100):0;
  return[
  {name:'Resumen',cols:[{h:'Indicador',w:34},{h:'Valor',w:18},{h:'Detalle',w:40}],rows:[['Informe',repResumen(R),''],['Generado',R.when.toLocaleString('es-CO'),U.name||''],...R.kp.map(k=>[k[0],k[1],k[2]])]},
  {name:'Lectura y decisiones',cols:[{h:'Tipo',w:14},{h:'Prioridad',w:12},{h:'Texto',w:120}],rows:[...R.L.map(t=>['Lectura','',t]),...R.Rc.map(x=>['Decisión sugerida',x.p,x.t])]},
@@ -2258,6 +2424,15 @@ async function repPages(R){
  h2('Lectura del periodo');bullets(R.L);
  h2('Decisiones sugeridas');
  recs.forEach(x=>{const f=F(500,18),ls=wrap(x.t,CW-130,f),bh=Math.max(52,ls.length*27+22);ens(bh+10);c.fillStyle=BG;rr(MX,y,CW,bh,12);c.fill();c.fillStyle=pillC[x.p];rr(MX+14,y+14,86,26,13);c.fill();tx(x.p,MX+57,y+32,F(700,14),'#fff','center');ls.forEach((l,i)=>tx(l,MX+116,y+32+i*27,f,TX));y+=bh+10});
+ if(R.PX&&R.PX.P.tot>0){const X=R.PX,P=X.P,E=X.E,se=semE(E.hay?E.T.ieo:null),cs=!!(X.cost&&CALC.inc);h2('Productividad y eficiencia');
+  kpiG([['Productividad',nf(P.pct,0)+' %','meta '+nf(X.meta,0)+' %',semP(P.pct,X.meta)],['HH no productivas',hh(P.tot-P.prod)+' HH',nf(100-P.pct,0)+' % de '+hh(P.tot)+' HH','#F59E0B'],['Eficiencia de proyectos',E.hay?nf(E.T.ieo*100,0)+' %':'—',E.hay?se.t:'sin expectativa',se.col],['Impacto de llegar a la meta',hh(X.I.gap)+' HH',(cs&&X.I.money!=null?money(X.I.money):nf(X.I.tec,1)+' técnicos'),'#0EA5E9']]);
+  bullets(prodTexts(X));
+  h3('Qué le quita productividad');hbars(prodLoss(X).map(x=>({k:x.k,v:x.h,c:'#38BDF8'})),'#38BDF8');
+  if(X.areas.length){h3('Productividad por área');table([{h:'Área',w:.4,f:r=>r.k,b:1},{h:'Productividad',w:.3,a:'r',f:r=>nf(r.pct,0)+' %'},{h:'HH no productivas',w:.3,a:'r',f:r=>nf(r.perd,0)}],X.areas)}
+  if(X.lineas.length){h3('Inversión en montaje de líneas');table([{h:'Línea',w:.4,f:r=>r.k,b:1},{h:'HH',w:.3,a:'r',f:r=>nf(r.h,1)},{h:cs?'Costo':'% del total',w:.3,a:'r',f:r=>cs?money(r.c):nf(r.pc,1)+' %'}],X.lineas)}
+  if(E.rows.length){h3('Eficiencia por proyecto');table([{h:'Proyecto',w:.16,f:r=>r.num,b:1},{h:'Eficiencia',w:.2,a:'r',f:r=>r.ieo==null?'—':nf(r.ieo*100,0)+' %'},{h:'Productividad',w:.22,a:'r',f:r=>r.prodP==null?'—':nf(r.prodP,0)+' %'},{h:'Retrabajo',w:.18,a:'r',f:r=>r.retP==null?'—':nf(r.retP,0)+' %'},{h:'Alcance',w:.24,a:'r',f:r=>nf(r.alc,0)+' HH · '+nf(r.alcP,0)+' %'}],E.rows)}
+  if(cs){h3('Costo del periodo por tipo de hora');table([{h:'Tipo de hora',w:.5,f:r=>r.k,b:1},{h:'HH',w:.2,a:'r',f:r=>nf(r.h,1)},{h:'Costo',w:.3,a:'r',f:r=>money(r.c)}],X.cost.rows);para('Costos calculados con valores de hora digitados por Gerencia o Auditoría; no sustituyen la contabilidad.',{s:16,c:SB})}
+ }
  h2('Proyectos y expectativa');
  if(R.pr.length){table([{h:'Proyecto',w:.09,f:r=>r.num,b:1},{h:'Cliente',w:.17,f:r=>r.cliente},{h:'Etapa actual',w:.17,f:r=>r.etapa},{h:'Expect.',w:.10,a:'r',f:r=>nf(r.exp,0)},{h:'Real',w:.09,a:'r',f:r=>nf(r.real,0)},{h:'% consumo',w:.10,a:'r',f:r=>r.exp?nf(r.pct,0)+'%':'—',c:r=>r.sem==='er'?'#DC2626':r.sem==='wa'?'#D97706':'#16A34A',b:1},{h:'% tiempo',w:.09,a:'r',f:r=>r.tp==null?'—':nf(r.tp,0)+'%'},{h:'Desv. HH',w:.10,a:'r',f:r=>(r.dev>0?'+':'')+nf(r.dev,0)},{h:'Entrega',w:.09,a:'r',f:r=>r.entrega?dlabel(r.entrega):'—'}],R.pr.slice(0,18));para('% consumo = HH reales / expectativa total. % tiempo = días hábiles transcurridos / días hábiles hasta la entrega. Si el consumo va por delante del tiempo, el proyecto corre riesgo de sobrecosto.',{s:15,c:SB})}else para('No hay proyectos con horas en el periodo.');
  h3('Expectativa vs. real por etapa');if(R.et.length)pair(R.et.map(e=>({k:e.k,exp:e.exp,real:e.real})));else para('Sin etapas con horas o expectativa.');
@@ -2301,7 +2476,7 @@ function pDashboard0(){
   return `<tr><td class="ttl">${esc(a.k)}</td><td class="num">${nf(a.v,1)}</td><td style="min-width:140px"><div style="display:flex;gap:8px;align-items:center"><div class="hbt" style="flex:1"><i style="width:${a.v/T*100}%;background:var(--pri)"></i></div><span class="mut" style="font-size:12px;min-width:38px">${nf(a.v/T*100,1)}%</span></div></td><td class="num">${badge(nf(ret,1)+' HH',ret>0?'wa':'n')}</td><td class="num ${p>=0?'up':'dn'}">${prev?(p>=0?'+':'')+nf(p,1)+'%':'—'}</td></tr>`}).join('');
  const act=K.P.filter(p=>p.estado==='Activo').map(p=>{const pr=K.rn.filter(r=>r.proy===p.num);const real=sum(pr.filter(isProd)),ret=sum(pr.filter(r=>r.clase==='retrabajo')),ex=+(p.exp&&p.exp.total)||0;const s=semaf(real,ex);
   return `<div class="pjr" data-act="fset" data-k="proy" data-v="${p.num}" style="cursor:pointer;padding:10px;border-radius:12px;border:1px solid var(--bd);margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:center"><span><span class="stat" style="--c:${s.col}"></span> <b>${p.num}</b> <span class="mut">${esc(stageOf(p))}</span></span>${badge(ex?nf(real/ex*100,0)+'%':'—',s.c==='er'?'er':s.c==='wa'?'wa':'n')}</div><div class="prog" style="margin:8px 0 6px;height:7px"><i style="width:${ex?Math.min(100,real/ex*100):0}%"></i></div><div style="display:flex;justify-content:space-between;font-size:12px" class="mut"><span>${nf(real,0)} / ${nf(ex,0)} HH</span><span>Retrabajo <b style="color:#fbbf24">${nf(ret,1)}</b></span></div></div>`}).join('');
- return base+`<div class="g12"><div class="c7">${card('Rendimiento por área','HH registradas en el periodo y tendencia frente a los 7 días previos',areas.length?`<div class="tw"><table class="t"><thead><tr><th>Área</th><th class="r">HH registradas</th><th>% del total</th><th class="r">HH retrabajo</th><th class="r">Tendencia</th></tr></thead><tbody>${trs}</tbody></table></div>`:empty())}</div><div class="c5">${card('Proyectos activos','Estado y etapa actual · clic para filtrar',act||empty('Sin proyectos activos'))}</div></div>`;
+ return base+prodCard()+`<div class="g12"><div class="c7">${card('Rendimiento por área','HH registradas en el periodo y tendencia frente a los 7 días previos',areas.length?`<div class="tw"><table class="t"><thead><tr><th>Área</th><th class="r">HH registradas</th><th>% del total</th><th class="r">HH retrabajo</th><th class="r">Tendencia</th></tr></thead><tbody>${trs}</tbody></table></div>`:empty())}</div><div class="c5">${card('Proyectos activos','Estado y etapa actual · clic para filtrar',act||empty('Sin proyectos activos'))}</div></div>`;
 }
 /* ================= Acciones nuevas ================= */
 Object.assign(A,{
@@ -2571,6 +2746,8 @@ function nbRows(){
  nbEnsureIds();const M=nbMaps();const out={};const mk=()=>new Map();
  const st=S.settings||{};
  out.ajustes=mk();['meta','rec','ali','recSab','empresa','url','respaldo'].forEach(k=>{if(st[k]!==undefined&&st[k]!==null&&st[k]!==''){const ck=k==='meta'?'meta_semanal':k==='respaldo'?'ultimo_respaldo':k;out.ajustes.set(ck,nbJ({clave:ck,valor:String(st[k])}))}});
+ if(st.metaProd>0)out.ajustes.set('meta_productividad',nbJ({clave:'meta_productividad',valor:String(st.metaProd)}));
+ if(st.umbAlc>0)out.ajustes.set('umbral_alcance',nbJ({clave:'umbral_alcance',valor:String(st.umbAlc)}));
  if(Array.isArray(st.caps)&&st.caps.length)out.ajustes.set('capacidades',nbJ({clave:'capacidades',valor:st.caps.join(',')}));
  if(Array.isArray(st.lineas)&&st.lineas.length)out.ajustes.set('lineas',nbJ({clave:'lineas',valor:st.lineas.join('|')}));
  if(Array.isArray(st.frases)&&st.frases.length)out.ajustes.set('frases',nbJ({clave:'frases',valor:st.frases.join('|')}));
@@ -2635,7 +2812,7 @@ async function nbLoad(){
   rg=await nbSel('registros_hh','select=*&order=registrado_en.asc,id.asc'+(since?'&fecha=gte.'+since:''));
   if(NB.perfil&&(NB.perfil.rol==='Gerencia'||NB.perfil.rol==='Auditoría')){[his,per,pnh]=await Promise.all([safe(nbSel('historial','select=*&order=id.desc'),[]).then(x=>x.slice(0,400)),safe(nbSel('perfiles'),[]),safe(nbSel('perfil_nombres','select=*&order=desde.asc'),[])]);NB.perfs=per;NB.pnh=pnh}}
  const st={...NB_DEF,webapp:'',url:'',empresa:'LATAMKS S.A.S.'};
- aj.forEach(a=>{if(a.clave==='meta_semanal')st.meta=+a.valor;else if(['rec','ali','recSab'].includes(a.clave))st[a.clave]=+a.valor;else if(['empresa','url'].includes(a.clave))st[a.clave]=a.valor;else if(a.clave==='ultimo_respaldo')st.respaldo=a.valor;else if(a.clave==='capacidades')st.caps=String(a.valor).split(',').map(Number).filter(n=>n>0);else if(a.clave==='frases')st.frases=String(a.valor).split('|').filter(Boolean);else if(a.clave==='msgsem'){try{st.msgsem=JSON.parse(a.valor)||{}}catch(_){st.msgsem={}}}else if(a.clave==='lineas')st.lineas=String(a.valor).split('|').filter(Boolean)});
+ aj.forEach(a=>{if(a.clave==='meta_semanal')st.meta=+a.valor;else if(['rec','ali','recSab'].includes(a.clave))st[a.clave]=+a.valor;else if(['empresa','url'].includes(a.clave))st[a.clave]=a.valor;else if(a.clave==='ultimo_respaldo')st.respaldo=a.valor;else if(a.clave==='capacidades')st.caps=String(a.valor).split(',').map(Number).filter(n=>n>0);else if(a.clave==='frases')st.frases=String(a.valor).split('|').filter(Boolean);else if(a.clave==='msgsem'){try{st.msgsem=JSON.parse(a.valor)||{}}catch(_){st.msgsem={}}}else if(a.clave==='meta_productividad')st.metaProd=+a.valor;else if(a.clave==='umbral_alcance')st.umbAlc=+a.valor;else if(a.clave==='lineas')st.lineas=String(a.valor).split('|').filter(Boolean)});
  const tmap={},turnoByName={};
  const turnos=tu.map((t,i)=>{const id='T'+(i+1);tmap[t.id]=id;turnoByName[t.nombre]=turnoByName[t.nombre]||id;const dias={};for(let k=0;k<7;k++)dias[k]=mkDia(0,'07:30','17:00',0,0);
   td.filter(d=>d.turno_id===t.id).forEach(d=>{dias[d.dia]=mkDia(d.activo?1:0,String(d.hora_inicio||'07:30').slice(0,5),String(d.hora_fin||'17:00').slice(0,5),d.receso_min||0,d.alimentacion_min||0)});
