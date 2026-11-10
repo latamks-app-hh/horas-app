@@ -1121,14 +1121,8 @@ function pDashboardBase(){
  const td=trendData(rs);
  const tseg=`<div class="seg"><button class="${U.trend==='dia'?'on':''}" data-act="trend" data-v="dia">Día</button><button class="${U.trend==='sem'?'on':''}" data-act="trend" data-v="sem">Semana</button></div>`;
  const AL=alerts().filter(a=>a.n!=='i').slice(0,4);
- return filterBar()+kp+
- `<div class="g12"><div class="c8">${curveCard}</div><div class="c4">${sumCard}</div></div>
- <div class="g12"><div class="c6">${card('Expectativa vs. realidad por proyecto','Acumulado del proyecto · clic para filtrar',pairRows(perProj))}</div><div class="c6">${card('Expectativa vs. realidad por macroetapa','Etapas terminadas muestran desviación; abiertas, consumo',pairRows(perEt))}</div></div>
- <div class="g12"><div class="c4">${card('Consumo de HH por etapa','HH de producción · acumulado del proyecto',donut(cons,[nf(K.real,0),'HH producción']))}</div><div class="c8">${card('HH normales vs. retrabajo por etapa','Dónde se generan horas adicionales',stackBars(nr,[{k:'normal',n:'Fabricación normal',c:'#38BDF8'},{k:'retrabajo',n:'Retrabajo',c:'#F59E0B'}]))}</div></div>
- <div class="g12"><div class="c4">${card('Retrabajo por causa','Fuentes de horas adicionales',hbars(causas.slice(0,8)))}</div><div class="c4">${card('Retrabajo por origen','¿Dónde se originó?',donut(orig,[nf(K.ret,0),'HH retrabajo']))}</div><div class="c4">${card('Horas improductivas por causa','Esperas y tiempo no productivo',hbars(imp.slice(0,8)))}</div></div>
- <div class="g12"><div class="c5">${card('HH por proyecto','Todas las HH de producción',hbars(hp))}</div><div class="c7">${card('HH por actividad','Las 10 actividades que más HH consumen',hbars(ha))}</div></div>
- <div class="g12"><div class="c8">${card('Tendencia de HH','Fabricación, retrabajo, improductivas y otras',stackBars(td,[{k:'normal',n:'Fabricación normal',c:'#38BDF8'},{k:'retrabajo',n:'Retrabajo',c:'#F59E0B'},{k:'improd',n:'Improductivas',c:'#EF4444'},{k:'otros',n:'Apoyo y otras',c:'#5F7A99'}]),{acts:tseg})}</div>
- <div class="c4">${card('Alertas que requieren atención',AL.length+' principales',AL.length?AL.map(alertRow).join(''):`<div class="empty">${icon('check',26)}<p>Sin alertas pendientes</p></div>`,{acts:btn('Ver todas','go','data-p="alertas"','sm ghost')})}</div></div>`;
+  const SEC={res:kp+`<div class="g12"><div class="c8">${curveCard}</div><div class="c4">${sumCard}</div></div>`,eta:`<div class="g12"><div class="c6">${card('Expectativa vs. realidad por proyecto','Acumulado del proyecto · clic para filtrar',pairRows(perProj))}</div><div class="c6">${card('Expectativa vs. realidad por macroetapa','Etapas terminadas muestran desviación; abiertas, consumo',pairRows(perEt))}</div></div><div class="g12"><div class="c4">${card('Consumo de HH por etapa','HH de producción · acumulado del proyecto',donut(cons,[nf(K.real,0),'HH producción']))}</div><div class="c8">${card('HH normales vs. retrabajo por etapa','Dónde se generan horas adicionales',stackBars(nr,[{k:'normal',n:'Fabricación normal',c:'#38BDF8'},{k:'retrabajo',n:'Retrabajo',c:'#F59E0B'}]))}</div></div>`,ret:`<div class="g12"><div class="c4">${card('Retrabajo por causa','Fuentes de horas adicionales',hbars(causas.slice(0,8)))}</div><div class="c4">${card('Retrabajo por origen','¿Dónde se originó?',donut(orig,[nf(K.ret,0),'HH retrabajo']))}</div><div class="c4">${card('Horas improductivas por causa','Esperas y tiempo no productivo',hbars(imp.slice(0,8)))}</div></div>`,hh:`<div class="g12"><div class="c5">${card('HH por proyecto','Todas las HH de producción',hbars(hp))}</div><div class="c7">${card('HH por actividad','Las 10 actividades que más HH consumen',hbars(ha))}</div></div><div class="g12"><div class="c8">${card('Tendencia de HH','Fabricación, retrabajo, improductivas y otras',stackBars(td,[{k:'normal',n:'Fabricación normal',c:'#38BDF8'},{k:'retrabajo',n:'Retrabajo',c:'#F59E0B'},{k:'improd',n:'Improductivas',c:'#EF4444'},{k:'otros',n:'Apoyo y otras',c:'#5F7A99'}]),{acts:tseg})}</div>
+ <div class="c4">${card('Alertas que requieren atención',AL.length+' principales',AL.length?AL.map(alertRow).join(''):`<div class="empty">${icon('check',26)}<p>Sin alertas pendientes</p></div>`,{acts:btn('Ver todas','go','data-p="alertas"','sm ghost')})}</div></div>`};return{fb:filterBar(),SEC};
 }
 /* ================= Comparación entre etapas ================= */
 function pEtapas(){
@@ -1225,7 +1219,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.9.1';
+const APP_VER='4.9.2';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1328,11 +1322,11 @@ async function fotosZip(){
 const AU='Auditoría',G_=['Gerencia'],GS=['Gerencia','Supervisor',AU],GSC=['Gerencia','Supervisor','Calidad',AU],GA=['Gerencia',AU];
 const NAV=[
 {g:'Operación',items:[['captura','Captura rápida','clock',['Gerencia','Supervisor','Técnico',AU]],['faltantes','Horas faltantes','warn',['Gerencia','Supervisor','Técnico',AU]],['supervisor','Panel de supervisor','users',GS],['registros','Registros','db',GSC],['alertas','Alertas','bell',GS]]},
-{g:'Análisis',items:[['dashboard','Panel de Gerencia','dash',GS],['etapas','Comparar etapas','layers',GS],['retrabajo','Retrabajo','redo',GSC],['auditoria','Auditoría','search',['Gerencia',AU]]]},
+{g:'Análisis',items:[['dashboard','Panel de Gerencia','dash',GS],['etapas','Comparar etapas','layers',GS],['retrabajo','Retrabajo','redo',GSC],['auditoria','Auditoría','search',['Gerencia',AU]],['hist','Histórico anterior','cal',GA]]},
 {g:'Gestión',items:[['proyectos','Proyectos','folder',GSC],['expectativas','Expectativas','sliders',GS],['tecnicos','Técnicos','user',GA],['turnos','Turnos','cal',GS],['hallazgos','Hallazgos','flag',GSC],['liberaciones','Liberaciones','check',GSC],['calidad','Gestión de Calidad','trend',GSC]]},
 {g:'Sistema',items:[['respaldo','Copia de seguridad','down',['Gerencia','Supervisor','Calidad']],['catalogo','Etapas y actividades','layers',GA],['listas','Otro tiempo y líneas','sliders',GA],['ajustes','Ajustes y QR','qr',G_]]}];
 const ALLN=NAV.flatMap(g=>g.items.map(i=>({id:i[0],t:i[1],ic:i[2],r:i[3],g:g.g})));
-const PAGES={auditoria:pAuditoria,faltantes:pFaltantes,expectativas:pExpectativas,captura:pCaptura,supervisor:pSupervisor,registros:pRegistros,alertas:pAlertas,respaldo:pRespaldo,dashboard:pDashboard,etapas:pEtapas,retrabajo:pRetrabajo,proyectos:pProyectos,tecnicos:pTecnicos,turnos:pTurnos,hallazgos:pHallazgos,ajustes:pAjustes,catalogo:pCatalogo,listas:pListas};
+const PAGES={auditoria:pAuditoria,faltantes:pFaltantes,expectativas:pExpectativas,captura:pCaptura,supervisor:pSupervisor,registros:pRegistros,alertas:pAlertas,respaldo:pRespaldo,dashboard:pDashboard,etapas:pEtapas,retrabajo:pRetrabajo,proyectos:pProyectos,tecnicos:pTecnicos,turnos:pTurnos,hallazgos:pHallazgos,ajustes:pAjustes,catalogo:pCatalogo,listas:pListas,hist:pHist};
 const DEFP={Gerencia:'dashboard',Supervisor:'supervisor','Técnico':'captura',Calidad:'hallazgos','Auditoría':'dashboard'};
 const app=()=>$('#app');
 const isMob=()=>innerWidth<=820;
@@ -1841,7 +1835,7 @@ async function sync(silent){const url=S.settings.webapp;if(!url){toast('Primero 
 /* ================= Acciones ================= */
 const A={
  go:t=>go(t.dataset.p),none:()=>{},
- prodOpen:t=>prodOpen(t.dataset.v),prodTab:t=>{CALC.tab=t.dataset.v;prodRender()},calcInc:()=>{CALC.inc=!CALC.inc;prodRender()},metaOpen:()=>metaOpen(),metaSave:()=>metaSave(),
+ prodOpen:t=>prodOpen(t.dataset.v),stab:t=>{U[t.dataset.k]=t.dataset.v;renderPage(true)},histDl:t=>histDl(t.dataset.v),histRetry:()=>{HIST.err='';HIST.rows=null;histLoad(true)},histTpl:()=>histTemplate(),histSave:()=>histSave(),histDiscard:()=>{HIST.imp=null;renderPage(true)},histDel:t=>histDelAsk(t.dataset.l),histDelDo:()=>histDelDo(),prodDl:t=>prodDl(t.dataset.v),prodTab:t=>{CALC.tab=t.dataset.v;prodRender()},calcInc:()=>{CALC.inc=!CALC.inc;prodRender()},metaOpen:()=>metaOpen(),metaSave:()=>metaSave(),
  drawer:()=>app().classList.toggle('open'),closeDrawer:()=>app().classList.remove('open'),
  collapse:()=>{if(isMob()){app().classList.remove('open');return}U.collapsed=!U.collapsed;saveUI();app().classList.toggle('col',U.collapsed);renderSide()},
  menu:()=>{U.menu=!U.menu;renderSide()},
@@ -1884,7 +1878,7 @@ const A={
  delDemo:()=>nbNo(),_delDemo:()=>confirmM('Eliminar datos de demostración','Se eliminarán los técnicos, proyectos, registros y hallazgos de demostración. Lo que hayas creado tú se conserva. Esta acción no se puede deshacer.','Eliminar datos demo',()=>{S.tecnicos=S.tecnicos.filter(x=>!x.demo);S.proyectos=S.proyectos.filter(x=>!x.demo);S.registros=S.registros.filter(x=>!x.demo);S.hallazgos=S.hallazgos.filter(x=>!x.demo);S.demo=false;U.c=newC();U.f=newF();save();closeModal();renderAll();toast('Datos demo eliminados','ok')},1),
  loadDemo:()=>nbNo(),_loadDemo:()=>confirmM('Cargar datos de demostración','Esto reemplaza los técnicos, proyectos y registros actuales por datos de demostración.','Reemplazar y cargar',()=>{const st=S.settings,tu=S.turnos;S=baseState();S.settings=st;S.turnos=tu;genDemo();U.c=newC();save();closeModal();renderAll();toast('Datos demo cargados','ok')},1),
  kpiOpen:t=>{if(String(t.dataset.k).startsWith('fc:'))fcReg(t.dataset.k);const f=KV[t.dataset.k];if(f){M={type:'kv',k:t.dataset.k};openModal(f(),'xl')}},kvXls:t=>{try{kvXls(t.dataset.k)}catch(e){toast('No se pudo crear el Excel: '+e.message,'er')}},
- mClose:()=>closeModal(),mOk:()=>{const cb=M.cb;if(cb)cb()}
+ mClose:()=>{const pm=M&&M.type==='prod';closeModal();if(pm)renderPage(true)},mOk:()=>{const cb=M.cb;if(cb)cb()}
 };
 function setPath(p,v){
  if(p.includes('.')){const [a,b]=p.split('.');U[a][b]=v;if(p==='c.macro')U.c.act='';if(p==='f.macro')U.f.act='';if(p==='c.origen')U.c.persona='';if(p==='f.per'){U.f.desde=''}}
@@ -2241,29 +2235,51 @@ function prodTexts(X){
  if(E.alertas.length)L.push(`Cambios de alcance por encima de ${umbAlc()} % de lo esperado: ${E.alertas.slice(0,4).map(o=>o.num+' ('+nf(o.alcP,0)+' %, '+hh(o.alc)+' HH)').join(', ')}. Documentarlos y validarlos con el cliente para ajustar el presupuesto de HH.`);
  if(X.lineas.length)L.push('Inversión en montaje de líneas: '+X.lineas.map(l=>`${l.k} ${hh(l.h)} HH`+(l.c!=null?` (${money(l.c)})`:'')).join('; ')+'.');
  return L}
-/* ---- tarjeta del Panel de gerencia ---- */
-function prodCard(){
+/* ---- pestaña «Productividad» del Panel de gerencia (v4.9.2) ---- */
+const subNav=(k,items,cur)=>`<div class="tabs" style="margin:0 0 14px;flex-wrap:wrap">${items.map(([v,l])=>`<button class="${v===cur?'on':''}" data-act="stab" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
+function prodSvg(X){
+ const wk=X.weeks.filter(w=>w.pct!=null),meta=X.meta;
+ if(wk.length<2)return '<p class="mut3">Se necesitan al menos 2 semanas de datos.</p>';
+ const W=760,H=250,L=44,B=H-34,T=26,px=i=>L+i*(W-L-24)/(wk.length-1),py=v=>B-Math.min(100,Math.max(0,v))/100*(B-T);
+ const grid=[0,25,50,75,100].map(v=>`<line x1="${L}" x2="${W-14}" y1="${py(v)}" y2="${py(v)}" stroke="currentColor" opacity=".1"/><text x="${L-8}" y="${py(v)+4}" font-size="11" text-anchor="end" fill="currentColor" opacity=".55">${v}%</text>`).join('');
+ return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Productividad por semana">${grid}<line x1="${L}" x2="${W-14}" y1="${py(meta)}" y2="${py(meta)}" stroke="#F59E0B" stroke-width="2" stroke-dasharray="6 5"/><text x="${L+6}" y="${py(meta)+17}" font-size="12" font-weight="700" fill="#F59E0B">Meta ${nf(meta,0)} %</text><polyline fill="none" stroke="#38BDF8" stroke-width="3.5" stroke-linejoin="round" points="${wk.map((w,i)=>px(i)+','+py(w.pct)).join(' ')}"/>${wk.map((w,i)=>`<circle cx="${px(i)}" cy="${py(w.pct)}" r="5" fill="#38BDF8"/><text x="${px(i)}" y="${py(w.pct)-11}" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">${nf(w.pct,0)}%</text><text x="${px(i)}" y="${H-10}" font-size="12" text-anchor="middle" fill="currentColor" opacity=".65">${esc(w.w)}</text>`).join('')}</svg>`}
+function pProdv(){
  const X=prodAll(),{P,E,I,meta}=X;
- if(!(P.tot>0))return '';
+ const top=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin:4px 0 14px"><div><h2 style="font-size:20px;margin:0">Productividad y eficiencia de la planta</h2><p class="mut" style="margin:4px 0 0;max-width:760px">Qué parte de las horas registradas fue fabricación en proyectos o montaje de línea. Respeta los filtros de arriba.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap">${btn(icon('down',16)+' Excel','prodDl','data-v="xls"','ghost')}${btn(icon('down',16)+' PDF','prodDl','data-v="pdf"','ghost')}${calcCan()?btn('Calculadora de costos','prodOpen','data-v="calc"'):''}${can(['Gerencia'])?btn('Fijar meta','metaOpen','','ghost'):''}</div></div>`;
+ if(!(P.tot>0))return filterBar()+top+card('Sin datos','',empty('No hay horas registradas con los filtros actuales'));
  const col=semP(P.pct,meta),se=semE(E.hay?E.T.ieo:null);
- const st=(l,v,sub)=>`<div class="fck"><div class="fckl">${l}</div><div class="fckv" style="font-size:26px">${v}</div><div class="fcks">${sub||''}</div></div>`;
- const bar=`<div style="position:relative;height:12px;background:rgba(148,163,184,.18);border-radius:6px;margin:10px 0 6px"><i style="display:block;height:100%;width:${Math.min(100,P.pct)}%;background:${col};border-radius:6px"></i><span style="position:absolute;top:-5px;left:${meta}%;width:3px;height:22px;background:var(--tx)"></span></div>`;
- const dl=X.delta==null?`<span class="mut3">Elige 7 o 30 días para comparar con el periodo anterior</span>`:`<span style="color:${X.delta>=0?'#22C55E':'#EF4444'};font-weight:700">${X.delta>=0?'▲ +':'▼ '}${nf(X.delta,1)} pts</span> <span class="mut3">antes ${nf(X.Pp.pct,0)} %</span>`;
- const wk=X.weeks.filter(w=>w.pct!=null);
- let svg='';if(wk.length>1){const W=460,H=150,px=i=>30+i*(W-50)/(wk.length-1),py=v=>H-30-Math.min(100,v)/100*(H-50);
-  svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:520px" role="img" aria-label="Productividad por semana"><line x1="30" x2="${W-10}" y1="${py(meta)}" y2="${py(meta)}" stroke="currentColor" stroke-dasharray="4 4" opacity=".5"/><text x="${W-10}" y="${py(meta)+14}" text-anchor="end" font-size="11" fill="currentColor" opacity=".7">meta ${nf(meta,0)} %</text><polyline fill="none" stroke="#38BDF8" stroke-width="3" points="${wk.map((w,i)=>px(i)+','+py(w.pct)).join(' ')}"/>${wk.map((w,i)=>`<circle cx="${px(i)}" cy="${py(w.pct)}" r="4" fill="#38BDF8"/><text x="${px(i)}" y="${py(w.pct)-9}" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">${nf(w.pct,0)}%</text><text x="${px(i)}" y="${H-10}" font-size="11" text-anchor="middle" fill="currentColor" opacity=".7">${esc(w.w)}</text>`).join('')}</svg>`}
- const ar=X.areas.slice(0,6).map(a=>`<tr><td>${esc(a.k)}</td><td class="num" style="color:${semP(a.pct,meta)};font-weight:700">${nf(a.pct,0)} %</td><td class="num">${nf(a.perd,0)}</td></tr>`).join('');
- const ls=prodLoss(X),mx=Math.max(1,...ls.map(x=>x.pts)),
-  lb=ls.map(x=>`<div style="display:flex;gap:10px;align-items:center;margin:6px 0"><span style="width:200px;font-size:13px">${x.k}</span><div class="hbt" style="flex:1"><i style="width:${Math.max(3,x.pts/mx*100)}%;background:var(--pri)"></i></div><b style="min-width:150px;text-align:right;font-size:13px">${nf(x.pts,1)} pts · ${nf(x.h,0)} HH</b></div>`).join('');
- const imp=I.gap>0?`<div class="sub-panel" style="border-color:rgba(56,189,248,.45);background:rgba(56,189,248,.07);margin:14px 0"><div class="ttl">El impacto: si llegamos a la meta del ${nf(meta,0)} %</div><div style="font-size:22px;font-weight:800;color:#38BDF8">${nf(I.gap,0)} HH recuperadas${I.money!=null?` · ${money(I.money)}`:''}</div><p class="mut" style="font-size:13px;margin-top:4px">En este periodo equivale a ${nf(I.tec,1)} técnicos trabajando todo el periodo. Cada punto de productividad vale ${nf(I.perPt,0)} HH${I.perPtMoney!=null?' ≈ '+money(I.perPtMoney):''}.${I.money==null&&calcCan()?' Para verlo en pesos, escribe los valores de hora en la calculadora.':''}</p></div>`
-  :`<div class="sub-panel" style="margin:14px 0"><div class="ttl" style="color:#86efac">${icon('check',16)} La productividad alcanza la meta del ${nf(meta,0)} %</div></div>`;
- return `<div class="g12"><div class="c12">${card('Productividad de la planta','Qué parte de las horas registradas fue fabricación en proyectos o montaje de línea · respeta los filtros del panel',`
-  <div class="fckg">${st('Productividad',`<span style="color:${col}">${nf(P.pct,0)} %</span>`,`Meta ${nf(meta,0)} % · ${P.pct>=meta?'meta alcanzada':'faltan '+nf(meta-P.pct,0)+' puntos'}`)}${st('Frente al periodo anterior',dl,'')}${st('Eficiencia de proyectos',E.hay?`<span style="color:${se.col}">${nf(E.T.ieo*100,0)} %</span>`:'—',E.hay?badge(se.t,se.c)+' '+hh(E.T.ev)+' HH ganadas con '+hh(E.T.real)+' gastadas':'Aún no hay proyectos con expectativa')}${st('Horas que no fueron productivas',nf(P.tot-P.prod,0)+' HH',nf(100-P.pct,0)+' % de '+nf(P.tot,0)+' HH registradas')}</div>
-  ${bar}${imp}
-  <div class="two" style="gap:18px;align-items:start"><div><div style="font-weight:700;margin-bottom:4px">Tendencia semanal</div>${svg||'<p class="mut3">Se necesitan al menos 2 semanas de datos.</p>'}</div>
-   <div><div style="font-weight:700;margin-bottom:4px">Por área</div>${ar?`<table class="t"><thead><tr><th>Área</th><th class="r">Productividad</th><th class="r">HH no productivas</th></tr></thead><tbody>${ar}</tbody></table>`:'<p class="mut3">Sin datos.</p>'}</div></div>
-  <div style="margin:14px 0 4px"><div style="font-weight:700;margin-bottom:2px">¿Qué le quita productividad?</div>${lb||'<p class="mut3">Nada que reportar.</p>'}</div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${btn('Detalle por proyecto y líneas','prodOpen','data-v="det"','pri')}${calcCan()?btn('Calculadora de costos','prodOpen','data-v="calc"'):''}${can(['Gerencia'])?btn('Fijar meta','metaOpen','','ghost'):''}</div>`)}</div></div>`}
+ const ser=f=>dailySeries(X.K.rs,14,f),wp=X.weeks.filter(w=>w.pct!=null).map(w=>w.pct);
+ const hero=(l,ic,v,unit,d,color,series)=>`<div class="c3"><section class="card kpi hero"><div class="k-l">${icon(ic,16)}${l}</div><div class="k-v">${v}<small>${unit}</small></div><div class="k-d">${d}</div>${spark(series,color)}</section></div>`;
+ const dl=X.delta==null?`<span class="mut3">Elige 7 o 30 días arriba para comparar</span>`:`<span class="mut3">antes ${nf(X.Pp.pct,0)} %</span>`;
+ const kp=`<div class="g12">
+  ${hero('Productividad','trend',`<span style="color:${col}">${nf(P.pct,0)}</span>`,'%',`${badge('Meta '+nf(meta,0)+' %',P.pct>=meta?'ok':'wa')}<span>${P.pct>=meta?'meta alcanzada':'faltan '+nf(meta-P.pct,0)+' puntos'}</span>`,col,wp.length>1?wp:[0,P.pct])}
+  ${hero('Frente al periodo anterior','clock',X.delta==null?'—':`<span style="color:${X.delta>=0?'#22C55E':'#EF4444'}">${X.delta>=0?'+':''}${nf(X.delta,1)}</span>`,X.delta==null?'':'pts',dl,'#38BDF8',wp.length>1?wp:[0,P.pct])}
+  ${hero('Eficiencia de proyectos','factory',E.hay?`<span style="color:${se.col}">${nf(E.T.ieo*100,0)}</span>`:'—',E.hay?'%':'',E.hay?`${badge(se.t,se.c)}<span>${nf(E.T.ev,0)} HH ganadas / ${nf(E.T.real,0)} reales</span>`:'<span class="mut3">Sin proyectos con expectativa</span>',se.col,ser(r=>esProdH(r)&&r.clase!=='montaje'))}
+  ${hero('HH no productivas','redo',nf(P.tot-P.prod,0),'HH',`<span>${nf(100-P.pct,0)} % de ${nf(P.tot,0)} HH registradas</span>`,'#F59E0B',ser(r=>r.clase!=='aus'&&!esProdH(r)))}
+ </div>`;
+ const imp=I.gap>0?`<div class="g12"><div class="c12"><section class="card" style="border-color:rgba(56,189,248,.5);background:rgba(56,189,248,.07)"><div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;justify-content:space-between"><div><div class="mut" style="font-weight:600">El impacto: si llegamos a la meta del ${nf(meta,0)} %</div><div style="font-size:32px;font-weight:800;color:#38BDF8;margin:4px 0">${nf(I.gap,0)} HH recuperadas${I.money!=null?` · ${money(I.money)}`:''}</div><div class="mut" style="font-size:13.5px;max-width:720px">En este periodo equivale a ${nf(I.tec,1)} técnicos trabajando todo el periodo. Cada punto de productividad vale ${nf(I.perPt,0)} HH${I.perPtMoney!=null?' ≈ '+money(I.perPtMoney):''}.${I.money==null&&calcCan()?' Para verlo en pesos, escribe los valores de hora en la calculadora.':''}</div></div><div style="flex:1;min-width:280px;max-width:520px"><div style="position:relative;height:14px;background:rgba(148,163,184,.2);border-radius:7px"><i style="display:block;height:100%;width:${Math.min(100,P.pct)}%;background:${col};border-radius:7px"></i><span style="position:absolute;top:-5px;left:${meta}%;width:3px;height:24px;background:var(--tx)"></span></div><div class="mut3" style="display:flex;justify-content:space-between;font-size:12px;margin-top:6px"><span>0 %</span><span>Meta ${nf(meta,0)} %</span><span>100 %</span></div></div></div></section></div></div>`
+  :`<div class="g12"><div class="c12"><section class="card" style="border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.07)"><b style="color:#22C55E">${icon('check',16)} La productividad alcanza la meta del ${nf(meta,0)} %</b></section></div></div>`;
+ const ls=prodLoss(X),mx=Math.max(1,...ls.map(x=>x.pts));
+ const lb=ls.map(x=>`<div style="margin:10px 0"><div style="display:flex;justify-content:space-between;font-size:13.5px"><span>${x.k}</span><b>${nf(x.pts,1)} pts · ${nf(x.h,0)} HH</b></div><div class="hbt" style="margin-top:5px"><i style="width:${Math.max(3,x.pts/mx*100)}%;background:var(--pri)"></i></div></div>`).join('');
+ const ar=X.areas.map(a=>`<tr><td class="ttl">${esc(a.k)}</td><td class="num" style="color:${semP(a.pct,meta)};font-weight:700">${nf(a.pct,0)} %</td><td class="num">${nf(a.perd,0)}</td></tr>`).join('');
+ const lin=X.lineas.length?`<table class="t"><thead><tr><th>Línea</th><th class="r">HH</th><th class="r">% de las HH</th>${X.cost?'<th class="r">Costo</th>':''}</tr></thead><tbody>${X.lineas.map(l=>`<tr><td class="ttl">${esc(l.k)}</td><td class="num">${nf(l.h,1)}</td><td class="num">${nf(l.pc,1)} %</td>${X.cost?`<td class="num">${money(l.c)}</td>`:''}</tr>`).join('')}</tbody></table>`:'<p class="mut3">No hay horas de montaje de línea en este periodo.</p>';
+ const al=E.alertas.length?`<div style="margin-top:14px;padding:10px 12px;border-radius:12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.4)"><b style="color:#F59E0B">Cambios de alcance sobre ${umbAlc()} %</b><div class="mut" style="font-size:13px;margin-top:4px">${E.alertas.slice(0,5).map(o=>esc(o.num)+' · '+nf(o.alc,0)+' HH ('+nf(o.alcP,0)+' %)').join(' · ')}</div></div>`:'';
+ const rows=E.rows.map(o=>{const s=semE(o.ieo);return `<tr><td class="ttl">${esc(o.num)}</td><td class="num" style="color:${s.col};font-weight:700">${o.ieo==null?'—':nf(o.ieo*100,0)+' %'}</td><td class="num">${o.prodP==null?'—':nf(o.prodP,0)+' %'}</td><td class="num">${o.retP==null?'—':nf(o.retP,0)+' %'}</td><td class="num"${o.alcP>umbAlc()&&o.alc>0?' style="color:#F59E0B;font-weight:700"':''}>${nf(o.alc,0)} HH · ${nf(o.alcP,0)} %</td><td class="num">${nf(o.ev,0)} / ${nf(o.real,0)}</td></tr>`}).join('');
+ const lect=`<div class="g12"><div class="c12">${card('Lectura del periodo','',kvLect(prodTexts(X).map(esc),'En palabras').replace('margin-top:20px;',''))}</div></div>`;
+ const SEC={
+  res:kp+imp+lect,
+  tend:`<div class="g12"><div class="c8">${card('Tendencia semanal','Productividad de las últimas 8 semanas frente a la meta',prodSvg(X))}</div><div class="c4">${card('¿Qué le quita productividad?','Puntos de productividad y HH que se van',lb||'<p class="mut3">Nada que reportar.</p>')}</div></div>`,
+  area:`<div class="g12"><div class="c12">${card('Productividad por área','Ordenadas de menor a mayor',ar?`<div class="tw"><table class="t"><thead><tr><th>Área</th><th class="r">Productividad</th><th class="r">HH no productivas</th></tr></thead><tbody>${ar}</tbody></table></div>`:empty())}</div></div>`,
+  proy:`<div class="g12"><div class="c12">${card('Eficiencia y productividad por proyecto','Acumulado de cada proyecto (no depende del filtro de fechas) · eficiencia = HH ganadas ÷ HH reales',rows?`<div class="tw"><table class="t"><thead><tr><th>Proyecto</th><th class="r">Eficiencia</th><th class="r">Productividad</th><th class="r">Retrabajo</th><th class="r">Cambios de alcance</th><th class="r">HH ganadas / reales</th></tr></thead><tbody>${rows}</tbody></table></div>`:empty('Aún no hay proyectos con expectativa y horas'))}</div></div>`,
+  lin:`<div class="g12"><div class="c12">${card('Inversión en montaje de líneas','HH de «Montaje de línea» en el periodo · no entra en la eficiencia',lin+al)}</div></div>`};
+ const cur=SEC[U.ptab]?U.ptab:'res';
+ return filterBar()+top+subNav('ptab',[['res','Resumen'],['tend','Tendencia y causas'],['area','Por área'],['proy','Por proyecto'],['lin','Montaje de líneas']],cur)+SEC[cur]}
+function prodDl(v){const R=repBuild();R.only='prod';toast('Preparando el análisis…','ok');
+ (async()=>{try{
+  if(v==='xls'){const sh=[{name:'Lectura',cols:[{h:'Lectura de la productividad',w:140}],rows:prodTexts(R.PX).map(t=>[t])},...repXlsxProd(R)];await dlBlob('productividad_latamks_'+today()+'.xlsx',xlsxBlob(sh))}
+  else await dlBlob('productividad_latamks_'+today()+'.pdf',await repPdf(R));
+  toast('Descargado','ok')}catch(e){toast('No se pudo crear el archivo: '+(e.message||e),'er')}})()}
+
 /* ---- ventana: detalle y calculadora ---- */
 function prodOpen(tab){CALC.tab=tab==='calc'&&calcCan()?'calc':'det';M={type:'prod'};prodRender()}
 function prodRender(){
@@ -2315,6 +2331,229 @@ function metaSave(){
  if(m!==metaProd())logH('Meta de productividad',metaProd()+' %',m+' %','Panel');if(u!==umbAlc())logH('Alerta de cambios de alcance',umbAlc()+' %',u+' %','Panel');
  S.settings.metaProd=m;S.settings.umbAlc=u;save();closeModal();renderAll(true);toast('Meta guardada','ok')}
 
+/* ================= Informe mensual de horas hombre (v4.9.2) =================
+   Misma estructura que el informe de la auditora (proyectos, taller/línea, ausencias, total, % y horas disponibles)
+   más la comparación con el periodo anterior y la lectura para decidir. */
+const MESL2=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function mesPrevRows(){
+ const f=U.f;if(f.mes){const [y,m]=f.mes.split('-').map(Number),d=new Date(y,m-2,1),pm=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),keep=U.f;U.f={...keep,mes:pm};try{return filt(live())}finally{U.f=keep}}
+ return prodPrevRows()}
+function mesGroups(rows){
+ const g=new Map(),add=(grp,lab,h)=>{const k=grp+'|'+lab,o=g.get(k)||{grp,lab,h:0};o.h+=h;g.set(k,o)};
+ rows.forEach(r=>{const h=+r.horas||0;if(!h)return;
+  if(r.clase==='aus')add('Ausencias',r.cat||r.causa||'Sin motivo',h);
+  else if(r.proy)add('Proyectos','Proyecto '+r.proy,h);
+  else if(r.clase==='montaje')add('Montaje de línea','Montaje de línea · '+(r.linea||'sin línea'),h);
+  else if(r.clase==='mant')add('Otro tiempo','Mantenimiento y soporte',h);
+  else if(r.clase==='capac'||r.clase==='apoyo'||r.clase==='fuera')add('Otro tiempo','Capacitación, orden y aseo, apoyo',h);
+  else if(r.clase==='improd')add('Otro tiempo','Esperas, daños e incidentes',h);
+  else add('Otro tiempo','Otras horas',h)});
+ return g}
+function mesCalc(K){
+ const f=U.f,rs=K.rs,tot=sum(rs),pv=mesPrevRows(),pg=pv?mesGroups(pv):null,ptot=pv?sum(pv):0,g=mesGroups(rs);
+ const ORD=['Proyectos','Montaje de línea','Otro tiempo','Ausencias'];
+ const lines=[];
+ ORD.forEach(grp=>{const items=[...g.values()].filter(o=>o.grp===grp).sort((a,b)=>b.h-a.h);if(!items.length)return;
+  const sub=items.reduce((s,o)=>s+o.h,0),psub=pg?[...pg.values()].filter(o=>o.grp===grp).reduce((s,o)=>s+o.h,0):null;
+  items.forEach(o=>{const p=pg?(pg.get(grp+'|'+o.lab)||{h:0}).h:null;lines.push({grp,lab:o.lab,h:o.h,pct:tot?o.h/tot*100:0,prev:p,sub:0})});
+  lines.push({grp,lab:'Subtotal '+grp.toLowerCase(),h:sub,pct:tot?sub/tot*100:0,prev:psub,sub:1})});
+ const label=f.mes?(MESL2[+f.mes.slice(5)-1]+' de '+f.mes.slice(0,4)):f.sem?('Semana '+f.sem):(f.desde||f.hasta)?('del '+(f.desde||'…')+' al '+(f.hasta||'hoy')):+f.per?('últimos '+f.per+' días'):'todo el histórico';
+ const aus=sum(rs.filter(r=>r.clase==='aus')),prog=K.prog;
+ const P=prodCalc(rs);
+ return{label,tot,ptot:pv?ptot:null,lines,prog,falt:K.falt,exc:K.exc,aus,ausP:tot?aus/tot*100:0,cumpl:prog>0?Math.min(999,(tot-0)/prog*100):null,pers:P.pers,pct:P.pct,hasPrev:!!pv}}
+function mesTexts(M){
+ const L=[];if(!(M.tot>0)){L.push('No hay horas registradas en el periodo.');return L}
+ L.push(`En el periodo (${M.label}) se registraron ${hh(M.tot)} HH de ${M.pers} personas`+(M.prog>0?`, frente a ${hh(M.prog)} HH programadas (${nf(M.cumpl,0)} % de cumplimiento del registro)`:'')+'.');
+ const tp=M.lines.filter(x=>x.grp==='Proyectos'&&!x.sub);if(tp.length)L.push(`En proyectos: ${hh(tp.reduce((s,x)=>s+x.h,0))} HH (${nf(tp.reduce((s,x)=>s+x.pct,0),0)} %). El proyecto con más horas fue ${tp[0].lab.toLowerCase()} con ${hh(tp[0].h)} HH.`);
+ const ml=M.lines.find(x=>x.grp==='Montaje de línea'&&x.sub);if(ml)L.push(`Montaje de línea: ${hh(ml.h)} HH (${nf(ml.pct,1)} % del total).`);
+ L.push(`Ausencias: ${hh(M.aus)} HH (${nf(M.ausP,1)} % de las horas registradas).`);
+ if(M.hasPrev&&M.ptot>0)L.push(`Frente al periodo anterior (${hh(M.ptot)} HH) el total ${M.tot>=M.ptot?'subió':'bajó'} ${nf(Math.abs(M.tot-M.ptot)/M.ptot*100,1)} %.`);
+ if(M.pct!=null)L.push(`Productividad del periodo: ${nf(M.pct,0)} % (fabricación en proyectos y montaje de línea sobre horas registradas sin ausencias).`);
+ return L}
+function mesSecPdf(R,api){
+ const{h2,h3,bullets,table,para,kpiG,SB}=api,M=R.MX;
+ h2('Informe mensual de horas hombre');
+ para('Periodo: '+M.label+'. Misma estructura del informe de Auditoría: cómo se distribuyeron las horas hombre del periodo.',{s:17,c:SB});
+ kpiG([['HH registradas',hh(M.tot)+' HH',M.pers+' personas','#14205A'],['HH programadas',M.prog>0?hh(M.prog)+' HH':'—',M.prog>0?nf(M.cumpl,0)+' % cumplido':'sin programación','#0EA5E9'],['Ausencias',hh(M.aus)+' HH',nf(M.ausP,1)+' % del total','#94A3B8'],['Productividad',M.pct==null?'—':nf(M.pct,0)+' %','fabricación + montaje','#16A34A']],4);
+ bullets(mesTexts(M));
+ h3('Distribución de las horas');
+ const cols=[{h:'Concepto',w:M.hasPrev?.38:.52,f:r=>r.lab,b:1},{h:'HH',w:.16,a:'r',f:r=>nf(r.h,1)},{h:'% del total',w:.16,a:'r',f:r=>nf(r.pct,1)+' %'}];
+ if(M.hasPrev){cols.push({h:'Periodo anterior',w:.15,a:'r',f:r=>r.prev==null?'—':nf(r.prev,1)});cols.push({h:'Variación',w:.15,a:'r',f:r=>r.prev==null?'—':((r.h-r.prev)>=0?'+':'')+nf(r.h-r.prev,1),c:r=>r.prev==null?null:(r.h-r.prev>0?'#D97706':'#16A34A')})}
+ else cols[0].w=.68;
+ const rows=[...M.lines,{lab:'TOTAL HH registradas',h:M.tot,pct:100,prev:M.hasPrev?M.ptot:null,sub:1}];
+ table(cols,rows);
+ para('Las horas se toman de los registros de la app. Las HH programadas salen de los turnos y la programación semanal.',{s:16,c:SB})}
+function mesXlsx(R){const M=R.MX;if(!M||!(M.tot>0))return[];
+ const hd=[{h:'Grupo',w:20},{h:'Concepto',w:42},{h:'HH',w:12,t:'n'},{h:'% del total',w:14,t:'n'}];if(M.hasPrev){hd.push({h:'Periodo anterior HH',w:20,t:'n'},{h:'Variación HH',w:16,t:'n'})}
+ const rows=M.lines.map(x=>{const a=[x.grp,x.lab,r2(x.h),r2(x.pct)];if(M.hasPrev)a.push(x.prev==null?'':r2(x.prev),x.prev==null?'':r2(x.h-x.prev));return a});
+ const tt=['','TOTAL HH registradas',r2(M.tot),100];if(M.hasPrev)tt.push(r2(M.ptot),r2(M.tot-M.ptot));rows.push(tt);
+ rows.push([],['','HH programadas',r2(M.prog),''],['','Cumplimiento del registro %',M.cumpl==null?'':r2(M.cumpl),''],['','Ausencias HH',r2(M.aus),r2(M.ausP)],['','Productividad %',M.pct==null?'':r2(M.pct),'']);
+ return[{name:'Informe mensual',cols:hd,rows},{name:'Lectura mensual',cols:[{h:'Periodo: '+M.label,w:140}],rows:mesTexts(M).map(t=>[t])}]}
+
+/* ================= Histórico anterior a la app (v4.9.2) =================
+   Solo lectura para el resto de la app: vive en su propia tabla (hist_hh) y NO toca los registros ni los indicadores.
+   Lo ven y lo importan Gerencia y Auditoría. */
+const HG=[['proyecto','Proyectos / tanques'],['taller','Taller'],['linea','Montaje de línea'],['mantenimiento','Mantenimiento'],['permisos','Permisos'],['induccion','Inducción'],['ausencia','Ausencias'],['extra','Horas extra'],['otro','Otros']];
+const HGN={...Object.fromEntries(HG),disponible:'Horas disponibles',total:'Total reportado'};
+const HIST={rows:null,busy:false,err:'',imp:null,mes:''};
+const hSum=(a,g)=>a.filter(r=>r.grupo===g).reduce((s,r)=>s+(+r.hh||0),0);
+const hMesL=m=>MESL2[+m.slice(5,7)-1]+' '+m.slice(0,4);
+const hNorm=s=>String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+async function histLoad(force){
+ if(HIST.busy||(HIST.rows&&!force))return;HIST.busy=true;HIST.err='';
+ try{HIST.rows=(await nbSel('hist_hh','select=*&order=mes.asc,dia.asc.nullsfirst,id.asc')).map(r=>({...r,hh:+r.hh}))}
+ catch(e){HIST.err=/relation|does not exist|42P01|404/.test((e.message||'')+(e.code||''))?'La tabla del histórico todavía no existe en la nube (falta el SQL del Paso F).':(e.message||'No se pudo leer el histórico');HIST.rows=null}
+ HIST.busy=false;if(U.page==='hist')renderPage(true)}
+function histCalc(){
+ const R=HIST.rows||[],months=[...new Set(R.map(r=>r.mes))].sort(),out=[],rev=[];
+ months.forEach(m=>{const a=R.filter(r=>r.mes===m&&!r.dia),g={};HG.forEach(x=>g[x[0]]=hSum(a,x[0]));
+  const lines=Object.values(g).reduce((s,v)=>s+v,0),disp=hSum(a,'disponible'),tot=hSum(a,'total'),rep=tot>0?tot:lines,has=lines>0;
+  const dif=(tot>0&&has)?lines-tot:null,notes=[...new Set(a.filter(r=>r.nota).map(r=>r.nota))],fl=[];
+  if(!has&&a.length)fl.push('Sin detalle de horas cargadas');
+  if(dif!=null&&dif<0&&lines<tot*.6)fl.push('Detalle incompleto: solo hay '+hh(lines)+' HH repartidas de las '+hh(tot)+' reportadas');
+  else if(dif!=null&&Math.abs(dif)>Math.max(2,tot*.01))fl.push('La suma de las líneas ('+hh(lines)+') no coincide con el total reportado ('+hh(tot)+'): diferencia de '+(dif>0?'+':'')+hh(dif)+' HH');
+  if(disp>0&&rep>disp*1.03)fl.push('Se reportan más horas ('+hh(rep)+') que las disponibles ('+hh(disp)+')');
+  if(!(disp>0)&&a.length)fl.push('Sin horas disponibles registradas');
+  fl.forEach(t=>rev.push({m,t}));
+  out.push({m,l:hMesL(m),g,lines,disp,tot,rep,dif,has,uso:(disp>0&&rep>0)?rep/disp*100:null,notes,fl})});
+ const D=R.filter(r=>r.dia),dias={},pers={};
+ D.forEach(r=>{(dias[r.dia]=dias[r.dia]||{d:r.dia,h:0,p:new Set()});dias[r.dia].h+=r.hh;dias[r.dia].p.add(r.persona);
+  const o=pers[r.persona||'—']=pers[r.persona||'—']||{n:r.persona||'—',t:0,g:{}};o.t+=r.hh;o.g[r.grupo]=(o.g[r.grupo]||0)+r.hh});
+ const pv={};R.filter(r=>r.grupo==='proyecto'&&!r.dia).forEach(r=>{const o=pv[r.concepto]=pv[r.concepto]||{k:r.concepto,t:0,m:{}};o.t+=r.hh;o.m[r.mes]=(o.m[r.mes]||0)+r.hh});
+ const lotes={};R.forEach(r=>{const o=lotes[r.lote]=lotes[r.lote]||{l:r.lote,n:0,h:0,f:(r.creado||'').slice(0,10)};o.n++;o.h+=r.hh});
+ return{months:out,rev,dias:Object.values(dias).sort((a,b)=>a.d<b.d?-1:1).map(o=>({d:o.d,h:o.h,p:o.p.size})),pers:Object.values(pers).sort((a,b)=>b.t-a.t),proy:Object.values(pv).sort((a,b)=>b.t-a.t),lotes:Object.values(lotes),n:R.length}}
+/* ---- lectura de archivos (xlsx sin librerías externas, y csv) ---- */
+async function zipRead(buf){
+ const dv=new DataView(buf),u8=new Uint8Array(buf);let e=u8.length-22;while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;
+ if(e<0)throw new Error('El archivo no es un Excel válido');
+ const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const files={};
+ for(let i=0;i<n;i++){const meth=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),off=dv.getUint32(p+42,true),name=new TextDecoder().decode(u8.subarray(p+46,p+46+nl));
+  files[name]={meth,cs,off};p+=46+nl+el+cl}
+ const get=async nm=>{const f=files[nm];if(!f)return null;const ln=dv.getUint16(f.off+26,true),le=dv.getUint16(f.off+28,true),st=f.off+30+ln+le,raw=u8.subarray(st,st+f.cs);
+  if(f.meth===0)return new TextDecoder().decode(raw);
+  const ds=new DecompressionStream('deflate-raw'),w=ds.writable.getWriter();w.write(raw);w.close();return new TextDecoder().decode(await new Response(ds.readable).arrayBuffer())};
+ return{get,names:Object.keys(files)}}
+async function xlsxRead(buf){
+ const z=await zipRead(buf),X=s=>new DOMParser().parseFromString(s,'application/xml');
+ const wbx=X(await z.get('xl/workbook.xml')),rels=X(await z.get('xl/_rels/workbook.xml.rels'));
+ const sh=[...wbx.getElementsByTagName('sheet')].map(s=>({n:s.getAttribute('name'),id:s.getAttribute('r:id')||s.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id')}));
+ const tgt=id=>{const r=[...rels.getElementsByTagName('Relationship')].find(x=>x.getAttribute('Id')===id);let t=r?r.getAttribute('Target'):'';t=t.replace(/^\//,'');return t.startsWith('xl/')?t:'xl/'+t};
+ const pick=sh.find(s=>hNorm(s.n)==='datos')||sh[0];if(!pick)throw new Error('El Excel no tiene hojas');
+ const ssx=await z.get('xl/sharedStrings.xml'),ss=ssx?[...X(ssx).getElementsByTagName('si')].map(si=>[...si.getElementsByTagName('t')].map(t=>t.textContent).join('')):[];
+ const doc=X(await z.get(tgt(pick.id))),rows=[];
+ const colIx=ref=>{let c=0;for(const ch of ref.replace(/\d+/g,''))c=c*26+ch.charCodeAt(0)-64;return c-1};
+ [...doc.getElementsByTagName('row')].forEach(r=>{const arr=[];[...r.getElementsByTagName('c')].forEach(c=>{const t=c.getAttribute('t'),v=c.getElementsByTagName('v')[0],i=colIx(c.getAttribute('r'));let val=null;
+   if(t==='s'&&v)val=ss[+v.textContent];else if(t==='inlineStr')val=[...c.getElementsByTagName('t')].map(x=>x.textContent).join('');else if(v){val=t==='str'||t==='b'?v.textContent:(isNaN(+v.textContent)?v.textContent:+v.textContent)}
+   arr[i]=val});rows.push(arr)});
+ return rows}
+function csvRead(txt){
+ const sep=(txt.split('\n')[0].match(/;/g)||[]).length>(txt.split('\n')[0].match(/,/g)||[]).length?';':',',rows=[];let row=[],cur='',q=false;
+ for(let i=0;i<txt.length;i++){const ch=txt[i];if(q){if(ch==='"'){if(txt[i+1]==='"'){cur+='"';i++}else q=false}else cur+=ch}else if(ch==='"')q=true;else if(ch===sep){row.push(cur);cur=''}else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&txt[i+1]==='\n')i++;row.push(cur);rows.push(row);row=[];cur=''}else cur+=ch}
+ if(cur||row.length){row.push(cur);rows.push(row)}return rows}
+const serial=n=>{const d=new Date(Math.round((n-25569)*864e5));return d.toISOString().slice(0,10)};
+function histValidate(table,fname){
+ const hd=(table[0]||[]).map(hNorm),ix=k=>hd.findIndex(h=>k.includes(h)&&h);
+ const col={mes:ix(['mes']),dia:ix(['dia','fecha']),grupo:ix(['grupo']),concepto:ix(['concepto']),persona:ix(['persona']),hh:ix(['hh','horas']),nota:ix(['nota','notas'])};
+ if(col.grupo<0||col.concepto<0||col.hh<0)return{err:'No encuentro las columnas Grupo, Concepto y HH en la primera fila. Descarga la plantilla para ver el formato.'};
+ const GM={};HG.forEach(x=>{GM[x[0]]=x[0];GM[hNorm(x[1])]=x[0]});Object.assign(GM,{disponible:'disponible','horas disponibles':'disponible',total:'total','total reportado':'total',proyectos:'proyecto',tanque:'proyecto',tanques:'proyecto','linea 2':'linea',ausencia:'ausencia',ausencias:'ausencia',otros:'otro',extras:'extra'});
+ const ok=[],bad=[],seen=new Set(),exist=new Set((HIST.rows||[]).map(r=>[r.mes,r.dia||'',r.grupo,r.concepto,r.persona||'',r.hh].join('|')));let dup=0;
+ const toD=v=>{if(v==null||v==='')return '';if(typeof v==='number'&&v>20000)return serial(v);const s=String(v).trim();if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);if(/^\d{4}-\d{2}$/.test(s))return s+'-01';const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');return 'x'};
+ table.slice(1).forEach((r,i)=>{if(!r||r.every(v=>v==null||v===''))return;const ln=i+2;
+  let dia=col.dia>=0?toD(r[col.dia]):'',mes=col.mes>=0?toD(r[col.mes]):'';if(dia==='x'||mes==='x'){bad.push({ln,t:'Fecha no reconocida (usa AAAA-MM-DD o AAAA-MM)'});return}
+  if(!mes&&dia)mes=dia.slice(0,7)+'-01';if(!mes){bad.push({ln,t:'Falta el mes'});return}mes=mes.slice(0,7)+'-01';if(dia&&dia.slice(0,7)!==mes.slice(0,7)){bad.push({ln,t:'El día no pertenece al mes'});return}
+  const g=GM[hNorm(r[col.grupo])];if(!g){bad.push({ln,t:'Grupo no válido: «'+(r[col.grupo]||'')+'»'});return}
+  const con=String(r[col.concepto]==null?'':r[col.concepto]).trim();if(!con||con.length>120){bad.push({ln,t:'Concepto vacío o demasiado largo'});return}
+  const h=typeof r[col.hh]==='number'?r[col.hh]:parseFloat(String(r[col.hh]).replace(',','.'));if(!(h>=0)){bad.push({ln,t:'HH no válidas'});return}
+  const o={mes,dia:dia||null,grupo:g,concepto:con,persona:col.persona>=0&&r[col.persona]?String(r[col.persona]).trim():null,hh:Math.round(h*100)/100,nota:col.nota>=0&&r[col.nota]?String(r[col.nota]).trim():null};
+  const k=[o.mes,o.dia||'',o.grupo,o.concepto,o.persona||'',o.hh].join('|');if(exist.has(k)||seen.has(k)){dup++;return}seen.add(k);ok.push(o)});
+ return{ok,bad,dup,name:fname}}
+async function histFile(f){
+ try{let t;if(/\.csv$/i.test(f.name))t=csvRead(await f.text());else t=await xlsxRead(await f.arrayBuffer());
+  HIST.imp=histValidate(t,f.name)}catch(e){HIST.imp={err:'No pude leer el archivo: '+(e.message||e)}}
+ renderPage(true)}
+async function histSave(){
+ const im=HIST.imp;if(!im||!im.ok||!im.ok.length)return;const lote=(im.name||'importación')+' · '+today();toast('Guardando '+im.ok.length+' filas…','ok');
+ try{for(let i=0;i<im.ok.length;i+=200)await nbReq('POST','/rest/v1/hist_hh',{body:im.ok.slice(i,i+200).map(o=>({...o,lote})),headers:{Prefer:'return=minimal'}});
+  logH('Histórico anterior','',im.ok.length+' filas importadas',lote);save();HIST.imp=null;await histLoad(true);toast('Histórico actualizado','ok')}
+ catch(e){toast('No se pudo guardar: '+(e.message||e),'er')}}
+function histDelAsk(l){M={type:'hdel',l};openModal(mh('Eliminar importación')+`<p class="mut">Se eliminarán de la nube todas las filas de «${esc(l)}». No afecta los registros de la app.</p>`+mf('Eliminar','histDelDo'),'s')}
+async function histDelDo(){const l=M.l;closeModal();try{await nbReq('DELETE','/rest/v1/hist_hh?lote=eq.'+encodeURIComponent(l));logH('Histórico anterior','importación eliminada','',l);save();await histLoad(true);toast('Importación eliminada','ok')}catch(e){toast('No se pudo eliminar: '+(e.message||e),'er')}}
+function histTemplate(){const ej=[['2026-10','','proyecto','Proyecto 00033','',954.47,'Ejemplo: horas del mes por proyecto'],['2026-10','','disponible','Horas disponibles','',2597,''],['2026-10','2026-10-02','proyecto','S-00032','Nombre Apellido',7.58,'Ejemplo de detalle diario']];
+ dlBlob('plantilla_historico_latamks.xlsx',xlsxBlob([{name:'Datos',cols:[{h:'Mes',w:12},{h:'Día',w:14},{h:'Grupo',w:18},{h:'Concepto',w:36},{h:'Persona',w:24},{h:'HH',w:10,t:'n'},{h:'Nota',w:50}],rows:ej},{name:'Instrucciones',cols:[{h:'Cómo llenar la plantilla',w:120}],rows:[['Una fila por cada dato. Mes: AAAA-MM. Día: AAAA-MM-DD (solo si es detalle diario; si no, déjalo vacío).'],['Grupo (uno de estos): '+[...HG.map(x=>x[0]),'disponible','total'].join(', ')+'.'],['«disponible» = horas disponibles del mes; «total» = total reportado por Auditoría. No cuentan como líneas de distribución.'],['Concepto: tanque, proyecto, motivo de ausencia, etc. Persona: solo para detalle diario. HH: horas (usa punto o coma decimal).'],['Las filas que ya existen en el histórico se omiten, así que se puede volver a subir sin duplicar.']]}]))}
+/* ---- pantalla ---- */
+function pHist(){
+ if(!can(GA))return '<div class="g12"><div class="c12">'+card('Histórico anterior','',empty('Solo Gerencia y Auditoría'))+'</div></div>';
+ if(HIST.rows==null&&!HIST.busy&&!HIST.err)histLoad();
+ const tabs=[['res','Resumen mensual'],['pry','Proyectos y tanques'],['dia','Detalle diario'],['rev','Por revisar'],['imp','Importar']],cur=tabs.some(t=>t[0]===U.htab)?U.htab:'res';
+ const top=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin:4px 0 14px"><div><h2 style="font-size:20px;margin:0">Histórico anterior a la app</h2><p class="mut" style="margin:4px 0 0;max-width:780px">Horas de antes de que existiera la app, organizadas para revisarlas y descargarlas. Es solo consulta: no modifica ningún registro ni indicador del panel.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap">${btn(icon('down',16)+' Excel','histDl','data-v="xls"','ghost')}${btn(icon('down',16)+' PDF','histDl','data-v="pdf"','ghost')}</div></div>`;
+ const nav=subNav('htab',tabs,cur);
+ if(HIST.busy&&HIST.rows==null)return top+card('Cargando…','',empty('Leyendo el histórico de la nube'));
+ if(HIST.err&&cur!=='imp')return top+nav+card('No se pudo abrir el histórico','',`<p class="mut">${esc(HIST.err)}</p><div style="margin-top:10px">${btn('Reintentar','histRetry')}</div>`);
+ const H=histCalc();
+ if(cur==='imp')return top+nav+histImp(H);
+ if(!H.n)return top+nav+card('Aún no hay histórico cargado','',`<p class="mut">Ve a la pestaña «Importar» y sube la plantilla con los datos.</p>`);
+ return top+nav+({res:histRes,pry:histPry,dia:histDia,rev:histRev}[cur])(H)}
+function histRes(H){
+ const M=H.months,mx=Math.max(1,...M.map(x=>Math.max(x.disp,x.rep)));
+ const bars=M.map(x=>`<div style="display:grid;grid-template-columns:110px 1fr 150px;gap:10px;align-items:center;margin:8px 0"><b style="font-size:13px">${x.l}</b><div><div class="hbt" style="height:9px"><i style="width:${x.disp/mx*100}%;background:#64748B"></i></div><div class="hbt" style="height:9px;margin-top:3px"><i style="width:${x.rep/mx*100}%;background:${x.fl.length?'#F59E0B':'var(--pri)'}"></i></div></div><span class="mut" style="font-size:12.5px;text-align:right">${nf(x.disp,0)} disp. · ${x.rep?nf(x.rep,0):'—'} rep.</span></div>`).join('');
+ const rows=M.map(x=>`<tr><td class="ttl">${x.l}</td><td class="num">${x.disp?nf(x.disp,1):'—'}</td><td class="num">${x.rep?nf(x.rep,1):'—'}</td><td class="num">${x.uso==null?'—':nf(x.uso,0)+' %'}</td><td class="num">${x.g.proyecto?nf(x.g.proyecto,1):'—'}</td><td class="num">${x.g.taller?nf(x.g.taller,1):'—'}</td><td class="num">${x.g.linea?nf(x.g.linea,1):'—'}</td><td class="num">${(x.g.mantenimiento+x.g.permisos+x.g.induccion+x.g.otro)?nf(x.g.mantenimiento+x.g.permisos+x.g.induccion+x.g.otro,1):'—'}</td><td class="num">${x.g.ausencia?nf(x.g.ausencia,1):'—'}</td><td>${x.fl.length?badge(x.fl.length+' por revisar','wa'):badge('Coherente','ok')}</td></tr>`).join('');
+ const T=M.filter(x=>x.has).length;
+ return `<div class="g12"><div class="c12">${card('Horas disponibles contra horas reportadas',T+' de '+M.length+' meses tienen detalle de horas · barra gris = disponibles, barra de color = reportadas (amarillo si hay algo por revisar)',bars)}</div></div>
+ <div class="g12"><div class="c12">${card('Resumen mensual','HH por mes tal como las reportó Auditoría',`<div class="tw"><table class="t"><thead><tr><th>Mes</th><th class="r">Disponibles</th><th class="r">Reportadas</th><th class="r">Uso</th><th class="r">Proyectos</th><th class="r">Taller</th><th class="r">Línea 2</th><th class="r">Mant. y otros</th><th class="r">Ausencias</th><th>Estado</th></tr></thead><tbody>${rows}</tbody></table></div>`)}</div></div>`}
+function histPry(H){
+ const ms=H.months.filter(x=>x.g.proyecto>0).map(x=>x.m);
+ const body=H.proy.map(o=>`<tr><td class="ttl">${esc(o.k)}</td>${ms.map(m=>`<td class="num">${o.m[m]?nf(o.m[m],1):'—'}</td>`).join('')}<td class="num"><b>${nf(o.t,1)}</b></td></tr>`).join('');
+ return `<div class="g12"><div class="c12">${card('Horas por proyecto o tanque','HH por mes · de marzo a julio los tanques vienen con su número TQ; desde octubre, por proyecto',`<div class="tw"><table class="t"><thead><tr><th>Proyecto / tanque</th>${ms.map(m=>`<th class="r">${hMesL(m)}</th>`).join('')}<th class="r">Total</th></tr></thead><tbody>${body}</tbody></table></div>`)}</div></div>`}
+function histDia(H){
+ if(!H.dias.length)return card('Sin detalle diario','',empty('El detalle diario por persona aparece cuando se importan filas con día y persona.'));
+ const mx=Math.max(1,...H.dias.map(d=>d.h)),db=H.dias.map(d=>`<div style="display:grid;grid-template-columns:90px 1fr 140px;gap:10px;align-items:center;margin:6px 0"><span style="font-size:13px">${dlabel(d.d)}</span><div class="hbt"><i style="width:${d.h/mx*100}%;background:var(--pri)"></i></div><span class="mut" style="font-size:12.5px;text-align:right">${nf(d.h,0)} HH · ${d.p} personas</span></div>`).join('');
+ const pr=H.pers.map(p=>`<tr><td class="ttl">${esc(p.n)}</td><td class="num">${nf(p.t,1)}</td><td class="num">${nf(p.g.proyecto||0,1)}</td><td class="num">${nf(p.g.taller||0,1)}</td><td class="num">${nf((p.g.mantenimiento||0)+(p.g.otro||0),1)}</td><td class="num">${nf(p.g.ausencia||0,1)}</td></tr>`).join('');
+ return `<div class="g12"><div class="c5">${card('Horas por día','Detalle diario importado',db)}</div><div class="c7">${card('Horas por persona','Todo el detalle diario importado',`<div class="tw"><table class="t"><thead><tr><th>Persona</th><th class="r">Total</th><th class="r">Proyectos</th><th class="r">Taller</th><th class="r">Mant. y otros</th><th class="r">Ausencias</th></tr></thead><tbody>${pr}</tbody></table></div>`)}</div></div>`}
+function histRev(H){
+ const it=H.rev.map(x=>`<div style="padding:11px 0;border-top:1px solid var(--bd);display:flex;gap:10px;align-items:flex-start">${badge(hMesL(x.m),'wa')}<div style="flex:1">${esc(x.t)}</div></div>`).join('');
+ const nt=H.months.filter(x=>x.notes.length).map(x=>`<div style="padding:9px 0;border-top:1px solid var(--bd)"><b>${x.l}</b><div class="mut" style="font-size:13px;margin-top:2px">${x.notes.map(esc).join('<br>')}</div></div>`).join('');
+ return `<div class="g12"><div class="c7">${card('Puntos por revisar','Diferencias que la app detecta al comparar las cifras originales; sirven para conciliar con Auditoría',it||`<p class="mut">No se detectaron diferencias.</p>`)}</div><div class="c5">${card('Notas de cada mes','Observaciones guardadas junto a las cifras',nt||'<p class="mut3">Sin notas.</p>')}</div></div>`}
+function histImp(H){
+ const im=HIST.imp;let prev='';
+ if(im&&im.err)prev=`<div class="sub-panel" style="border-color:rgba(239,68,68,.45)"><b style="color:#EF4444">${esc(im.err)}</b></div>`;
+ else if(im){const g={};im.ok.forEach(o=>{g[o.grupo]=(g[o.grupo]||0)+o.hh});const ms=[...new Set(im.ok.map(o=>o.mes))].sort().map(hMesL);
+  prev=`<div class="sub-panel" style="margin-top:12px"><div style="font-weight:700;margin-bottom:6px">Vista previa de «${esc(im.name)}» · aún NO se ha guardado nada</div><div class="mut" style="line-height:1.7">${im.ok.length} filas nuevas · ${nf(im.ok.reduce((s,o)=>s+o.hh,0),1)} HH en total (incluye disponibles y totales)${ms.length?' · meses: '+ms.join(', '):''}<br>${im.dup?im.dup+' filas ya existían o estaban repetidas y se omitieron. ':''}${im.bad.length?`<b style="color:#F59E0B">${im.bad.length} filas con problemas (no se guardan)</b>`:''}</div>
+  ${Object.keys(g).length?`<div class="tw" style="margin-top:8px"><table class="t"><thead><tr><th>Grupo</th><th class="r">HH</th></tr></thead><tbody>${Object.entries(g).map(([k,v])=>`<tr><td>${esc(HGN[k]||k)}</td><td class="num">${nf(v,1)}</td></tr>`).join('')}</tbody></table></div>`:''}
+  ${im.bad.length?`<div class="mut3" style="margin-top:8px;font-size:12.5px">${im.bad.slice(0,8).map(b=>'Fila '+b.ln+': '+esc(b.t)).join('<br>')}${im.bad.length>8?'<br>…':''}</div>`:''}
+  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${im.ok.length?btn('Guardar '+im.ok.length+' filas','histSave'):''}${btn('Descartar','histDiscard','','ghost')}</div></div>`}
+ const lotes=H.lotes.map(l=>`<tr><td class="ttl">${esc(l.l)}</td><td class="num">${l.n}</td><td class="num">${nf(l.h,1)}</td><td class="num">${l.f}</td><td class="num">${btn('Eliminar','histDel','data-l="'+esc(l.l)+'"','sm ghost')}</td></tr>`).join('');
+ return `<div class="g12"><div class="c7">${card('Importar un Excel o CSV','Sube la plantilla llena. Se muestra primero una vista previa y solo se guarda cuando tú lo confirmas',`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><label class="btn pri" style="cursor:pointer">${icon('up',16)} Elegir archivo<input type="file" id="histFile" accept=".xlsx,.csv" style="display:none"></label>${btn(icon('down',16)+' Descargar plantilla','histTpl','','ghost')}</div>${prev}`)}</div>
+ <div class="c5">${card('Importaciones guardadas','Cada archivo subido queda como un lote que se puede eliminar completo',lotes?`<div class="tw"><table class="t"><thead><tr><th>Lote</th><th class="r">Filas</th><th class="r">HH</th><th class="r">Fecha</th><th></th></tr></thead><tbody>${lotes}</tbody></table></div>`:'<p class="mut3">Aún no hay importaciones.</p>')}</div></div>`}
+/* ---- descargas ---- */
+function histXlsx(){
+ const H=histCalc(),ms=H.months.filter(x=>x.g.proyecto>0).map(x=>x.m),S=[];
+ S.push({name:'Resumen mensual',cols:[{h:'Mes',w:16},{h:'HH disponibles',w:16,t:'n'},{h:'HH reportadas',w:16,t:'n'},{h:'Uso %',w:10,t:'n'},...HG.map(x=>({h:x[1],w:16,t:'n'})),{h:'Suma de líneas',w:16,t:'n'},{h:'Diferencia vs total',w:18,t:'n'},{h:'Por revisar',w:70}],rows:H.months.map(x=>[x.l,r2(x.disp),r2(x.rep),x.uso==null?'':r2(x.uso),...HG.map(g=>r2(x.g[g[0]])),r2(x.lines),x.dif==null?'':r2(x.dif),x.fl.join(' | ')])});
+ S.push({name:'Proyectos y tanques',cols:[{h:'Proyecto / tanque',w:34},...ms.map(m=>({h:hMesL(m),w:14,t:'n'})),{h:'Total',w:14,t:'n'}],rows:H.proy.map(o=>[o.k,...ms.map(m=>o.m[m]?r2(o.m[m]):''),r2(o.t)])});
+ if(H.pers.length)S.push({name:'Detalle por persona',cols:[{h:'Persona',w:28},{h:'Total',w:12,t:'n'},{h:'Proyectos',w:12,t:'n'},{h:'Taller',w:12,t:'n'},{h:'Mant. y otros',w:14,t:'n'},{h:'Ausencias',w:12,t:'n'}],rows:H.pers.map(p=>[p.n,r2(p.t),r2(p.g.proyecto||0),r2(p.g.taller||0),r2((p.g.mantenimiento||0)+(p.g.otro||0)),r2(p.g.ausencia||0)])});
+ S.push({name:'Por revisar',cols:[{h:'Mes',w:16},{h:'Observación',w:120}],rows:[...H.rev.map(x=>[hMesL(x.m),x.t]),...H.months.flatMap(x=>x.notes.map(n=>[x.l,'Nota: '+n]))]});
+ S.push({name:'Datos completos',cols:[{h:'Mes',w:12},{h:'Día',w:12},{h:'Grupo',w:18},{h:'Concepto',w:36},{h:'Persona',w:24},{h:'HH',w:10,t:'n'},{h:'Nota',w:60},{h:'Lote',w:34}],rows:(HIST.rows||[]).map(r=>[r.mes.slice(0,7),r.dia||'',HGN[r.grupo]||r.grupo,r.concepto,r.persona||'',r2(r.hh),r.nota||'',r.lote||''])});
+ return S}
+function histSecPdf(R,api){
+ const{h2,h3,bullets,table,para,kpiG,pair,SB}=api,H=R.HX,M=H.months;
+ h2('Resumen del histórico');
+ para('Horas de antes de que existiera la app, tal como las reportó Auditoría. Es información de consulta: no forma parte de los indicadores del panel.',{s:17,c:SB});
+ const rep=M.reduce((s,x)=>s+x.rep,0),con=M.filter(x=>x.has).length;
+ kpiG([['Meses',String(M.length),'de '+(M.length?M[0].l:'—')+' a '+(M.length?M[M.length-1].l:'—'),'#14205A'],['Con detalle',con+' de '+M.length,'meses con horas por proyecto','#0EA5E9'],['HH reportadas',hh(rep)+' HH','suma de los meses','#16A34A'],['Por revisar',String(H.rev.length),'diferencias detectadas','#D97706']],4);
+ h3('Horas disponibles contra reportadas');pair(M.map(x=>({k:x.l,exp:x.disp,real:x.rep})));
+ h3('Resumen mensual');table([{h:'Mes',w:.15,f:r=>r.l,b:1},{h:'Disponibles',w:.13,a:'r',f:r=>r.disp?nf(r.disp,1):'—'},{h:'Reportadas',w:.13,a:'r',f:r=>r.rep?nf(r.rep,1):'—'},{h:'Uso',w:.08,a:'r',f:r=>r.uso==null?'—':nf(r.uso,0)+' %'},{h:'Proyectos',w:.13,a:'r',f:r=>r.g.proyecto?nf(r.g.proyecto,1):'—'},{h:'Taller',w:.12,a:'r',f:r=>r.g.taller?nf(r.g.taller,1):'—'},{h:'Línea 2',w:.12,a:'r',f:r=>r.g.linea?nf(r.g.linea,1):'—'},{h:'Ausenc.',w:.14,a:'r',f:r=>r.g.ausencia?nf(r.g.ausencia,1):'—'}],M);
+ h2('Puntos por revisar');
+ if(H.rev.length)bullets(H.rev.map(x=>hMesL(x.m)+': '+x.t));else para('No se detectaron diferencias.');
+ if(H.proy.length){h2('Horas por proyecto o tanque');table([{h:'Proyecto / tanque',w:.5,f:r=>r.k,b:1},{h:'HH acumuladas',w:.25,a:'r',f:r=>nf(r.t,1)},{h:'Meses',w:.25,a:'r',f:r=>String(Object.keys(r.m).length)}],H.proy.slice(0,28))}
+ if(H.pers.length){h2('Detalle diario por persona');table([{h:'Persona',w:.34,f:r=>r.n,b:1},{h:'Total',w:.14,a:'r',f:r=>nf(r.t,1)},{h:'Proyectos',w:.16,a:'r',f:r=>nf(r.g.proyecto||0,1)},{h:'Taller',w:.12,a:'r',f:r=>nf(r.g.taller||0,1)},{h:'Ausenc.',w:.12,a:'r',f:r=>nf(r.g.ausencia||0,1)},{h:'Otros',w:.12,a:'r',f:r=>nf((r.g.mantenimiento||0)+(r.g.otro||0),1)}],H.pers)}}
+function histDl(v){
+ if(!HIST.rows||!HIST.rows.length){toast('Primero carga el histórico','wa');return}
+ (async()=>{try{
+  if(v==='xls')await dlBlob('historico_latamks_'+today()+'.xlsx',xlsxBlob(histXlsx()));
+  else{const R=repBuild();R.only='hist';R.HX=histCalc();R.scope={...R.scope,proy:'Histórico anterior a la app',per:'marzo a octubre 2026',n:HIST.rows.length};await dlBlob('historico_latamks_'+today()+'.pdf',await repPdf(R))}
+  toast('Descargado','ok')}catch(e){toast('No se pudo crear el archivo: '+(e.message||e),'er')}})()}
+
+document.addEventListener('change',e=>{const t=e.target;if(t&&t.id==='histFile'&&t.files&&t.files[0]){histFile(t.files[0]);t.value=''}});
+
 function repBuild(){
  const K=kpis(),D=fcData(),f=U.f,rs=K.rs,T=D.T,np=+f.per,t0=today(),ds=rs.map(r=>r.fecha).sort();
  const scope={per:(f.desde||f.hasta)?'Rango elegido':(!f.per||f.per==='0')?'Todo el histórico':'Últimos '+f.per+' días',proy:f.proy?'Proyecto '+f.proy:'Todos los proyectos (activos y cerrados)',desde:ds[0]||'',hasta:ds[ds.length-1]||'',n:rs.length,dias:new Set(ds).size};
@@ -2361,7 +2600,7 @@ function repBuild(){
  const ord={Alta:0,Media:1,Baja:2};Rc.sort((a,b)=>ord[a.p]-ord[b.p]);
  const ctl=[['Horas faltantes',nf(K.falt,0)+' HH',K.falt>0?'Revisar':'OK'],['Horas excedentes',nf(K.exc,0)+' HH',K.exc>0?'Revisar':'OK'],['Registros por validar',String(pend),pend>0?'Revisar':'OK'],['Retrabajo sin causa',String(rsin),rsin?'Revisar':'OK'],['Proyectos activos sin expectativa',String(sinE.length),sinE.length?'Revisar':'OK'],['Proyectos sobre expectativa',String(sob.length),sob.length?'Revisar':'OK'],['Registros con motivo genérico',String(gen.length),gen.length?'Revisar':'OK'],['Alertas críticas abiertas',String(crit),crit?'Revisar':'OK']];
  const kp=[['Horas registradas',hh(T)+' HH',scope.dias+' días con registros','#14205A'],['En proyectos',hh(D.hp)+' HH',nf(T?D.hp/T*100:0,1)+'% del total','#0EA5E9'],['Fuera de proyectos',hh(D.fu)+' HH',nf(pcF,1)+'% del total','#0F766E'],['Retrabajo',hh(ret)+' HH',nf(pcR,1)+'% de las horas','#D97706'],['Desviación vs. expectativa',(K.dev>0?'+':'')+nf(K.dev,0)+' HH',nf(dvp,1)+'% de '+nf(K.exp,0)+' HH','#7C3AED'],['Improductivas',hh(imp)+' HH','esperas, clima, fallas','#DC2626'],['Horas faltantes',nf(K.falt,0)+' HH',nf(K.exc,0)+' HH excedentes','#475569'],['Proyectos activos',String(act.length),sob.length+' sobre expectativa','#16A34A']];
- return{K,D,scope,kp,L,Rc,ctl,pr,et,causas,origs,retP,pers,cv,gap,imp,mant,pT,pR,tot,ret,pcF,pcR,dvp,rs,PX:prodAll(K),when:new Date()}}
+ return{K,D,scope,kp,L,Rc,ctl,pr,et,causas,origs,retP,pers,cv,gap,imp,mant,pT,pR,tot,ret,pcF,pcR,dvp,rs,PX:prodAll(K),MX:mesCalc(K),when:new Date()}}
 const repResumen=R=>`${R.scope.proy} · ${R.scope.per}${R.scope.desde?' · del '+R.scope.desde.split('-').reverse().join('/')+' al '+R.scope.hasta.split('-').reverse().join('/'):''}`;
 function repXlsxProd(R){const X=R.PX;if(!X||!(X.P.tot>0))return[];const P=X.P,E=X.E,cs=!!(X.cost&&CALC.inc),out=[];
  out.push({name:'Productividad',cols:[{h:'Concepto',w:40},{h:'HH',w:14,t:'n'},{h:'% de HH registradas',w:20,t:'n'}],rows:[['Productividad (meta '+X.meta+' %)',r2(P.prod),r2(P.pct)],...GRP.map(g=>[g[0],r2(P.by[g[0]]||0),P.tot?r2((P.by[g[0]]||0)/P.tot*100):0]),['Total HH registradas (sin ausencias)',r2(P.tot),100],['HH recuperadas si se llega a la meta',r2(X.I.gap),'']]});
@@ -2369,7 +2608,7 @@ function repXlsxProd(R){const X=R.PX;if(!X||!(X.P.tot>0))return[];const P=X.P,E=
  out.push({name:'Montaje de líneas',cols:[{h:'Línea',w:20},{h:'HH',w:12,t:'n'},{h:'% de HH registradas',w:20,t:'n'},...(cs?[{h:'Costo $',w:18,t:'n'}]:[])],rows:X.lineas.map(l=>[l.k,r2(l.h),r2(l.pc),...(cs?[Math.round(l.c)]:[])])});
  if(cs)out.push({name:'Costos del periodo',cols:[{h:'Tipo de hora',w:34},{h:'HH',w:12,t:'n'},{h:'Costo $',w:20,t:'n'}],rows:[...X.cost.rows.map(r=>[r.k,r2(r.h),Math.round(r.c)]),['Total',r2(P.tot),Math.round(X.cost.total)],['Costo de la ineficiencia','',Math.round(X.cost.ineff)]]});
  return out}
-function repXlsx(R){const S0=repXlsx0(R),PS=repXlsxProd(R);S0.splice(2,0,...PS);return S0}
+function repXlsx(R){const S0=repXlsx0(R),PS=repXlsxProd(R),MS=mesXlsx(R);S0.splice(2,0,...MS,...PS);return S0}
 function repXlsx0(R){const K=R.K,D=R.D,pc=(a,b)=>b?r2(a/b*100):0;
  return[
  {name:'Resumen',cols:[{h:'Indicador',w:34},{h:'Valor',w:18},{h:'Detalle',w:40}],rows:[['Informe',repResumen(R),''],['Generado',R.when.toLocaleString('es-CO'),U.name||''],...R.kp.map(k=>[k[0],k[1],k[2]])]},
@@ -2418,13 +2657,9 @@ async function repPages(R){
  const recs=R.Rc,pillC={Alta:'#DC2626',Media:'#D97706',Baja:'#16A34A'};
  /* ----- construcción ----- */
  np();
- tx('Informe ejecutivo',MX,y+34,F(800,42),NV);y+=48;tx('Control de horas hombre · Latamks',MX,y+22,F(600,20),SB);y+=40;
- c.fillStyle=BG;rr(MX,y,CW,62,12);c.fill();tx(fit(repResumen(R),CW-30,F(600,17)),MX+18,y+27,F(600,17),TX);tx(R.scope.n+' registros · generado el '+R.when.toLocaleDateString('es-CO')+' '+R.when.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})+' por '+(U.name||'—'),MX+18,y+50,F(500,14),SB);y+=84;
- h2('Resumen ejecutivo');kpiG(R.kp,4);
- h2('Lectura del periodo');bullets(R.L);
- h2('Decisiones sugeridas');
- recs.forEach(x=>{const f=F(500,18),ls=wrap(x.t,CW-130,f),bh=Math.max(52,ls.length*27+22);ens(bh+10);c.fillStyle=BG;rr(MX,y,CW,bh,12);c.fill();c.fillStyle=pillC[x.p];rr(MX+14,y+14,86,26,13);c.fill();tx(x.p,MX+57,y+32,F(700,14),'#fff','center');ls.forEach((l,i)=>tx(l,MX+116,y+32+i*27,f,TX));y+=bh+10});
- if(R.PX&&R.PX.P.tot>0){const X=R.PX,P=X.P,E=X.E,se=semE(E.hay?E.T.ieo:null),cs=!!(X.cost&&CALC.inc);h2('Productividad y eficiencia');
+ tx(R.only==='prod'?'Análisis de productividad':R.only==='hist'?'Histórico anterior a la app':'Informe ejecutivo',MX,y+34,F(800,42),NV);y+=48;tx('Control de horas hombre · Latamks',MX,y+22,F(600,20),SB);y+=40;
+ c.fillStyle=BG;rr(MX,y,CW,62,12);c.fill();tx(fit(R.only==='hist'?'Horas de antes de la app · marzo a octubre 2026':repResumen(R),CW-30,F(600,17)),MX+18,y+27,F(600,17),TX);tx(R.scope.n+' registros · generado el '+R.when.toLocaleDateString('es-CO')+' '+R.when.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})+' por '+(U.name||'—'),MX+18,y+50,F(500,14),SB);y+=84;
+ const prodSec=()=>{if(!(R.PX&&R.PX.P.tot>0)){para('No hay horas registradas con los filtros actuales.');return}const X=R.PX,P=X.P,E=X.E,se=semE(E.hay?E.T.ieo:null),cs=!!(X.cost&&CALC.inc);h2('Productividad y eficiencia');
   kpiG([['Productividad',nf(P.pct,0)+' %','meta '+nf(X.meta,0)+' %',semP(P.pct,X.meta)],['HH no productivas',hh(P.tot-P.prod)+' HH',nf(100-P.pct,0)+' % de '+hh(P.tot)+' HH','#F59E0B'],['Eficiencia de proyectos',E.hay?nf(E.T.ieo*100,0)+' %':'—',E.hay?se.t:'sin expectativa',se.col],['Impacto de llegar a la meta',hh(X.I.gap)+' HH',(cs&&X.I.money!=null?money(X.I.money):nf(X.I.tec,1)+' técnicos'),'#0EA5E9']]);
   bullets(prodTexts(X));
   h3('Qué le quita productividad');hbars(prodLoss(X).map(x=>({k:x.k,v:x.h,c:'#38BDF8'})),'#38BDF8');
@@ -2432,7 +2667,16 @@ async function repPages(R){
   if(X.lineas.length){h3('Inversión en montaje de líneas');table([{h:'Línea',w:.4,f:r=>r.k,b:1},{h:'HH',w:.3,a:'r',f:r=>nf(r.h,1)},{h:cs?'Costo':'% del total',w:.3,a:'r',f:r=>cs?money(r.c):nf(r.pc,1)+' %'}],X.lineas)}
   if(E.rows.length){h3('Eficiencia por proyecto');table([{h:'Proyecto',w:.16,f:r=>r.num,b:1},{h:'Eficiencia',w:.2,a:'r',f:r=>r.ieo==null?'—':nf(r.ieo*100,0)+' %'},{h:'Productividad',w:.22,a:'r',f:r=>r.prodP==null?'—':nf(r.prodP,0)+' %'},{h:'Retrabajo',w:.18,a:'r',f:r=>r.retP==null?'—':nf(r.retP,0)+' %'},{h:'Alcance',w:.24,a:'r',f:r=>nf(r.alc,0)+' HH · '+nf(r.alcP,0)+' %'}],E.rows)}
   if(cs){h3('Costo del periodo por tipo de hora');table([{h:'Tipo de hora',w:.5,f:r=>r.k,b:1},{h:'HH',w:.2,a:'r',f:r=>nf(r.h,1)},{h:'Costo',w:.3,a:'r',f:r=>money(r.c)}],X.cost.rows);para('Costos calculados con valores de hora digitados por Gerencia o Auditoría; no sustituyen la contabilidad.',{s:16,c:SB})}
- }
+ };
+  if(R.only==='prod'){h2('Análisis de productividad');prodSec();return pages}
+  if(R.only==='hist'){histSecPdf(R,{h2,h3,bullets,table,para,kpiG,pair,SB});return pages}
+
+ h2('Resumen ejecutivo');kpiG(R.kp,4);
+ h2('Lectura del periodo');bullets(R.L);
+ h2('Decisiones sugeridas');
+ recs.forEach(x=>{const f=F(500,18),ls=wrap(x.t,CW-130,f),bh=Math.max(52,ls.length*27+22);ens(bh+10);c.fillStyle=BG;rr(MX,y,CW,bh,12);c.fill();c.fillStyle=pillC[x.p];rr(MX+14,y+14,86,26,13);c.fill();tx(x.p,MX+57,y+32,F(700,14),'#fff','center');ls.forEach((l,i)=>tx(l,MX+116,y+32+i*27,f,TX));y+=bh+10});
+  if(R.MX&&R.MX.tot>0)mesSecPdf(R,{h2,h3,bullets,table,para,kpiG,SB});
+  prodSec();
  h2('Proyectos y expectativa');
  if(R.pr.length){table([{h:'Proyecto',w:.09,f:r=>r.num,b:1},{h:'Cliente',w:.17,f:r=>r.cliente},{h:'Etapa actual',w:.17,f:r=>r.etapa},{h:'Expect.',w:.10,a:'r',f:r=>nf(r.exp,0)},{h:'Real',w:.09,a:'r',f:r=>nf(r.real,0)},{h:'% consumo',w:.10,a:'r',f:r=>r.exp?nf(r.pct,0)+'%':'—',c:r=>r.sem==='er'?'#DC2626':r.sem==='wa'?'#D97706':'#16A34A',b:1},{h:'% tiempo',w:.09,a:'r',f:r=>r.tp==null?'—':nf(r.tp,0)+'%'},{h:'Desv. HH',w:.10,a:'r',f:r=>(r.dev>0?'+':'')+nf(r.dev,0)},{h:'Entrega',w:.09,a:'r',f:r=>r.entrega?dlabel(r.entrega):'—'}],R.pr.slice(0,18));para('% consumo = HH reales / expectativa total. % tiempo = días hábiles transcurridos / días hábiles hasta la entrega. Si el consumo va por delante del tiempo, el proyecto corre riesgo de sobrecosto.',{s:15,c:SB})}else para('No hay proyectos con horas en el periodo.');
  h3('Expectativa vs. real por etapa');if(R.et.length)pair(R.et.map(e=>({k:e.k,exp:e.exp,real:e.real})));else para('Sin etapas con horas o expectativa.');
@@ -2465,19 +2709,21 @@ async function repDo(pdf,xls){const R=repBuild();toast('Preparando el informe…
 
 const repBtn=()=>btn(icon('down',16)+' Informe ejecutivo','repOpen','','pri');
 function pDashboard(){
- const tabs=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><div class="tabs" style="margin-bottom:16px"><button class="${U.dtab==='fuera'?'':'on'}" data-act="dtab" data-v="prod">Producción</button><button class="${U.dtab==='fuera'?'on':''}" data-act="dtab" data-v="fuera">Horas fuera de proyectos</button></div>${repBtn()}</div>`;
+ const tabs=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><div class="tabs" style="margin-bottom:16px"><button class="${U.dtab==='fuera'||U.dtab==='prodv'?'':'on'}" data-act="dtab" data-v="prod">Producción</button><button class="${U.dtab==='prodv'?'on':''}" data-act="dtab" data-v="prodv">Productividad</button><button class="${U.dtab==='fuera'?'on':''}" data-act="dtab" data-v="fuera">Horas fuera de proyectos</button></div>${repBtn()}</div>`;
  if(U.dtab==='fuera')return tabs+pFuera();
+ if(U.dtab==='prodv')return tabs+pProdv();
  return tabs+pDashboard0()}
 function pDashboard0(){
- const K=kpis(),rs=K.rs;const base=pDashboardBase();const nd=rs.filter(r=>r.clase!=='aus');const T=sum(nd)||1;
+ const K=kpis(),rs=K.rs;const B=pDashboardBase();const nd=rs.filter(r=>r.clase!=='aus');const T=sum(nd)||1;
  const t0=today(),inR=(r,a,b)=>r.fecha>addDays(t0,-a)&&r.fecha<=addDays(t0,-b);
  const areas=sumBy(nd,r=>r.area||'Sin área');
  const trs=areas.map(a=>{const cur=sum(nd.filter(r=>r.area===a.k&&inR(r,7,0))),prev=sum(nd.filter(r=>r.area===a.k&&inR(r,14,7)));const p=prev?(cur-prev)/prev*100:0;const ret=sum(rs.filter(r=>r.area===a.k&&r.clase==='retrabajo'));
   return `<tr><td class="ttl">${esc(a.k)}</td><td class="num">${nf(a.v,1)}</td><td style="min-width:140px"><div style="display:flex;gap:8px;align-items:center"><div class="hbt" style="flex:1"><i style="width:${a.v/T*100}%;background:var(--pri)"></i></div><span class="mut" style="font-size:12px;min-width:38px">${nf(a.v/T*100,1)}%</span></div></td><td class="num">${badge(nf(ret,1)+' HH',ret>0?'wa':'n')}</td><td class="num ${p>=0?'up':'dn'}">${prev?(p>=0?'+':'')+nf(p,1)+'%':'—'}</td></tr>`}).join('');
  const act=K.P.filter(p=>p.estado==='Activo').map(p=>{const pr=K.rn.filter(r=>r.proy===p.num);const real=sum(pr.filter(isProd)),ret=sum(pr.filter(r=>r.clase==='retrabajo')),ex=+(p.exp&&p.exp.total)||0;const s=semaf(real,ex);
   return `<div class="pjr" data-act="fset" data-k="proy" data-v="${p.num}" style="cursor:pointer;padding:10px;border-radius:12px;border:1px solid var(--bd);margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:center"><span><span class="stat" style="--c:${s.col}"></span> <b>${p.num}</b> <span class="mut">${esc(stageOf(p))}</span></span>${badge(ex?nf(real/ex*100,0)+'%':'—',s.c==='er'?'er':s.c==='wa'?'wa':'n')}</div><div class="prog" style="margin:8px 0 6px;height:7px"><i style="width:${ex?Math.min(100,real/ex*100):0}%"></i></div><div style="display:flex;justify-content:space-between;font-size:12px" class="mut"><span>${nf(real,0)} / ${nf(ex,0)} HH</span><span>Retrabajo <b style="color:#fbbf24">${nf(ret,1)}</b></span></div></div>`}).join('');
- return base+prodCard()+`<div class="g12"><div class="c7">${card('Rendimiento por área','HH registradas en el periodo y tendencia frente a los 7 días previos',areas.length?`<div class="tw"><table class="t"><thead><tr><th>Área</th><th class="r">HH registradas</th><th>% del total</th><th class="r">HH retrabajo</th><th class="r">Tendencia</th></tr></thead><tbody>${trs}</tbody></table></div>`:empty())}</div><div class="c5">${card('Proyectos activos','Estado y etapa actual · clic para filtrar',act||empty('Sin proyectos activos'))}</div></div>`;
-}
+ const areaSec=`<div class="g12"><div class="c7">${card('Rendimiento por área','HH registradas en el periodo y tendencia frente a los 7 días previos',areas.length?`<div class="tw"><table class="t"><thead><tr><th>Área</th><th class="r">HH registradas</th><th>% del total</th><th class="r">HH retrabajo</th><th class="r">Tendencia</th></tr></thead><tbody>${trs}</tbody></table></div>`:empty())}</div><div class="c5">${card('Proyectos activos','Estado y etapa actual · clic para filtrar',act||empty('Sin proyectos activos'))}</div></div>`;
+ const SEC={...B.SEC,area:areaSec},cur=SEC[U.stab]?U.stab:'res';
+ return B.fb+subNav('stab',[['res','Resumen'],['eta','Etapas y proyectos'],['ret','Retrabajo'],['hh','Horas y alertas'],['area','Áreas y proyectos activos']],cur)+SEC[cur]}
 /* ================= Acciones nuevas ================= */
 Object.assign(A,{
  tab:t=>{U.tab=t.dataset.v;renderPage(true)},
@@ -2723,7 +2969,7 @@ async function nbReq(method,path,o={}){
  const auth=o.auth!==false;const h={apikey:NUBE.key,...(o.headers||{})};
  if(o.body!==undefined)h['Content-Type']='application/json';
  if(auth&&NB.sess){if(Date.now()>NB.sess.exp-60000)await nbRefresh();h.Authorization='Bearer '+NB.sess.access_token}
- if(isAud()&&method!=='GET'&&path.startsWith('/rest/v1/')&&!/^\/rest\/v1\/rpc\/(contexto_captura|personas_para_origen|invitado_datos|liberacion_mis|hh_firma|fotos_candidatas)\b/.test(path)&&!/^\/rest\/v1\/(turnos|turno_dias|programacion|tecnicos|ajustes|catalogo_otro_tiempo|catalogo_lineas_montaje)(\?|$)/.test(path))throw new Error('Perfil de Auditoría: solo lectura');
+ if(isAud()&&method!=='GET'&&path.startsWith('/rest/v1/')&&!/^\/rest\/v1\/rpc\/(contexto_captura|personas_para_origen|invitado_datos|liberacion_mis|hh_firma|fotos_candidatas)\b/.test(path)&&!/^\/rest\/v1\/(turnos|turno_dias|programacion|tecnicos|ajustes|catalogo_otro_tiempo|catalogo_lineas_montaje|hist_hh)(\?|$)/.test(path))throw new Error('Perfil de Auditoría: solo lectura');
  let r;try{r=await fetch(NUBE.url+path,{method,headers:h,body:o.body!==undefined?JSON.stringify(o.body):undefined})}catch(e){throw new Error('Sin conexión con la nube')}
  const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){}
  if(r.status===401&&auth&&NB.sess&&!o.retried){if(await nbRefresh())return nbReq(method,path,{...o,retried:true})}
