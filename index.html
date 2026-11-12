@@ -1283,7 +1283,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.9.3';
+const APP_VER='4.9.4';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -3041,7 +3041,7 @@ async function nbReq(method,path,o={}){
  return j}
 async function nbSel(table,q){let out=[],off=0;const page=1000;
  for(;;){const rows=await nbReq('GET',`/rest/v1/${table}?${q||'select=*'}&limit=${page}&offset=${off}`);out=out.concat(rows||[]);if(!rows||rows.length<page)break;off+=page}return out}
-async function nbUp(table,rows,conflict){for(let i=0;i<rows.length;i+=300)await nbReq('POST',`/rest/v1/${table}?on_conflict=${conflict}`,{body:rows.slice(i,i+300),headers:{Prefer:'resolution=merge-duplicates,return=minimal'}})}
+async function nbUp(table,rows,conflict){const g={};rows.forEach(r=>{const k=Object.keys(r).sort().join(',');(g[k]=g[k]||[]).push(r)});for(const rs of Object.values(g))for(let i=0;i<rs.length;i+=300)await nbReq('POST',`/rest/v1/${table}?on_conflict=${conflict}`,{body:rs.slice(i,i+300),headers:{Prefer:'resolution=merge-duplicates,return=minimal'}})}
 const nbRpc=(fn,args,auth)=>nbReq('POST','/rest/v1/rpc/'+fn,{body:args,auth});
 
 /* ---------- Traducción entre la app y la base de datos ---------- */
@@ -3082,7 +3082,7 @@ function nbRows(){
  S.registros.forEach(r=>{const tu=S.turnos.find(x=>x.id===r.turno);
   out.registros_hh.set(r.id,nbJ({id:r.id,fecha:r.fecha,tecnico_id:M.tecUuid[r.tec]||null,codigo_tecnico:r.tec,iniciales:r.ini||'',nombre:r.nombre||'',area:r.area||null,especialidad:r.esp||null,turno:tu?tu.nombre:null,
    proyecto_id:M.projUuid[r.proy]||null,numero_proyecto:r.proy||null,capacidad_gal:r.cap||null,cliente:r.cli||null,kind:r.kind||'proy',macroetapa:r.macro||null,
-   actividad_codigo:(r.actId!==''&&r.actId!=null)?String(r.actId):null,actividad:r.act||null,categoria:r.cat||null,...(r.linea?{linea_montaje:r.linea}:{}),horas:+r.horas,tipo_trabajo:r.tipo,clase:r.clase,causa:r.causa||null,origen:r.origen||null,
+   actividad_codigo:(r.actId!==''&&r.actId!=null)?String(r.actId):null,actividad:r.act||null,categoria:r.cat||null,linea_montaje:r.linea||null,horas:+r.horas,tipo_trabajo:r.tipo,clase:r.clase,causa:r.causa||null,origen:r.origen||null,
    persona_relacionada_id:M.tecUuid[r.persona]||null,codigo_hallazgo:r.hallazgo||null,descripcion:r.desc||null,registrado_por:r.por||null,registrado_en:r.ts,estado:r.estado,es_demo:!!r.demo,
    pendiente_validacion:!!r.pend,validado_por:r.valPor||null,validado_en:r.valTs||null}))});
  return out}
