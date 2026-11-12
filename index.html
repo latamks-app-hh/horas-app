@@ -52,7 +52,7 @@ h1,h2,h3{font-weight:650;letter-spacing:-.01em}
 .brand{display:flex;align-items:center;gap:12px;height:68px;padding:0 20px;flex:none}
 .logo{width:36px;height:36px;border-radius:11px;background:var(--grad);display:grid;place-items:center;flex:none;box-shadow:0 0 22px -4px rgba(56,189,248,.55);color:#04121c}
 .brand-t b{display:block;font-size:16px;letter-spacing:-.02em}
-.brand-t small{color:var(--tx3);font-size:11.5px}
+.brand-t small{color:var(--tx3);font-size:11.5px}.brand-t small.ver{display:block;margin-top:2px;color:var(--tx2);font-weight:600;letter-spacing:.01em}
 .prof{margin:4px 12px 10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid var(--bd);display:flex;align-items:center;gap:11px;width:calc(100% - 24px);text-align:left;transition:background .15s,border-color .15s;position:relative}
 .prof:hover{background:rgba(255,255,255,.055);border-color:var(--bd2)}
 .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#4c2f8a);display:grid;place-items:center;font-weight:700;font-size:12.5px;flex:none;border:1px solid rgba(255,255,255,.14);transition:width .26s var(--ease),height .26s var(--ease)}
@@ -366,6 +366,11 @@ a.btn{text-decoration:none}
  table.t.stkm td.hm{display:none}
  table.t.stkm td.ac{justify-content:flex-start;flex-wrap:wrap;margin-top:6px}
 }
+
+.rvk{display:flex;flex-direction:column;min-width:96px}.rvk b{font-size:26px;letter-spacing:-.02em}.rvk span{color:var(--tx3);font-size:12.5px}
+.rvt td{vertical-align:top;font-size:13px}.rvt .wrapd{max-width:340px;white-space:normal;line-height:1.4}.rvt .sub{white-space:normal}
+.rvh{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.rvh .nmx{min-width:210px}
+.mbox.xw{max-width:760px;width:94vw}.mbox .rtxt{min-height:70px}
 </style></head>
 <body>
 <div class="app" id="app"></div>
@@ -898,8 +903,8 @@ function xlsxBlob(sheets){
  {name:'xl/styles.xml',text:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="${ns}"><numFmts count="2"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/><numFmt numFmtId="165" formatCode="#,##0.00"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B6FA4"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF1F5F9"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="9"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"><alignment horizontal="right" vertical="center"/></xf><xf numFmtId="0" fontId="0" fillId="3" borderId="0" xfId="0" applyFill="1"/><xf numFmtId="0" fontId="0" fillId="3" borderId="0" xfId="0" applyFill="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="0" fillId="3" borderId="0" xfId="0" applyFill="1"/><xf numFmtId="164" fontId="0" fillId="3" borderId="0" xfId="0" applyNumberFormat="1" applyFill="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="165" fontId="0" fillId="3" borderId="0" xfId="0" applyNumberFormat="1" applyFill="1"><alignment horizontal="right" vertical="center"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`}];
  sheets.forEach((s,i)=>files.push({name:`xl/worksheets/sheet${i+1}.xml`,text:xlsxSheet(s)}));
  return zipStore(files)}
-function xlsxRegistros(){
- const rs=regBusca(filt(S.registros.filter(r=>U.showAn||r.estado!=='Anulado')),(U.rq||'').toLowerCase().trim()).sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:(a.nombre<b.nombre?-1:1));
+function xlsxRegistros(ov){
+ const rs=ov||regBusca(filt(S.registros.filter(r=>U.showAn||r.estado!=='Anulado')),(U.rq||'').toLowerCase().trim()).sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:(a.nombre<b.nombre?-1:1));
  const ra=rs.filter(r=>r.estado!=='Anulado');
  const A=rs.map(r=>[r.fecha,r.nombre,r.area,r.turno?((S.turnos.find(t=>t.id===r.turno)||{}).nombre||r.turno):'',r.proy||'',r.macro||'',r.act||'',r.horas,r.tipo,r.causa||'',r.origen||'',r.hallazgo||'',r.estado,r.por||'']);
  const sA={name:'Registros',cols:[{h:'Fecha',w:12,t:'d'},{h:'Técnico',w:26},{h:'Área',w:20},{h:'Turno',w:18},{h:'Proyecto',w:11},{h:'Etapa',w:20},{h:'Actividad',w:34},{h:'Horas',w:9,t:'n'},{h:'Tipo de trabajo',w:16},{h:'Causa',w:22},{h:'Origen',w:18},{h:'Hallazgo',w:14},{h:'Estado',w:12},{h:'Registrado por',w:22}],rows:A};
@@ -1000,6 +1005,71 @@ function capSave(){if(NB.kiosk)return nbCapSave();
  Object.assign(U.c,{macro:'',act:'',horas:'',tipo:TIPOS[0],causa:'',origen:'',persona:'',hallazgo:'',hdesc:'',desc:'',cat:'',linea:'',espera:''});
  renderAll();toast(m,k);
 }
+
+/* ================= Revisión de registros (supervisor / gerencia) ================= */
+const hora=ts=>{try{return new Date(ts).toLocaleTimeString('es-CO',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Bogota'})}catch(e){return ''}};
+function rvRango(){let d1=U.supF||today(),d2=U.rvH||d1;if(d2<d1){const x=d1;d1=d2;d2=x}const lim=addDays(d1,30);if(d2>lim)d2=lim;const ds=[];for(let d=d1;d<=d2;d=addDays(d,1))ds.push(d);return{d1,d2,ds}}
+function pRevision(){
+ const R=rvRango(),multi=R.ds.length>1,q=(U.rvQ||'').toLowerCase().trim(),ef=U.rvE||'',pf=U.rvP||'';
+ let techs=S.tecnicos.filter(t=>t.registra&&t.activo!==false&&(!U.supT||R.ds.some(d=>turnoDe(t,d)===U.supT)));
+ if(U.rvTec)techs=techs.filter(t=>t.codigo===U.rvTec);
+ const dayAll=S.registros.filter(r=>r.fecha>=R.d1&&r.fecha<=R.d2&&techs.some(t=>t.codigo===r.tec)&&(!pf||r.proy===pf));
+ const pendN=dayAll.filter(r=>r.pend&&r.estado!=='Anulado').length,incN=dayAll.filter(r=>r.estado==='Incompleto').length,vivos=dayAll.filter(r=>r.estado!=='Anulado');
+ const groups=techs.map(t=>{let p=0,g=0;R.ds.forEach(d=>{const j=jornadaInfo(t,d);p+=j.p;g+=j.g});const j={p:r2(p),g:r2(g),df:r2(g-p)};let rs=dayAll.filter(r=>r.tec===t.codigo);
+  rs=ef==='anul'?rs.filter(r=>r.estado==='Anulado'):rs.filter(r=>r.estado!=='Anulado');
+  if(ef==='pend')rs=rs.filter(r=>r.pend);if(ef==='inc')rs=rs.filter(r=>r.estado==='Incompleto');
+  rs=regBusca(rs,q).sort((a,b)=>a.fecha===b.fecha?(a.ts<b.ts?-1:1):(a.fecha<b.fecha?-1:1));return{t,j,rs}}).filter(g=>g.rs.length||(!ef&&!q&&!pf));
+ const fb=`<div class="fbar"><label class="mut3" style="font-size:12px">Desde</label><input type="date" class="inp" style="width:158px" data-f="supF" value="${R.d1}" aria-label="Desde"><label class="mut3" style="font-size:12px">Hasta</label><input type="date" class="inp" style="width:158px" data-f="rvH" value="${U.rvH?R.d2:''}" aria-label="Hasta (opcional)">${btn('Hoy','supHoy','','ghost sm')}${btn('Últimos 7 días','rvSem','','ghost sm')}${sel('supT',S.turnos.map(t=>[t.id,t.nombre]),U.supT,{ph:'Todos los turnos'})}</div>
+ <div class="fbar">${sel('rvP',S.proyectos.map(p=>[p.num,p.num+' · '+p.cap+' gal']),U.rvP,{ph:'Todos los proyectos'})}${sel('rvTec',S.tecnicos.filter(t=>t.registra&&t.activo!==false).map(t=>[t.codigo,t.nombre]),U.rvTec,{ph:'Todos los técnicos'})}${sel('rvE',[['pend','Por validar'],['inc','Incompletos'],['anul','Anulados']],U.rvE,{ph:'Todos los registros'})}<input class="inp" style="max-width:260px" placeholder="Buscar actividad, descripción…" data-f="rvQ" value="${esc(U.rvQ||'')}"><span class="mut">${multi?dlabel(R.d1)+' – '+dlabel(R.d2)+' · '+R.ds.length+' días':dfull(R.d1)}${U.rvH&&addDays(R.d1,30)<U.rvH?' · máximo 31 días':''}</span></div>`;
+ const resumen=`<div class="rvh" style="margin:2px 0 14px"><div class="rvk"><b>${vivos.length}</b><span>registros</span></div><div class="rvk"><b>${hh(sum(vivos))}</b><span>HH${pf?' en el proyecto '+pf:''}</span></div><div class="rvk"><b>${pendN}</b><span>por validar</span></div><div class="rvk"><b>${incN}</b><span>incompletos</span></div>${pendN?`<div style="margin-left:auto">${btn(icon('check',15)+' Validar todos los pendientes ('+pendN+')','rvValAll')}</div>`:''}</div>`;
+ const body=groups.length?groups.map(({t,j,rs})=>{
+  const st=!j.p&&!j.g?badge('Sin jornada','n'):Math.abs(j.df)<.01?badge('Completa','ok'):j.df<0?badge('Faltan '+hh(-j.df),'wa'):badge('+'+hh(j.df)+' exced.','er');const pn=rs.filter(r=>r.pend).length;
+  return `<section class="card flat" style="margin-bottom:14px"><div class="rvh" style="margin-bottom:10px"><div class="nmx"><b style="font-size:15px">${esc(t.nombre)}</b><div class="mut3" style="font-size:12px">${esc(t.codigo)} · ${esc(t.area)} · ${esc(turnoDe(t,R.d1))}</div></div><div class="rvk" style="min-width:70px"><b style="font-size:18px">${hh(j.g)} / ${hh(j.p)}</b><span>registradas / programadas</span></div>${st}<div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">${btn('Registrar','regFor',`data-tec="${t.codigo}" data-fecha="${R.d2}"`,'sm ghost')}${!multi&&j.df<-.01?btn('Completar','faltModal',`data-tec="${t.codigo}" data-fecha="${R.d1}"`,'sm ghost'):''}${pn?btn('Validar todo ('+pn+')','rvValTec',`data-tec="${t.codigo}"`,'sm'):''}</div></div>
+  ${rs.length?`<div class="tw"><table class="t rvt"><thead><tr>${multi?'<th>Fecha</th>':''}<th>Hora</th><th>Proyecto</th><th>Etapa y actividad</th><th>Tipo de trabajo</th><th class="r">HH</th><th>Descripción con que se ingresó</th><th>Registró</th><th>Estado</th><th></th></tr></thead><tbody>${rs.map(r=>{const an=r.estado==='Anulado';
+   const ret=r.clase==='retrabajo'?`<div class="sub">${esc(r.causa||'Sin causa')} · ${esc(r.origen||'Sin origen')}${r.persona?' · '+esc((S.tecnicos.find(x=>x.codigo===r.persona)||{}).nombre||r.persona):''}${r.hallazgo?' · '+esc(r.hallazgo):''}</div>`:'';
+   return `<tr style="${an?'opacity:.5':''}">${multi?`<td data-l="Fecha">${dlabel(r.fecha)}</td>`:''}<td data-l="Hora">${hora(r.ts)}</td><td data-l="Proyecto">${r.proy?`<b>${r.proy}</b><div class="sub">${r.cap} gal</div>`:'—'}</td><td data-l="Etapa"><div class="ttl">${esc(r.macro||r.tipo)}</div><div class="sub">${esc(r.act)}</div></td><td data-l="Tipo">${esc(r.tipo==='Tiempo no ligado a proyecto'?'Otro tiempo':r.tipo)}${ret}</td><td class="num" data-l="HH"><b>${hh(r.horas)}</b></td><td class="wrapd" data-l="Descripción">${r.desc?esc(r.desc):'<span class="mut3">Sin descripción</span>'}</td><td data-l="Registró"><div class="sub">${esc(r.por||'—')}</div>${r.pend&&!an?badge('Por validar','wa'):(r.valPor?`<div class="sub">Validó: ${esc(r.valPor)}</div>`:'')}</td><td data-l="Estado">${badge(r.estado,r.estado==='Completo'?'ok':an?'n':'wa')}</td><td class="ac" style="white-space:nowrap">${btn(icon('edit',14)+' Editar','rvEdit',`data-id="${r.id}"`,'sm ghost')} ${r.pend&&!an?btn('Validar','rvVal',`data-id="${r.id}"`,'sm'):''} ${an?btn('Restaurar','rvRest',`data-id="${r.id}"`,'sm ghost'):btn('Anular','rvVoid',`data-id="${r.id}"`,'sm ghost')}</td></tr>`}).join('')}</tbody></table></div>`:`<p class="mut3" style="font-size:13px">Sin registros en este período.</p>`}</section>`}).join(''):empty('No hay registros con estos filtros');
+ return card('Revisión de registros','Detalle completo de cada registro: puedes corregirlo todo, validarlo o anularlo (queda en el historial)',fb+resumen+body,{acts:btn(icon('down',16)+' Exportar a Excel','rvExp','','ghost')});
+}
+function rvEditOpen(id){if(!can(['Gerencia','Supervisor'])){toast('Tu rol solo puede consultar los registros','wa');return}const r=S.registros.find(x=>x.id===id);if(!r)return;M={type:'rv',id};
+ const projs=S.proyectos.filter(p=>p.estado==='Activo'||p.num===r.proy);const ps=personasPara(r.origen);
+ const opt=(arr,v,ph)=>(ph!=null?`<option value="">${esc(ph)}</option>`:'')+arr.map(x=>{const [a,b]=Array.isArray(x)?x:[x,x];return `<option value="${esc(a)}"${String(a)===String(v)?' selected':''}>${esc(b)}</option>`}).join('');
+ let kindF='';
+ if(r.kind==='proy'){const acts=actsFor(r.macro,true);
+  kindF=`<div class="two">${fld('Proyecto',`<select class="sel" id="x_proy">${opt(projs.map(p=>[p.num,p.num+' · '+p.cap+' gal · '+p.cliente]),r.proy)}</select>`)}${fld('Macroetapa',`<select class="sel" id="x_macro">${opt([...etapasOn(),ALM],r.macro)}</select>`)}</div>
+  ${fld('Actividad',`<select class="sel" id="x_act">${opt(acts.map(a=>[String(a[0]),a[0]+' · '+a[1]]),String(r.actId))}</select>`)}
+  ${fld('Tipo de trabajo',`<select class="sel" id="x_tipo">${opt(TIPOS,r.tipo)}</select>`)}
+  <div class="sub-panel" id="x_ret" style="display:${r.tipo==='Retrabajo'?'block':'none'}"><div class="ttl">${icon('redo',18)} Retrabajo: ¿por qué fue?</div><div class="two">${fld('Causa',`<select class="sel" id="x_causa">${opt(CAUSAS,r.causa,'Sin causa')}</select>`)}${fld('¿Dónde se originó?',`<select class="sel" id="x_origen">${opt(ORIG,r.origen,'Sin origen')}</select>`)}</div><div class="two">${fld('Persona relacionada',`<select class="sel" id="x_persona">${opt(ps.map(t=>[t.codigo,t.nombre]),r.persona,'No aplica / no identificada')}</select>`)}${fld('Código de hallazgo',`<input class="inp" id="x_hall" value="${esc(r.hallazgo)}" style="text-transform:uppercase">`)}</div></div>
+  <div class="sub-panel" id="x_esp" style="display:${r.tipo===TIPOS[4]?'block':'none'}"><div class="ttl">${icon('clock',18)} Espera: ¿cuál fue la causa?</div><select class="sel" id="x_espc">${opt(ESPERAS,r.causa,'Seleccionar causa…')}</select></div>`;
+ }else if(r.kind==='otro'){kindF=fld('Opción de otro tiempo',`<select class="sel" id="x_cat">${opt(OTROS_LEG.map(x=>x[0]),r.cat)}</select>`)+fld('Línea del montaje (si aplica)',`<select class="sel" id="x_lin">${opt(LINEAS_M_ALL.map(l=>l.nombre),r.linea,'Sin línea')}</select>`)}
+ else{kindF=fld('Motivo de ausencia',`<select class="sel" id="x_cat">${opt([...AUS,...AUS_OLD],r.cat)}</select>`)}
+ openModal(mh('Corregir registro de '+esc(r.nombre))+`<p class="mut" style="margin-bottom:12px">Registrado ${dlabel(r.fecha)} a las ${hora(r.ts)} por ${esc(r.por||'—')}${r.pend?' · <b>por validar</b>':''}</p>
+ <div class="two">${fld('Fecha',`<input type="date" class="inp" id="x_fecha" value="${r.fecha}">`)}${fld('Horas',`<input class="inp" id="x_h" inputmode="decimal" value="${String(r.horas).replace('.',',')}">`)}</div>${kindF}
+ ${fld('Descripción',`<textarea class="inp rtxt" id="x_desc">${esc(r.desc)}</textarea>`)}
+ ${fld('Motivo del cambio (obligatorio)',`<input class="inp" id="x_mot" placeholder="Ej.: el técnico eligió mal la etapa; confirmado con él" autocomplete="off">`)}
+ <p class="mut3" style="font-size:12px;margin-top:8px">Cada campo cambiado queda en el historial con valor anterior, nuevo, motivo, fecha y usuario.</p>
+ <div class="mf">${r.estado!=='Anulado'?btn('Anular registro','regVoid','','dng'):btn('Restaurar','regRestore','','ghost')}${btn('Cancelar','mClose','','ghost')}${btn('Guardar','rvSave','','ghost')}${r.pend?btn('Guardar y validar','rvSaveVal'):''}</div>`,'xw');
+}
+document.addEventListener('change',ev=>{const e=ev.target;if(!e||!e.id||!M||M.type!=='rv')return;const r=S.registros.find(x=>x.id===M.id);if(!r)return;
+ if(e.id==='x_macro'){const a=$('#x_act');a.innerHTML='<option value="">Seleccionar actividad…</option>'+actsFor(e.value,true).map(x=>`<option value="${esc(String(x[0]))}">${esc(x[0]+' · '+x[1])}</option>`).join('')}
+ if(e.id==='x_tipo'){$('#x_ret').style.display=e.value==='Retrabajo'?'block':'none';$('#x_esp').style.display=e.value===TIPOS[4]?'block':'none'}
+ if(e.id==='x_origen'){const ps=personasPara(e.value);$('#x_persona').innerHTML='<option value="">No aplica / no identificada</option>'+ps.map(t=>`<option value="${esc(t.codigo)}">${esc(t.nombre)}</option>`).join('')}});
+function rvSave(validar){if(!can(['Gerencia','Supervisor'])){toast('Tu rol solo puede consultar los registros','wa');return}const r=S.registros.find(x=>x.id===M.id);if(!r)return;
+ const mot=(val('x_mot')||'').trim();if(mot.length<5){toast('Escribe el motivo del cambio (mínimo 5 letras).','wa');return}
+ const fecha=val('x_fecha'),h=r2(num(val('x_h')));if(!fecha){toast('Elige la fecha.','wa');return}
+ const dd=(new Date(fecha+'T12:00:00')-new Date(today()+'T12:00:00'))/864e5;if(dd<-45||dd>1){toast('La fecha debe estar entre 45 días atrás y mañana.','wa');return}
+ if(!(h>0&&h<=24)){toast('Las horas deben ser mayores que 0 y no más de 24.','wa');return}
+ const otras=sum(live().filter(x=>x.tec===r.tec&&x.fecha===fecha&&x.id!==r.id));if(r.estado!=='Anulado'&&otras+h>24+.001){toast('Con este cambio la persona supera 24 HH ese día.','wa');return}
+ const o={id:r.id,ts:r.ts,por:r.por,tec:r.tec,fecha,horas:h,desc:(val('x_desc')||'').trim(),kind:r.kind,sync:0,demo:r.demo};
+ if(r.kind==='proy'){Object.assign(o,{proy:val('x_proy'),macro:val('x_macro'),actId:val('x_act'),tipo:val('x_tipo')});if(!o.proy||!o.macro||!o.actId){toast('Elige proyecto, macroetapa y actividad.','wa');return}
+  if(o.tipo==='Retrabajo')Object.assign(o,{causa:val('x_causa'),origen:val('x_origen'),persona:val('x_persona'),hallazgo:(val('x_hall')||'').trim().toUpperCase()});if(o.tipo===TIPOS[4])o.causa=val('x_espc')}
+ else{o.cat=val('x_cat');if(r.kind==='otro'&&esMontaje(o.cat)){o.linea=val('x_lin');if(!o.linea){toast('Elige la línea del montaje.','wa');return}}if(r.kind==='otro'&&o.cat===APOYO_OA&&o.desc.length<8){toast('«Apoyo a otra área» necesita descripción (mínimo 8 letras).','wa');return}}
+ const n=buildReg(o);if(n.clase==='retrabajo'&&n.origen&&personasPara(n.origen).length&&!n.persona)n.estado='Incompleto';if(r.estado==='Anulado')n.estado='Anulado';
+ const campos=[['fecha','Fecha'],['proy','Proyecto'],['macro','Macroetapa'],['act','Actividad'],['tipo','Tipo de trabajo'],['horas','Horas'],['causa','Causa'],['origen','Origen'],['persona','Persona relacionada'],['hallazgo','Hallazgo'],['linea','Línea del montaje'],['cat','Opción'],['desc','Descripción'],['estado','Estado']];
+ let cambios=0;campos.forEach(([k,l])=>{if(String(r[k]??'')!==String(n[k]??'')){logH(l,r[k],n[k],r.id.slice(-6)+' '+r.nombre+' · Motivo: '+mot);cambios++}});
+ if(!cambios&&!(validar&&r.pend)){toast('No hay cambios para guardar.','wa');return}
+ ['fecha','turno','proy','cap','cli','macro','act','actId','horas','tipo','clase','kind','cat','causa','origen','persona','hallazgo','desc','linea','estado'].forEach(k=>{r[k]=n[k]});
+ if(r.hallazgo&&!S.hallazgos.find(x=>x.codigo===r.hallazgo))S.hallazgos.push({codigo:r.hallazgo,proy:r.proy,desc:'',estado:'Abierto',fecha:r.fecha});
+ r.sync=0;if(validar&&r.pend)nbValidar([r]);save();closeModal();renderAll(true);toast(validar?'Registro corregido y validado':'Registro corregido','ok')}
 /* ================= Panel de supervisor ================= */
 function pSupervisor(){
  const d=U.supF;const techs=S.tecnicos.filter(t=>t.registra&&t.activo!==false&&(!U.supT||turnoDe(t,d)===U.supT));
@@ -1011,15 +1081,9 @@ function pSupervisor(){
  const mini=(l,v,c='',kv='')=>`<div class="card mini flat${kv?' kvc':''}" ${kv?`data-act="kpiOpen" data-k="${kv}" role="button" tabindex="0" data-tip="Clic para ver el análisis"`:''}><div><div class="m-v ${c}">${v}</div><div class="m-l">${l}</div></div></div>`;
  const A=alerts().filter(a=>a.fecha===d||(a.reg&&rd.some(r=>r.id===a.reg)));
  const act=S.proyectos.filter(p=>p.estado==='Activo').map(p=>{const hd=sum(rd.filter(r=>r.proy===p.num&&isProd(r)));const real=sum(live().filter(r=>r.proy===p.num&&isProd(r)));const s=semaf(real,p.exp&&p.exp.total);return{p,hd,real,s}});
- return `<div class="fbar"><input type="date" class="inp" style="width:170px" data-f="supF" value="${d}" aria-label="Fecha">${sel('supT',S.turnos.map(t=>[t.id,t.nombre]),U.supT,{ph:'Todos los turnos'})}${btn('Hoy','supHoy','','ghost sm')}<span class="mut" style="margin-left:6px">${dfull(d)}</span><div style="margin-left:auto">${btn(icon('print',14)+' Tarjetas','tarjTodas','','ghost sm')}</div></div>
+ return `<div class="fbar"><input type="date" class="inp" style="width:170px" data-f="supF" value="${d}" aria-label="Fecha">${sel('supT',S.turnos.map(t=>[t.id,t.nombre]),U.supT,{ph:'Todos los turnos'})}${btn('Hoy','supHoy','','ghost sm')}<span class="mut" style="margin-left:6px">${dfull(d)}</span><div style="margin-left:auto;display:flex;gap:8px">${btn(icon('check',14)+' Revisar y corregir registros','goRev','','sm')}${btn(icon('print',14)+' Tarjetas','tarjTodas','','ghost sm')}</div></div>
  <div class="g12 minis">${[mini('Personal del turno',rows.length,'','sPers'),mini('HH programadas',hh(P),'','sProg'),mini('HH registradas',hh(G),'','sReg'),mini('HH faltantes',hh(falt),falt>.01?'dn':'','sFalt'),mini('HH excedentes',hh(exc),exc>.01?'dn':'','sExc')].map(x=>`<div class="c3" style="grid-column:span 2">${x}</div>`).join('')}<div class="c3" style="grid-column:span 2">${mini('Retrabajos del día',rets.length,'','sRet')}</div></div>
- <div class="g12"><div class="c12">${card('Alertas del día',`${A.length} activa${A.length===1?'':'s'}`,A.length?`<div class="algrid">${A.slice(0,8).map(alertRow).join('')}</div>`:`<div class="empty">${icon('check',26)}<p>Sin alertas para esta fecha</p></div>`)}</div></div>
- <div class="g12"><div class="c12">${card('Personal y jornada','Programadas vs registradas del día',rows.length?`<div class="tw"><table class="t stkm"><thead><tr><th>Técnico</th><th>Turno</th><th class="r">Prog.</th><th class="r">Reg.</th><th>Estado</th><th>Distribución</th><th></th></tr></thead><tbody>${rows.map(({t,j})=>{
-  const st=!j.p&&!j.g?badge('Sin jornada','n'):Math.abs(j.df)<.01?badge('Completa','ok'):j.df<0?badge('Faltan '+hh(-j.df),'wa'):badge('+'+hh(j.df)+' exced.','er');
-  const seg=Object.keys(CL).map(k=>({k,v:sum(j.rs.filter(r=>r.clase===k))})).filter(x=>x.v>0);const mx=Math.max(j.p,j.g,1);
-  return `<tr><td class="nm"><div class="ttl">${esc(t.nombre)}</div><div class="sub">${esc(t.area)}</div></td><td data-l="Turno">${esc(turnoDe(t,d))}</td><td class="num" data-l="Programadas">${hh(j.p)}</td><td class="num" data-l="Registradas">${hh(j.g)}</td><td data-l="Estado">${st}</td><td class="hm"><div class="stk">${seg.map(x=>`<i style="width:${x.v/mx*100}%;background:${CL[x.k].c}" data-tip="${esc(CL[x.k].n+'\n'+hh(x.v)+' HH')}"></i>`).join('')}</div></td>
-  <td class="ac" style="white-space:nowrap">${btn('Registrar','regFor',`data-tec="${t.codigo}" data-fecha="${d}"`,'sm ghost')} ${j.df<-.01?btn('Completar','faltModal',`data-tec="${t.codigo}" data-fecha="${d}"`,'sm'):''} ${j.rs.some(r=>r.pend)?btn('Validar ('+j.rs.filter(r=>r.pend).length+')','valDia',`data-tec="${t.codigo}" data-fecha="${d}"`,'sm'):''}</td></tr>`}).join('')}</tbody></table></div>`:empty('No hay personal activo en este turno'))}</div>
- </div></div>
+ <div class="g12"><div class="c12">${card('Revisión del día','Valida, corrige o completa lo que registraron los técnicos',`<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div class="rvk"><b>${rd.filter(r=>r.pend).length}</b><span>por validar</span></div><div class="rvk"><b>${rd.filter(r=>r.estado==='Incompleto').length}</b><span>incompletos</span></div><div class="rvk"><b>${rows.filter(x=>x.j.df<-.01).length}</b><span>con horas faltantes</span></div><div style="margin-left:auto">${btn(icon('check',15)+' Abrir revisión de registros','goRev')}</div></div>`)}</div></div>
  <div class="g12"><div class="c4">${card('Proyectos activos','HH de producción del día y acumuladas',act.length?act.map(x=>`<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--bd)"><span class="stat" style="--c:${x.s.col}"></span><div style="flex:1"><b>${x.p.num}</b> <span class="mut">${x.p.cap} gal</span><div class="mut3" style="font-size:12px">${esc(stageOf(x.p))}</div></div><div style="text-align:right"><b>${hh(x.hd)}</b><div class="mut3" style="font-size:12px">${nf(x.real,0)} acum.</div></div></div>`).join(''):empty('Sin proyectos activos'))}</div>
  <div class="c4">${card('Retrabajos del día','Fuentes de horas adicionales',rets.length?rets.map(r=>`<div style="padding:9px 0;border-top:1px solid var(--bd);display:flex;gap:10px;align-items:center"><div style="flex:1;min-width:0"><b>${r.proy}</b> · ${esc(r.macro)} <div class="mut3" style="font-size:12px">${esc(r.causa||'Sin causa')} · ${esc(r.origen||'Sin origen')}${r.hallazgo?' · '+esc(r.hallazgo):''}</div></div><b>${hh(r.horas)}</b><button class="ib" style="width:30px;height:30px" data-act="editReg" data-id="${r.id}" aria-label="Editar">${icon('edit',15)}</button></div>`).join(''):empty('Sin retrabajos registrados'))}</div>
  <div class="c4">${card('Novedades','Ausencias, capacitaciones y esperas',nov.length?nov.map(r=>`<div style="padding:9px 0;border-top:1px solid var(--bd);display:flex;gap:10px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:${CL[r.clase].c}"></span><div style="flex:1"><b>${esc(r.nombre)}</b><div class="mut3" style="font-size:12px">${esc(r.causa||r.cat||r.act)}</div></div><b>${hh(r.horas)}</b></div>`).join(''):empty('Sin novedades'))}</div></div>`;
@@ -1219,7 +1283,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.9.2';
+const APP_VER='4.9.3';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1321,12 +1385,12 @@ async function fotosZip(){
 /* ================= Navegación ================= */
 const AU='Auditoría',G_=['Gerencia'],GS=['Gerencia','Supervisor',AU],GSC=['Gerencia','Supervisor','Calidad',AU],GA=['Gerencia',AU];
 const NAV=[
-{g:'Operación',items:[['captura','Captura rápida','clock',['Gerencia','Supervisor','Técnico',AU]],['faltantes','Horas faltantes','warn',['Gerencia','Supervisor','Técnico',AU]],['supervisor','Panel de supervisor','users',GS],['registros','Registros','db',GSC],['alertas','Alertas','bell',GS]]},
+{g:'Operación',items:[['captura','Captura rápida','clock',['Gerencia','Supervisor','Técnico',AU]],['faltantes','Horas faltantes','warn',['Gerencia','Supervisor','Técnico',AU]],['supervisor','Panel de supervisor','users',GS],['revision','Revisión de registros','check',['Gerencia','Supervisor']],['registros','Registros','db',GSC],['alertas','Alertas','bell',GS]]},
 {g:'Análisis',items:[['dashboard','Panel de Gerencia','dash',GS],['etapas','Comparar etapas','layers',GS],['retrabajo','Retrabajo','redo',GSC],['auditoria','Auditoría','search',['Gerencia',AU]],['hist','Histórico anterior','cal',GA]]},
 {g:'Gestión',items:[['proyectos','Proyectos','folder',GSC],['expectativas','Expectativas','sliders',GS],['tecnicos','Técnicos','user',GA],['turnos','Turnos','cal',GS],['hallazgos','Hallazgos','flag',GSC],['liberaciones','Liberaciones','check',GSC],['calidad','Gestión de Calidad','trend',GSC]]},
 {g:'Sistema',items:[['respaldo','Copia de seguridad','down',['Gerencia','Supervisor','Calidad']],['catalogo','Etapas y actividades','layers',GA],['listas','Otro tiempo y líneas','sliders',GA],['ajustes','Ajustes y QR','qr',G_]]}];
 const ALLN=NAV.flatMap(g=>g.items.map(i=>({id:i[0],t:i[1],ic:i[2],r:i[3],g:g.g})));
-const PAGES={auditoria:pAuditoria,faltantes:pFaltantes,expectativas:pExpectativas,captura:pCaptura,supervisor:pSupervisor,registros:pRegistros,alertas:pAlertas,respaldo:pRespaldo,dashboard:pDashboard,etapas:pEtapas,retrabajo:pRetrabajo,proyectos:pProyectos,tecnicos:pTecnicos,turnos:pTurnos,hallazgos:pHallazgos,ajustes:pAjustes,catalogo:pCatalogo,listas:pListas,hist:pHist};
+const PAGES={auditoria:pAuditoria,faltantes:pFaltantes,expectativas:pExpectativas,captura:pCaptura,supervisor:pSupervisor,revision:pRevision,registros:pRegistros,alertas:pAlertas,respaldo:pRespaldo,dashboard:pDashboard,etapas:pEtapas,retrabajo:pRetrabajo,proyectos:pProyectos,tecnicos:pTecnicos,turnos:pTurnos,hallazgos:pHallazgos,ajustes:pAjustes,catalogo:pCatalogo,listas:pListas,hist:pHist};
 const DEFP={Gerencia:'dashboard',Supervisor:'supervisor','Técnico':'captura',Calidad:'hallazgos','Auditoría':'dashboard'};
 const app=()=>$('#app');
 const isMob=()=>innerWidth<=820;
@@ -1334,7 +1398,7 @@ function toast(m,k=''){const e=document.createElement('div');e.className='toast 
 function renderSide(){
  const ac=alertCount();const nav=NAV.map(g=>{const its=g.items.filter(i=>i[3].includes(U.role));if(!its.length)return '';
   return `<div class="grp"><span>${g.g}</span></div>`+its.map(i=>`<button class="ni ${U.page===i[0]?'on':''}" data-act="go" data-p="${i[0]}" data-nav data-tip="${i[1]}">${icon(i[2],20)}<span class="lbl">${i[1]}</span>${i[0]==='alertas'&&ac?`<span class="nb">${ac}</span>`:''}${i[0]==='liberaciones'&&typeof lBadge==='function'&&lBadge()?`<span class="nb">${lBadge()}</span>`:''}</button>`).join('')}).join('');
- $('#side').innerHTML=`<div class="brand"><img class="logoimg" src="${LOGO}" alt="Latamks HH"><div class="brand-t"><b>Latamks HH</b><small>Control de horas hombre</small></div></div>
+ $('#side').innerHTML=`<div class="brand"><img class="logoimg" src="${LOGO}" alt="Latamks HH"><div class="brand-t"><b>Latamks HH</b><small>Control de horas hombre</small><small class="ver">Versión App v${APP_VER}</small></div></div>
  <div class="pw" style="position:relative;margin:4px 12px 10px"><button class="prof" style="margin:0;width:100%" data-act="menu" data-nav data-tip="${esc(U.name+' · '+U.role)}" aria-haspopup="menu"><div class="av lg">${esc(ini2(U.name))}</div><div class="prof-t"><b>${esc(U.name)}</b><small>${U.role}</small></div></button>
  ${U.menu?`<div class="menu" role="menu"><div class="mut3" style="font-size:11.5px;padding:6px 11px;word-break:break-all">${esc(NB.email||'')}</div><button data-act="chPass" role="menuitem">${icon('edit',15)}Cambiar contraseña</button><button data-act="logout" role="menuitem">${icon('x',15)}Cerrar sesión</button></div>`:''}</div>
  <button class="sbox" data-act="pal" data-nav data-tip="Buscar (Ctrl K)">${icon('search',18)}<span class="sb-l">Buscar…</span><span class="kbd">Ctrl K</span></button>
@@ -1853,7 +1917,7 @@ const A={
  capLogin,capSave,capLogout:()=>{U.c=newC();if(NB.kiosk)nbKioskReset();renderAll()},
  regFor:t=>{U.c={...newC(),tec:t.dataset.tec,fecha:t.dataset.fecha};go('captura')},
  faltModal:t=>faltOpen(t.dataset.tec,t.dataset.fecha),fAdd:()=>{faltRead();M.rows.push({cat:'',h:''});faltRender()},fDel:t=>{faltRead();M.rows.splice(+t.dataset.i,1);if(!M.rows.length)M.rows.push({cat:'',h:''});faltRender()},fSave:faltSave,
- editReg:t=>editRegOpen(t.dataset.id),regSave,regVoid:()=>regState('Anulado'),regRestore:()=>regState('Completo'),
+ editReg:t=>editRegOpen(t.dataset.id),goRev:()=>go('revision'),rvEdit:t=>rvEditOpen(t.dataset.id),rvVal:t=>{const r=S.registros.find(x=>x.id===t.dataset.id);if(!r)return;nbValidar([r]);renderPage(true);toast('Registro validado','ok')},rvVoid:t=>{M={type:'reg',id:t.dataset.id};regState('Anulado')},rvRest:t=>{M={type:'reg',id:t.dataset.id};regState('Completo')},rvSave:()=>rvSave(false),rvSaveVal:()=>rvSave(true),rvSem:()=>{U.rvH=today();U.supF=addDays(today(),-6);renderPage(true)},rvExp:()=>{try{const R=rvRango(),q=(U.rvQ||'').toLowerCase().trim();let rs=S.registros.filter(r=>r.fecha>=R.d1&&r.fecha<=R.d2&&(!U.rvP||r.proy===U.rvP)&&(!U.rvTec||r.tec===U.rvTec)&&(!U.supT||r.turno===U.supT));rs=U.rvE==='anul'?rs.filter(r=>r.estado==='Anulado'):rs.filter(r=>r.estado!=='Anulado');if(U.rvE==='pend')rs=rs.filter(r=>r.pend);if(U.rvE==='inc')rs=rs.filter(r=>r.estado==='Incompleto');rs=regBusca(rs,q).sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:(a.nombre<b.nombre?-1:1));dlBlob('revision_hh_'+R.d1+(R.d2!==R.d1?'_a_'+R.d2:'')+'.xlsx',xlsxRegistros(rs));toast('Excel descargado','ok')}catch(e){toast('No se pudo crear el Excel: '+e.message,'er')}},rvValTec:t=>{const R=rvRango();const rs=live().filter(r=>r.pend&&r.tec===t.dataset.tec&&r.fecha>=R.d1&&r.fecha<=R.d2&&(!U.rvP||r.proy===U.rvP));if(!rs.length)return;nbValidar(rs);renderPage(true);toast(rs.length+' registro'+(rs.length>1?'s':'')+' validado'+(rs.length>1?'s':''),'ok')},rvValAll:()=>{const R=rvRango();const rs=live().filter(r=>r.pend&&r.fecha>=R.d1&&r.fecha<=R.d2&&(!U.supT||r.turno===U.supT)&&(!U.rvP||r.proy===U.rvP)&&(!U.rvTec||r.tec===U.rvTec));if(!rs.length)return;nbValidar(rs);renderPage(true);toast(rs.length+' registros validados','ok')},regSave,regVoid:()=>regState('Anulado'),regRestore:()=>regState('Completo'),
  goProj:()=>go('proyectos'),moreR:()=>{U.rlim+=80;renderPage(true)},supHoy:()=>{U.supF=today();renderPage(true)},
  consPdf:()=>consPdf(),
  expXLSX:()=>{try{dlBlob('registros_hh_latamks_'+today()+'.xlsx',xlsxRegistros());toast('Excel descargado','ok')}catch(e){toast('No se pudo crear el Excel: '+e.message,'er')}},
@@ -3494,20 +3558,21 @@ async function nbBackup(){
  try{
   if(NB.dirty)await nbPush();
   const hoy=today(),partes=[],cuenta={};
-  for(const [t,ord] of BAK_TABLAS){
+  const TBL=isGer()?[...BAK_TABLAS,['hist_hh','id.asc']]:BAK_TABLAS;
+  for(const [t,ord] of TBL){
    const q=ord.includes('.')||ord.includes(',')?'select=*&order='+ord:'select=*&order='+ord+'.asc';
-   let rows;try{rows=await nbSel(t,q)}catch(e0){e0.tabla=t;throw e0}
-   cuenta[t]=rows.length;
+   let rows;try{rows=await nbSel(t,q)}catch(e0){if(t==='hist_hh'){rows=[];NB.bakAv=1}else{e0.tabla=t;throw e0}}
+   cuenta[t]=(t==='hist_hh'&&NB.bakAv)?'NO INCLUIDA (error al leerla)':rows.length;
    for(let i=0;i<rows.length;i+=400){
     let js=JSON.stringify(rows.slice(i,i+400));let tag='j';while(js.includes('$'+tag+'$'))tag+='x';
     if(BAK_CLAVE[t]){const k=BAK_CLAVE[t];partes.push(`insert into public.${t} select r.* from jsonb_populate_recordset(null::public.${t}, $${tag}$${js}$${tag}$::jsonb) r where not exists (select 1 from public.${t} x where x.${k} = r.${k});`);continue}
     partes.push(`insert into public.${t}${(t==='historial'||t==='hallazgo_historial'||t==='liberacion_historial')?' overriding system value':''} select * from jsonb_populate_recordset(null::public.${t}, $${tag}$${js}$${tag}$::jsonb) on conflict do nothing;`)}}
   let cuentas='';
   if(isGer()){try{const ps=await nbSel('perfiles','select=*&order=nombre.asc');cuentas='-- CUENTAS (solo referencia, NO se restauran solas): vuelve a crearlas en Authentication y asígnales el mismo rol.\n'+ps.map(p=>'-- '+[p.nombre,p.correo||'sin correo',p.rol,p.activo===false?'inactiva':'activa',p.cuenta_compartida?'compartida':''].filter(Boolean).join(' · ').replace(/[\r\n]+/g,' ')).join('\n')+'\n'}catch(e){cuentas=''}}
-  const cab=`-- LATAMKS HH · COPIA DE SEGURIDAD · ${hoy}\n-- Filas: ${BAK_TABLAS.map(([t])=>t+' '+cuenta[t]).join(' · ')}\n-- Para restaurar: Supabase > SQL Editor > pegar este archivo completo > Run. Es seguro repetirlo (no duplica nada).\n-- Las contraseñas no van en este archivo. Las cuentas se vuelven a crear en Authentication (si la descargó Gerencia, abajo hay una lista de referencia).\n-- Este archivo trae los DATOS: las tablas y funciones deben existir antes (archivo de estructura).\n${cuentas}begin;\n`;
-  const pie=`\nselect setval(pg_get_serial_sequence('public.historial','id'), (select coalesce(max(id),1) from public.historial));\nselect setval(pg_get_serial_sequence('public.hallazgo_historial','id'), (select coalesce(max(id),1) from public.hallazgo_historial));\nselect setval(pg_get_serial_sequence('public.liberacion_historial','id'), (select coalesce(max(id),1) from public.liberacion_historial));\ncommit;\n`;
+  const cab=`-- LATAMKS HH · COPIA DE SEGURIDAD · ${hoy}\n-- Filas: ${TBL.map(([t])=>t+' '+cuenta[t]).join(' · ')}\n-- Para restaurar: Supabase > SQL Editor > pegar este archivo completo > Run. Es seguro repetirlo (no duplica nada).\n-- Las contraseñas no van en este archivo. Las cuentas se vuelven a crear en Authentication (si la descargó Gerencia, abajo hay una lista de referencia).\n-- Este archivo trae los DATOS: las tablas y funciones deben existir antes (archivo de estructura).\n${cuentas}begin;\n`;
+  const pie=`\nselect setval(pg_get_serial_sequence('public.historial','id'), (select coalesce(max(id),1) from public.historial));\nselect setval(pg_get_serial_sequence('public.hallazgo_historial','id'), (select coalesce(max(id),1) from public.hallazgo_historial));\nselect setval(pg_get_serial_sequence('public.liberacion_historial','id'), (select coalesce(max(id),1) from public.liberacion_historial));\n${isGer()?"select setval(pg_get_serial_sequence('public.hist_hh','id'), (select coalesce(max(id),1) from public.hist_hh));\n":''}commit;\n`;
   nbDownload('latamks-hh_copia-seguridad_'+hoy+'.sql',new Blob([cab+partes.join('\n')+pie],{type:'text/plain;charset=utf-8'}));
-  S.settings.respaldo=hoy;save();nbBakCheck();if(U.page==='ajustes')renderPage(true);
+  if(NB.bakAv){toast('Atención: la copia salió SIN el histórico anterior (no se pudo leer). Avisa a quien administra la app.','wa');NB.bakAv=0}S.settings.respaldo=hoy;save();nbBakCheck();if(U.page==='ajustes')renderPage(true);
   toast('Copia lista · '+cuenta.registros_hh+' registros de horas. Guárdala fuera de esta computadora (correo o Drive).','ok')}
  catch(e){toast('No se pudo crear la copia: '+nbMsg(e)+(e&&e.tabla?' (tabla: '+e.tabla+')':''),'er')}
  finally{NB.bak=false}}
