@@ -591,7 +591,7 @@ function monday(s){return addDays(s,-((dow(s)+6)%7))}
 function turnoDe(tec,fecha){const w=S.rota&&S.rota[monday(fecha)];const v=w&&w[tec.codigo];if(v&&typeof v==='object')return v[dow(fecha)]||tec.turno;return v||tec.turno}
 function rolDe(area){return area==='Calidad'?'Calidad':area==='Ingeniería / Diseño'?'Ingeniería':area==='Almacén / Recepción'?'Almacén':'Técnico'}
 const semanaH=t=>[1,2,3,4,5,6,0].reduce((a,k)=>a+horasDia(t.dias[k]),0);
-function prog(tec,fecha){if(NB.kiosk)return +NB.ctxProg[fecha]||0;if(tec&&tec.alta&&fecha<tec.alta)return 0;const d=diaCfg(tec,fecha);return d?horasDia(d):0}
+function prog(tec,fecha){if(NB.kiosk)return +NB.ctxProg[fecha]||0;if(tec&&tec.alta&&fecha<tec.alta)return 0;{const rt=retDe(tec);if(rt&&fecha>rt)return 0}const d=diaCfg(tec,fecha);return d?horasDia(d):0}
 
 /* ---- construcción de un registro ---- */
 function buildReg(o){
@@ -729,7 +729,7 @@ function progStats(){
  const f=U.f,t0=today();let d0=f.desde||(+f.per?addDays(t0,-(+f.per)+1):'');let d1=f.hasta||addDays(t0,-1);if(d1>=t0)d1=addDays(t0,-1);
  const rs=live();if(!d0)d0=rs.map(r=>r.fecha).sort()[0]||t0;
  if(d0<ALERTAS_DESDE)d0=ALERTAS_DESDE; /* antes del lanzamiento las horas vienen del papel: no se calculan faltantes ni excedentes */
- const techs=S.tecnicos.filter(t=>t.registra&&t.activo!==false&&(!f.tec||t.codigo===f.tec)&&(!f.area||t.area===f.area)&&(!f.esp||t.esp===f.esp));
+ const techs=S.tecnicos.filter(t=>t.registra&&vig(t)&&(!f.tec||t.codigo===f.tec)&&(!f.area||t.area===f.area)&&(!f.esp||t.esp===f.esp));
  const by={};rs.forEach(r=>{const k=r.tec+'|'+r.fecha;by[k]=(by[k]||0)+r.horas});
  let P=0,F=0,E=0;
  for(let d=d0;d<=d1;d=addDays(d,1)){if(f.sem&&wk(d)!==f.sem)continue;if(f.mes&&d.slice(0,7)!==f.mes)continue;
@@ -775,7 +775,7 @@ const ALERTAS_DESDE='2026-10-19';
 function alerts(){
  const A=[],t0=today(),rs=live(),by={};rs.forEach(r=>{const k=r.tec+'|'+r.fecha;by[k]=(by[k]||0)+r.horas});
  for(let i=0;i<=7;i++){const d=addDays(t0,-i);if(d<ALERTAS_DESDE)continue;
-  S.tecnicos.filter(t=>t.registra&&t.activo!==false).forEach(t=>{const p=prog(t,d),g=by[t.codigo+'|'+d]||0;if(i===0&&!g)return;if(!p&&!g)return;const df=r2(g-p);
+  S.tecnicos.filter(t=>t.registra&&vig(t)).forEach(t=>{const p=prog(t,d),g=by[t.codigo+'|'+d]||0;if(i===0&&!g)return;if(!p&&!g)return;const df=r2(g-p);
    if(df<-.01)A.push({n:'wa',k:'Horas faltantes',t:`Faltan ${hh(-df)} HH`,s:`${t.nombre} · ${dfull(d)} · ${hh(g)} de ${hh(p)} HH`,tec:t.codigo,fecha:d});
    else if(df>.01)A.push({n:'wa',k:'Horas excedentes',t:`Se registraron ${hh(df)} HH por encima de la jornada`,s:`${t.nombre} · ${dfull(d)}`,tec:t.codigo,fecha:d})})}
  S.proyectos.filter(p=>p.estado==='Activo').forEach(p=>{
@@ -1283,7 +1283,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.9.7';
+const APP_VER='4.9.8';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1596,7 +1596,7 @@ KVX.proy=function(){const K=kpis();return[{name:'Proyectos activos',cols:[{h:'Pr
 function kvProgData(){
  const f=U.f,t0=today();let d0=f.desde||(+f.per?addDays(t0,-(+f.per)+1):'');let d1=f.hasta||addDays(t0,-1);if(d1>=t0)d1=addDays(t0,-1);
  const rs=live();if(!d0)d0=rs.map(r=>r.fecha).sort()[0]||t0;if(d0<ALERTAS_DESDE)d0=ALERTAS_DESDE;
- const techs=S.tecnicos.filter(t=>t.registra&&t.activo!==false&&(!f.tec||t.codigo===f.tec)&&(!f.area||t.area===f.area)&&(!f.esp||t.esp===f.esp));
+ const techs=S.tecnicos.filter(t=>t.registra&&vig(t)&&(!f.tec||t.codigo===f.tec)&&(!f.area||t.area===f.area)&&(!f.esp||t.esp===f.esp));
  const by={};rs.forEach(r=>{const k=r.tec+'|'+r.fecha;by[k]=(by[k]||0)+r.horas});const out=[];
  for(let d=d0;d<=d1;d=addDays(d,1)){if(f.sem&&wk(d)!==f.sem)continue;if(f.mes&&d.slice(0,7)!==f.mes)continue;
   techs.forEach(t=>{const p=prog(t,d),g=by[t.codigo+'|'+d]||0;if(!p&&!g)return;out.push({t,d,p,g,falt:Math.max(0,p-g),exc:Math.max(0,g-p)})})}
@@ -1874,12 +1874,12 @@ function expSave(){const p=S.proyectos.find(x=>x.num===M.num);const e=p.exp||{to
  p.exp={total:t,et,dias,cerradas:ETAPAS.filter((x,i)=>$(`[data-xc="${i}"]`).checked),mod:{ts:new Date().toISOString(),por:U.name+' ('+U.role+')'}};save();closeModal();renderAll(true);toast('Expectativa guardada','ok')}
 /* --- técnicos --- */
 function tecOpen(code){const t=code?S.tecnicos.find(x=>x.codigo===code):null;M={type:'tec',code};const nx='TEC'+String(S.tecnicos.reduce((m,x)=>Math.max(m,parseInt(x.codigo.slice(3),10)||0),0)+1).padStart(3,'0');
- openModal(mh(t?'Editar técnico':'Nuevo técnico')+`<div class="two">${fld('Código',`<input class="inp" id="t_cod" maxlength="20" value="${esc(t?t.codigo:nx)}" ${t?'disabled':''}>`)}${fld('Iniciales',`<input class="inp" id="t_ini" maxlength="4" value="${t?esc(t.ini):''}" style="text-transform:uppercase" oninput="this.dataset.man=1"><small class="mut3" style="display:block;margin-top:4px">${t?'':'Se sugieren solas al escribir el nombre; puedes cambiarlas.'}</small>`)}</div>${fld('Nombre',`<input class="inp" id="t_nom" value="${t?esc(t.nombre):''}" ${t?'':'oninput="tecSugIni(this.value)"'}>`)}<div class="two">${fld('Rol',selM('t_rol',ROLES_P,t?(t.rol||rolDe(t.area)):'Técnico'))}${fld('Estado',selM('t_act',[['1','Activo'],['0','Inactivo']],t&&t.activo===false?'0':'1'))}</div><div class="two">${fld('Área principal',`<input class="inp" id="t_area" list="areas" value="${t?esc(t.area):''}"><datalist id="areas">${uniq([...AREAS0,...S.tecnicos.map(x=>x.area)]).map(a=>`<option value="${esc(a)}">`).join('')}</datalist><small class="mut3" style="display:block;margin-top:4px">Elige de la lista o escribe una nueva.</small>`)}${fld('Cargo / especialidad',`<input class="inp" id="t_esp" list="cargos" value="${t?esc(t.esp):''}"><datalist id="cargos">${uniq([...CARGOS0,...S.tecnicos.map(x=>x.esp)]).map(a=>`<option value="${esc(a)}">`).join('')}</datalist>`)}</div><div class="two">${fld('Turno por defecto',selM('t_tur',activeTurnos().map(u=>[u.id,u.nombre]),t?t.turno:activeTurnos()[0].id))}${fld('Fecha de ingreso',`<input type="date" class="inp" id="t_ing" value="${esc(t?(t.alta||today()):today())}" max="${addDays(today(),30)}" ${NB.hasIng?'':'disabled'}><small class="mut3" style="display:block;margin-top:4px">${NB.hasIng?'Día real en que empezó (o volvió). Desde esa fecha se programan y se esperan sus horas. Puedes poner una fecha pasada.':'Falta activar el cambio en la base de datos (SQL de la versión 4.9.5).'}</small>`)}</div><label class="mut" style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="t_reg" ${!t||t.registra?'checked':''}> Registra horas de producción (desmarcar para Calidad, Ingeniería, Almacén…)</label>${mf('Guardar','tecSave')}`)}
+ openModal(mh(t?'Editar técnico':'Nuevo técnico')+`<div class="two">${fld('Código',`<input class="inp" id="t_cod" maxlength="20" value="${esc(t?t.codigo:nx)}" ${t?'disabled':''}>`)}${fld('Iniciales',`<input class="inp" id="t_ini" maxlength="4" value="${t?esc(t.ini):''}" style="text-transform:uppercase" oninput="this.dataset.man=1"><small class="mut3" style="display:block;margin-top:4px">${t?'':'Se sugieren solas al escribir el nombre; puedes cambiarlas.'}</small>`)}</div>${fld('Nombre',`<input class="inp" id="t_nom" value="${t?esc(t.nombre):''}" ${t?'':'oninput="tecSugIni(this.value)"'}>`)}<div class="two">${fld('Rol',selM('t_rol',ROLES_P,t?(t.rol||rolDe(t.area)):'Técnico'))}${fld('Estado',selM('t_act',[['1','Activo'],['0','Inactivo']],t&&t.activo===false?'0':'1'))}</div><div class="two">${fld('Área principal',`<input class="inp" id="t_area" list="areas" value="${t?esc(t.area):''}"><datalist id="areas">${uniq([...AREAS0,...S.tecnicos.map(x=>x.area)]).map(a=>`<option value="${esc(a)}">`).join('')}</datalist><small class="mut3" style="display:block;margin-top:4px">Elige de la lista o escribe una nueva.</small>`)}${fld('Cargo / especialidad',`<input class="inp" id="t_esp" list="cargos" value="${t?esc(t.esp):''}"><datalist id="cargos">${uniq([...CARGOS0,...S.tecnicos.map(x=>x.esp)]).map(a=>`<option value="${esc(a)}">`).join('')}</datalist>`)}</div><div class="two">${fld('Fecha de retiro (solo si queda inactivo)',`<input type="date" class="inp" id="t_ret" value="${esc(t&&retDe(t)?retDe(t):today())}" max="${today()}"><small class="mut3" style="display:block;margin-top:4px">Último día que trabajó. Puede ser una fecha pasada si olvidaste dar la baja.</small>`)}<div></div></div><div class="two">${fld('Turno por defecto',selM('t_tur',activeTurnos().map(u=>[u.id,u.nombre]),t?t.turno:activeTurnos()[0].id))}${fld('Fecha de ingreso',`<input type="date" class="inp" id="t_ing" value="${esc(t?(t.alta||today()):today())}" max="${addDays(today(),30)}" ${NB.hasIng?'':'disabled'}><small class="mut3" style="display:block;margin-top:4px">${NB.hasIng?'Día real en que empezó (o volvió). Desde esa fecha se programan y se esperan sus horas. Puedes poner una fecha pasada.':'Falta activar el cambio en la base de datos (SQL de la versión 4.9.5).'}</small>`)}</div><label class="mut" style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="t_reg" ${!t||t.registra?'checked':''}> Registra horas de producción (desmarcar para Calidad, Ingeniería, Almacén…)</label>${mf('Guardar','tecSave')}`)}
 function tecSave(){const o={codigo:(val('t_cod')||'').trim().toUpperCase(),ini:(val('t_ini')||'').trim().toUpperCase(),nombre:(val('t_nom')||'').trim(),area:(val('t_area')||'').trim(),esp:(val('t_esp')||'').trim(),turno:val('t_tur'),rol:val('t_rol'),activo:val('t_act')==='1',registra:!!val('t_reg')};
  if(!o.codigo||!o.ini||!o.nombre){toast('Código, iniciales y nombre son necesarios','wa');return}
  let ing=(val('t_ing')||'').trim();if(NB.hasIng&&ing&&(!/^\d{4}-\d{2}-\d{2}$/.test(ing)||ing>addDays(today(),30))){toast('La fecha de ingreso no es válida (máximo 30 días hacia adelante)','er');return}
  if(!M.code&&!/^[A-Z0-9][A-Z0-9._-]{0,19}$/.test(o.codigo)){toast('El código solo puede llevar letras, números, punto o guion (máximo 20). Ej.: TEC015','er');return}
- if(M.code){const t=S.tecnicos.find(x=>x.codigo===M.code);['turno','area','esp','nombre','activo'].forEach(k=>{if(t[k]!==o[k])logH('Técnico '+k,t[k],o[k],t.codigo)});const react=t.activo===false&&o.activo;const ing0=t.alta||'';Object.assign(t,o,{codigo:t.codigo});if(NB.hasIng&&ing){const ni=(react&&ing===ing0)?today():ing;if(ni!==ing0)logH('Técnico fecha de ingreso',ing0,ni,t.codigo);t.alta=ni;t.ing=ni}else if(react)t.alta=today()}
+ if(M.code){const t=S.tecnicos.find(x=>x.codigo===M.code);['turno','area','esp','nombre','activo'].forEach(k=>{if(t[k]!==o[k])logH('Técnico '+k,t[k],o[k],t.codigo)});const react=t.activo===false&&o.activo;const ing0=t.alta||'';Object.assign(t,o,{codigo:t.codigo});if(!o.activo){const rf=(val('t_ret')||'').trim();retPon(t,/^\d{4}-\d{2}-\d{2}$/.test(rf)&&rf<=today()?rf:today())}else retPon(t,'');if(NB.hasIng&&ing){const ni=(react&&ing===ing0)?today():ing;if(ni!==ing0)logH('Técnico fecha de ingreso',ing0,ni,t.codigo);t.alta=ni;t.ing=ni}else if(react)t.alta=today()}
  else{if(S.tecnicos.some(x=>x.codigo===o.codigo)){toast('Ese código ya existe','er');return}S.tecnicos.push({...o,alta:(NB.hasIng&&ing)?ing:today(),ing:(NB.hasIng&&ing)?ing:''})}
  const nuevo=!M.code;save();closeModal();renderAll(true);toast('Técnico guardado','ok');if(nuevo&&o.registra&&o.activo)setTimeout(()=>tarjetasOpen([o.codigo],true),250)}
 /* --- hallazgo --- */
@@ -1929,7 +1929,7 @@ const A={
  editExp:t=>expOpen(t.dataset.p),expSave,xUse:()=>{const s=$$('[data-xe]').reduce((a,e)=>a+num(e.value),0);$('#x_tot').value=s;expLive()},
  newTec:()=>tecOpen(''),editTec:t=>tecOpen(t.dataset.c),tecSave,newHall:hallOpen,hallSave,
  tSel:t=>{U.tsel=t.dataset.v;renderPage(true)},
- tDay:t=>{tfApply(U.tsel,t.dataset.k,'on',0)},ajhOpen:t=>ajhOpen(t.dataset.c,t.dataset.k),ajhSave:ajhSave,ajhDel:ajhDel,ajhDia:t=>ajhDiaOpen(t.dataset.k),
+ tDay:t=>{tfApply(U.tsel,t.dataset.k,'on',0)},bajaOk:bajaOk,ajhOpen:t=>ajhOpen(t.dataset.c,t.dataset.k),ajhSave:ajhSave,ajhDel:ajhDel,ajhDia:t=>ajhDiaOpen(t.dataset.k),
  tSave:()=>{const tu=S.turnos.find(x=>x.id===U.tsel);tu.mod={ts:new Date().toISOString(),por:U.name+' ('+U.role+')'};save();renderPage(true);toast('Turno guardado','ok')},
  newTurno:()=>{M={type:'nt'};openModal(mh('Nuevo turno')+fld('Nombre',`<input class="inp" id="nt_n" placeholder="Ej.: Turno 3 · Sábados alternos">`)+`<p class="mut3" style="font-size:12.5px;margin-top:10px">Se crea como copia del turno seleccionado; luego ajusta los horarios por día.</p>`+mf('Crear turno','ntSave'))},
  ntSave:()=>{const n=(val('nt_n')||'').trim();if(!n){toast('Escribe un nombre','wa');return}const b=S.turnos.find(x=>x.id===U.tsel)||S.turnos[0];const id='T'+(S.turnos.reduce((m,x)=>Math.max(m,parseInt(x.id.slice(1),10)||0),0)+1);S.turnos.push({id,nombre:n,dias:JSON.parse(JSON.stringify(b.dias)),mod:{ts:new Date().toISOString(),por:U.name+' ('+U.role+')'}});U.tsel=id;save();closeModal();renderPage(true);toast('Turno creado','ok')},
@@ -2049,8 +2049,16 @@ function capForm(tec){
 }
 
 
-/* ---------- v4.9.7 · ajustes de horario por persona y día (sin crear turnos) ---------- */
+/* ---------- v4.9.8 · ajustes de horario por persona y día (sin crear turnos) ---------- */
 /* S.settings.ajh = { 'AAAA-MM-DD': { CODIGO: {i:entrada,o:salida,r:receso,a:alimentación,l:1 si libre,m:motivo,u:quién,t:cuándo} } } */
+/* v4.9.8 · fecha de retiro: S.settings.ret = { CODIGO: 'AAAA-MM-DD' } (último día laborado) */
+const retDe=t=>(S.settings.ret&&t&&S.settings.ret[t.codigo])||'';
+const vig=t=>t.activo!==false||!!retDe(t);
+function retPon(t,f){S.settings.ret=S.settings.ret||{};const a=S.settings.ret[t.codigo]||'';if(f){if(a!==f)logH('Técnico fecha de retiro',a||'—',f,t.codigo);S.settings.ret[t.codigo]=f}else if(a){logH('Técnico fecha de retiro',a,'quitada',t.codigo);delete S.settings.ret[t.codigo]}}
+function bajaOpen(code){const t=S.tecnicos.find(x=>x.codigo===code);if(!t)return;M={type:'baja',code};
+ openModal(mh('Dar de baja · '+esc(t.nombre))+`<p class="mut" style="margin-bottom:6px">Elige el <b style="color:var(--tx)">último día que trabajó</b>. Desde el día siguiente no se le programan ni se le cuentan horas faltantes. Sus horas registradas no se borran. Si fue un olvido, pon la fecha real aunque sea pasada.</p>`+fld('Último día laborado',`<input type="date" class="inp" id="b_f" value="${today()}" max="${today()}">`)+mf('Dar de baja','bajaOk'))}
+function bajaOk(){const t=S.tecnicos.find(x=>x.codigo===M.code),f=(val('b_f')||'').trim();if(!t)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(f)||f>today()){toast('La fecha no es válida (no puede ser futura)','er');return}
+ logH('Técnico '+t.nombre,'activo','inactivo',t.codigo);t.activo=false;retPon(t,f);save();closeModal();renderPage(true);toast('Baja registrada: último día '+dfull(f),'ok')}
 function ajhGet(tec,f){const a=S.settings.ajh&&S.settings.ajh[f];return (a&&tec&&a[tec.codigo])||null}
 function diaCfg(tec,f){const o=ajhGet(tec,f);if(o)return o.l?{on:0,ini:'00:00',fin:'00:00',rec:0,ali:0}:{on:1,ini:o.i,fin:o.o,rec:+o.r||0,ali:+o.a||0};const tu=S.turnos.find(x=>x.id===turnoDe(tec,f));return tu?tu.dias[dow(f)]:null}
 function ajhPon(tec,f,e){S.settings.ajh=S.settings.ajh||{};(S.settings.ajh[f]=S.settings.ajh[f]||{})[tec.codigo]=e}
@@ -2211,7 +2219,7 @@ function pRespaldo(){
  const last=S.settings.respaldo;
  return `<div class="g12"><div class="c8">${card('Copia de seguridad','La puede descargar Gerencia, Calidad o Supervisor · una vez al día',`<p class="mut" style="font-size:13.5px;line-height:1.7">Descarga el archivo y guárdalo fuera de esta computadora (carpeta «Copia de seguridad APP HH»). Cuando alguien la descarga, la app lo registra y quita el aviso rojo para todos.</p>${backupCardExtra()}`)}</div></div>`}
 function pFaltantes(){
- const techs=S.tecnicos.filter(t=>t.registra&&t.activo!==false);const hf=U.hf;if(!hf.tec&&U.c.tec)hf.tec=U.c.tec;if(!hf.tec&&techs[0])hf.tec=techs[0].codigo;
+ const techs=S.tecnicos.filter(t=>t.registra&&vig(t));const hf=U.hf;if(!hf.tec&&U.c.tec)hf.tec=U.c.tec;if(!hf.tec&&techs[0])hf.tec=techs[0].codigo;
  const t=techs.find(x=>x.codigo===hf.tec);const j=t?jornadaInfo(t,hf.fecha):null;
  /* rueda: filtros de período, turno y persona */
  const per=hf.per||'todo',fT=hf.ft||'',fU=hf.fu||'';
@@ -2848,7 +2856,7 @@ Object.assign(A,{
  tDel:()=>{const t=S.turnos.find(x=>x.id===U.tsel);const n=S.tecnicos.filter(x=>x.turno===t.id).length;if(n){toast('Primero reasigna a las '+n+' personas de este turno, o sácalo de funcionamiento.','wa');return}if(S.turnos.length<=1){toast('Debe existir al menos un turno','wa');return}
   confirmM('Eliminar turno','Se eliminará “'+esc(t.nombre)+'”. Los registros históricos conservan el nombre del turno. Si solo quieres dejar de usarlo, mejor sácalo de funcionamiento.','Eliminar turno',()=>{logH('Turno eliminado',t.nombre,'');S.turnos=S.turnos.filter(x=>x.id!==t.id);U.tsel=S.turnos[0].id;save();closeModal();renderPage(true);toast('Turno eliminado','ok')},1)},
  unasg:t=>{const c=S.tecnicos.find(x=>x.codigo===t.dataset.c);const otro=activeTurnos().find(x=>x.id!==c.turno);if(!otro){toast('No hay otro turno al que moverlo','wa');return}logH('Turno de '+c.nombre,turnoName(c.turno),turnoName(otro.id),c.codigo);tecCongelar(c);c.turno=otro.id;save();renderPage(true);toast(c.nombre+' pasó a '+otro.nombre,'ok')},
- tecToggle:t=>{const c=S.tecnicos.find(x=>x.codigo===t.dataset.c);logH('Técnico '+c.nombre,c.activo===false?'inactivo':'activo',c.activo===false?'activo':'inactivo',c.codigo);c.activo=c.activo===false;save();renderPage(true)},
+ tecToggle:t=>{const c=S.tecnicos.find(x=>x.codigo===t.dataset.c);if(c.activo!==false){bajaOpen(c.codigo);return}retPon(c,'');logH('Técnico '+c.nombre,c.activo===false?'inactivo':'activo',c.activo===false?'activo':'inactivo',c.codigo);c.activo=c.activo===false;save();renderPage(true)},
  hallQuick:()=>{const p=val('hq_p');if(!p){toast('Primero crea un proyecto','wa');return}const c=hallNext(p);S.hallazgos.push({codigo:c,proy:p,desc:(val('hq_d')||'').trim(),estado:'Abierto',fecha:today()});save();renderPage(true);toast('Hallazgo '+c+' creado','ok')},
  hallToggle:t=>{const h=S.hallazgos.find(x=>x.codigo===t.dataset.c);const n=h.estado==='Cerrado'?'Abierto':'Cerrado';logH('Hallazgo '+h.codigo,h.estado||'Abierto',n);h.estado=n;save();renderPage(true)}
 });
@@ -3113,6 +3121,7 @@ function nbRows(){
  if(Array.isArray(st.lineas)&&st.lineas.length)out.ajustes.set('lineas',nbJ({clave:'lineas',valor:st.lineas.join('|')}));
  if(Array.isArray(st.frases)&&st.frases.length)out.ajustes.set('frases',nbJ({clave:'frases',valor:st.frases.join('|')}));
  if(st.msgsem&&Object.keys(st.msgsem).length)out.ajustes.set('msgsem',nbJ({clave:'msgsem',valor:JSON.stringify(st.msgsem)}));
+ if(st.ret!==undefined)out.ajustes.set('ret',nbJ({clave:'ret',valor:JSON.stringify(st.ret)}));
  if(st.ajh!==undefined)out.ajustes.set('ajh',nbJ({clave:'ajh',valor:JSON.stringify(st.ajh)}));
  out.turnos=mk();out.turno_dias=mk();
  S.turnos.forEach(t=>{
@@ -3174,7 +3183,7 @@ async function nbLoad(){
   rg=await nbSel('registros_hh','select=*&order=registrado_en.asc,id.asc'+(since?'&fecha=gte.'+since:''));
   if(NB.perfil&&(NB.perfil.rol==='Gerencia'||NB.perfil.rol==='Auditoría')){[his,per,pnh]=await Promise.all([safe(nbSel('historial','select=*&order=id.desc'),[]).then(x=>x.slice(0,400)),safe(nbSel('perfiles'),[]),safe(nbSel('perfil_nombres','select=*&order=desde.asc'),[])]);NB.perfs=per;NB.pnh=pnh}}
  const st={...NB_DEF,webapp:'',url:'',empresa:'LATAMKS S.A.S.'};
- aj.forEach(a=>{if(a.clave==='meta_semanal')st.meta=+a.valor;else if(['rec','ali','recSab'].includes(a.clave))st[a.clave]=+a.valor;else if(['empresa','url'].includes(a.clave))st[a.clave]=a.valor;else if(a.clave==='ultimo_respaldo')st.respaldo=a.valor;else if(a.clave==='capacidades')st.caps=String(a.valor).split(',').map(Number).filter(n=>n>0);else if(a.clave==='frases')st.frases=String(a.valor).split('|').filter(Boolean);else if(a.clave==='ajh'){try{st.ajh=JSON.parse(a.valor)||{}}catch(_){st.ajh={}}}else if(a.clave==='msgsem'){try{st.msgsem=JSON.parse(a.valor)||{}}catch(_){st.msgsem={}}}else if(a.clave==='meta_productividad')st.metaProd=+a.valor;else if(a.clave==='umbral_alcance')st.umbAlc=+a.valor;else if(a.clave==='lineas')st.lineas=String(a.valor).split('|').filter(Boolean)});
+ aj.forEach(a=>{if(a.clave==='meta_semanal')st.meta=+a.valor;else if(['rec','ali','recSab'].includes(a.clave))st[a.clave]=+a.valor;else if(['empresa','url'].includes(a.clave))st[a.clave]=a.valor;else if(a.clave==='ultimo_respaldo')st.respaldo=a.valor;else if(a.clave==='capacidades')st.caps=String(a.valor).split(',').map(Number).filter(n=>n>0);else if(a.clave==='frases')st.frases=String(a.valor).split('|').filter(Boolean);else if(a.clave==='ret'){try{st.ret=JSON.parse(a.valor)||{}}catch(_){st.ret={}}}else if(a.clave==='ajh'){try{st.ajh=JSON.parse(a.valor)||{}}catch(_){st.ajh={}}}else if(a.clave==='msgsem'){try{st.msgsem=JSON.parse(a.valor)||{}}catch(_){st.msgsem={}}}else if(a.clave==='meta_productividad')st.metaProd=+a.valor;else if(a.clave==='umbral_alcance')st.umbAlc=+a.valor;else if(a.clave==='lineas')st.lineas=String(a.valor).split('|').filter(Boolean)});
  const tmap={},turnoByName={};
  const turnos=tu.map((t,i)=>{const id='T'+(i+1);tmap[t.id]=id;turnoByName[t.nombre]=turnoByName[t.nombre]||id;const dias={};for(let k=0;k<7;k++)dias[k]=mkDia(0,'07:30','17:00',0,0);
   td.filter(d=>d.turno_id===t.id).forEach(d=>{dias[d.dia]=mkDia(d.activo?1:0,String(d.hora_inicio||'07:30').slice(0,5),String(d.hora_fin||'17:00').slice(0,5),d.receso_min||0,d.alimentacion_min||0)});
@@ -3199,7 +3208,7 @@ async function nbLoad(){
  if(seeded){if(NB.perfil&&NB.perfil.rol==='Gerencia'){nbSave()}else NB.snap=nbSnapNow()}
  NB.sig=nbSig()}
 function nbSnapNow(){const r=nbRows();const o={};NB_ORDER.forEach(([c])=>{o[c]=r[c]});return o}
-function nbSig(){let h=0;const s=ETAPAS.join()+JSON.stringify(ETINFO)+ACT.map(a=>a[0]+a[1]+a[2]+(a[3]||[]).join()+a[4]).join()+S.registros.map(r=>r.id+r.estado+r.horas+(r.pend?1:0)+(r.hallazgo||'')+(r.causa||'')+(r.origen||'')+(r.persona||'')).join('|')+S.proyectos.map(p=>p.num+p.estado+((p.exp||{}).total||0)).join(',')+S.tecnicos.map(t=>t.codigo+t.activo+t.turno).join(',')+S.hallazgos.map(x=>x.codigo+x.estado+(x.ciclos||0)+(x.esc?1:0)+(x.autEn?1:0)+(x.asigIni||'')).join(',')+(S.hhist||[]).length+'L'+(S.lib||[]).map(x=>x.codigo+x.estado+(x.asigIni||'')).join(',')+'f'+(S.hfotos||[]).length+JSON.stringify(S.rota)+JSON.stringify(S.settings.ajh||{})+S.turnos.map(t=>t.nombre+nbJ(t.dias)).join('');
+function nbSig(){let h=0;const s=ETAPAS.join()+JSON.stringify(ETINFO)+ACT.map(a=>a[0]+a[1]+a[2]+(a[3]||[]).join()+a[4]).join()+S.registros.map(r=>r.id+r.estado+r.horas+(r.pend?1:0)+(r.hallazgo||'')+(r.causa||'')+(r.origen||'')+(r.persona||'')).join('|')+S.proyectos.map(p=>p.num+p.estado+((p.exp||{}).total||0)).join(',')+S.tecnicos.map(t=>t.codigo+t.activo+t.turno).join(',')+S.hallazgos.map(x=>x.codigo+x.estado+(x.ciclos||0)+(x.esc?1:0)+(x.autEn?1:0)+(x.asigIni||'')).join(',')+(S.hhist||[]).length+'L'+(S.lib||[]).map(x=>x.codigo+x.estado+(x.asigIni||'')).join(',')+'f'+(S.hfotos||[]).length+JSON.stringify(S.rota)+JSON.stringify(S.settings.ajh||{})+JSON.stringify(S.settings.ret||{})+S.turnos.map(t=>t.nombre+nbJ(t.dias)).join('');
  for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return s.length+':'+h}
 
 /* ---------- Guardado en la nube (solo cambios) ---------- */
