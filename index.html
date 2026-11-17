@@ -1283,7 +1283,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.9.5';
+const APP_VER='4.9.6';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1929,7 +1929,7 @@ const A={
  editExp:t=>expOpen(t.dataset.p),expSave,xUse:()=>{const s=$$('[data-xe]').reduce((a,e)=>a+num(e.value),0);$('#x_tot').value=s;expLive()},
  newTec:()=>tecOpen(''),editTec:t=>tecOpen(t.dataset.c),tecSave,newHall:hallOpen,hallSave,
  tSel:t=>{U.tsel=t.dataset.v;renderPage(true)},
- tDay:t=>{const tu=S.turnos.find(x=>x.id===U.tsel),d=tu.dias[t.dataset.k];logH('Turno '+tu.nombre+' · '+DN[t.dataset.k],d.on?'con jornada':'sin jornada',d.on?'sin jornada':'con jornada');d.on=d.on?0:1;tu.mod={ts:new Date().toISOString(),por:U.name+' ('+U.role+')'};save();renderPage(true)},
+ tDay:t=>{if(tfGuard(t.dataset.k,'on',0))return;tfApply(U.tsel,t.dataset.k,'on',0)},tfNew:()=>tfModal(null),tfGo:t=>tfGo(t),
  tSave:()=>{const tu=S.turnos.find(x=>x.id===U.tsel);tu.mod={ts:new Date().toISOString(),por:U.name+' ('+U.role+')'};save();renderPage(true);toast('Turno guardado','ok')},
  newTurno:()=>{M={type:'nt'};openModal(mh('Nuevo turno')+fld('Nombre',`<input class="inp" id="nt_n" placeholder="Ej.: Turno 3 · Sábados alternos">`)+`<p class="mut3" style="font-size:12.5px;margin-top:10px">Se crea como copia del turno seleccionado; luego ajusta los horarios por día.</p>`+mf('Crear turno','ntSave'))},
  ntSave:()=>{const n=(val('nt_n')||'').trim();if(!n){toast('Escribe un nombre','wa');return}const b=S.turnos.find(x=>x.id===U.tsel)||S.turnos[0];const id='T'+(S.turnos.reduce((m,x)=>Math.max(m,parseInt(x.id.slice(1),10)||0),0)+1);S.turnos.push({id,nombre:n,dias:JSON.parse(JSON.stringify(b.dias)),mod:{ts:new Date().toISOString(),por:U.name+' ('+U.role+')'}});U.tsel=id;save();closeModal();renderPage(true);toast('Turno creado','ok')},
@@ -1961,8 +1961,8 @@ document.addEventListener('change',e=>{const t=e.target;
  if(t.id==='impFile'){const f=t.files[0];if(!f)return;f.text().then(x=>{try{const o=JSON.parse(x);if(!o.registros||!o.tecnicos)throw 0;S=o;save();renderAll();toast('Respaldo importado','ok')}catch(_){toast('Ese archivo no es un respaldo válido','er')}});return}
  if(t.dataset.f){setPath(t.dataset.f,t.type==='checkbox'?t.checked:t.value);if(t.hasAttribute('data-nr'))return;if(t.dataset.f==='f.per'){renderAll(true);return}renderPage(true);return}
  if(t.dataset.ot!==undefined){const o=OTROS_CAT.find(x=>x.nombre===t.dataset.ot);if(o&&o.clase!==t.value){logH('Lista Otro tiempo',o.nombre+' · '+(CL[o.clase]||{n:o.clase}).n,o.nombre+' · '+(CL[t.value]||{n:t.value}).n,'Ajustes');otSave([{...o,clase:t.value}],'catalogo_otro_tiempo','nombre','Cambio guardado')}return}
- if(t.dataset.tur){const c=S.tecnicos.find(x=>x.codigo===t.dataset.tur);logH('Turno de '+c.nombre,turnoName(c.turno),turnoName(t.value),c.codigo);c.turno=t.value;save();renderPage(true);toast('Turno asignado','ok');return}
- if(t.dataset.tf){const [k,f]=t.dataset.tf.split('.');const tu=S.turnos.find(x=>x.id===U.tsel),d=tu.dias[k];const nv=(f==='ini'||f==='fin')?t.value:Math.max(0,+t.value||0);logH('Turno '+tu.nombre+' · '+DN[k]+' '+f,d[f],nv);d[f]=nv;tu.mod={ts:new Date().toISOString(),por:U.name+' ('+U.role+')'};save();renderPage(true);return}
+ if(t.dataset.tur){const c=S.tecnicos.find(x=>x.codigo===t.dataset.tur);logH('Turno de '+c.nombre,turnoName(c.turno),turnoName(t.value),c.codigo);tecCongelar(c);c.turno=t.value;save();renderPage(true);toast('Turno asignado','ok');return}
+ if(t.dataset.tf){const [k,f]=t.dataset.tf.split('.');const nv=(f==='ini'||f==='fin')?t.value:Math.max(0,+t.value||0);if(tfGuard(k,f,nv)){renderPage(true);return}tfApply(U.tsel,k,f,nv);return}
  if(t.dataset.hp){const c=$('#h_c');if(c)c.value=hallNext(t.value);return}
  if(t.dataset.mo){const r=S.registros.find(x=>x.id===M.id);const ps=personasPara(t.value);const w=$('#e_persona');if(w)w.innerHTML=`<option value="">No aplica / no identificada</option>`+ps.map(p=>`<option value="${p.codigo}">${esc(p.nombre)}</option>`).join('')}
 });
@@ -2048,6 +2048,34 @@ function capForm(tec){
  return `<div class="cap">${head}${sec(1,'Tipo de registro','Elige de las listas, sin escribir',modes)}${sec(2,'Trabajo ejecutado','',s2)}${s3}${desc}${typeof libTecCard==='function'?libTecCard():''}${list}${bar}</div>`;
 }
 
+
+/* ---------- v4.9.6 · horarios con vigencia: un cambio de turno ya no reescribe semanas pasadas ---------- */
+function turnoSemUsadas(id){const hoyW=monday(today()),set={};live().forEach(r=>{if(!r.tec||!r.fecha)return;const w=monday(r.fecha);if(w>=hoyW)return;const t=S.tecnicos.find(x=>x.codigo===r.tec);if(t&&turnoDe(t,r.fecha)===id)set[w]=1});return Object.keys(set).sort()}
+function tfApply(id,k,f,nv){const tu=S.turnos.find(x=>x.id===id),d=tu.dias[k];
+ if(f==='on'){logH('Turno '+tu.nombre+' · '+DN[k],d.on?'con jornada':'sin jornada',d.on?'sin jornada':'con jornada');d.on=d.on?0:1}
+ else{logH('Turno '+tu.nombre+' · '+DN[k]+' '+f,d[f],nv);d[f]=nv}
+ tu.mod={ts:new Date().toISOString(),por:U.name+' ('+U.role+')'};save();renderPage(true)}
+function tfGuard(k,f,nv){const id=U.tsel;if(U.tfOk&&U.tfOk[id])return false;if(!turnoSemUsadas(id).length)return false;tfModal({id,k,f,nv});return true}
+function tfModal(p){const id=U.tsel,tu=S.turnos.find(x=>x.id===id),ws=turnoSemUsadas(id);M={type:'tf',id,p};
+ const w0=U.semW||monday(today());
+ openModal(mh(p?'Este cambio tocaría semanas ya trabajadas':'Versión del turno por fechas')+
+ `<p class="mut">${p?`El turno <b style="color:var(--tx)">${esc(tu.nombre)}</b> ya se usó en <b style="color:var(--tx)">${ws.length} semana(s) pasadas</b> (${ws.length?dlabel(ws[0])+' … '+dlabel(ws[ws.length-1]):''}). Si cambias sus horas aquí, esas semanas también cambian y se alteran las horas programadas que ya se cuentan.`:`Crea una copia de <b style="color:var(--tx)">${esc(tu.nombre)}</b> que aplica solo desde una fecha, sin tocar el turno original ni las semanas pasadas.`}</p>`+
+ fld('Semana de referencia (cualquier fecha dentro de la semana)',`<input type="date" class="inp" id="tf_w" value="${w0}">`)+
+ `<div style="display:grid;gap:8px;margin-top:12px">${btn('<b>Solo esa semana</b><br><small>Una excepción, por ejemplo un festivo</small>','tfGo','data-m="week" style="white-space:normal;text-align:left;height:auto;padding:11px 14px;line-height:1.35"')}${btn('<b>Desde esa semana en adelante</b><br><small>Cambio permanente de horario</small>','tfGo','data-m="from" style="white-space:normal;text-align:left;height:auto;padding:11px 14px;line-height:1.35"')}${p?btn('<b>Cambiar todo el historial</b><br><small>Solo para corregir un error de digitación</small>','tfGo','data-m="all" style="white-space:normal;text-align:left;height:auto;padding:11px 14px;line-height:1.35"','ghost'):''}</div><p class="mut3" style="font-size:12.5px;margin-top:10px">Con las dos primeras opciones el turno original no cambia: se crea una versión nueva, se asigna a las personas en esas fechas y tu cambio queda ahí.</p><div class="mf">${btn('Cancelar','mClose','','ghost')}</div>`,'s')}
+function tfGo(t){const m=t.dataset.m,p=M&&M.p,id=M.id;
+ if(m==='all'){(U.tfOk=U.tfOk||{})[id]=1;closeModal();if(p)tfApply(id,p.k,p.f,p.nv);toast('Cambio aplicado a todo el historial','wa');return}
+ const w=monday(val('tf_w')||today()),nid=turnoFork(id,m,w);closeModal();if(p)tfApply(nid,p.k,p.f,p.nv);else renderPage(true);
+ toast('Listo: ahora editas «'+turnoName(nid)+'». El turno original y las semanas pasadas no cambiaron.','ok')}
+function turnoFork(id,mode,w){const o=S.turnos.find(x=>x.id===id),nid='T'+(S.turnos.reduce((m,x)=>Math.max(m,parseInt(x.id.slice(1),10)||0),0)+1),lab=mode==='week'?'semana '+dCorta(w):'desde '+dCorta(w);
+ S.turnos.push({id:nid,nombre:o.nombre+' · '+lab,dias:JSON.parse(JSON.stringify(o.dias)),mod:{ts:new Date().toISOString(),por:U.name+' ('+U.role+')'}});S.rota=S.rota||{};
+ let weeks=[w];if(mode==='from'){const last=Object.keys(S.rota).sort().pop()||w,lim=addDays(monday(today()),56),end=last>lim?last:lim;weeks=[];for(let x=w;x<=end;x=addDays(x,7))weeks.push(x)}
+ S.tecnicos.filter(t=>t.registra).forEach(t=>{
+  if(mode==='from'&&t.turno===id){const first=tecPrimeraSemana(t),lo=addDays(w,-7*52);for(let x=(first&&first>lo?first:lo);first&&x<w;x=addDays(x,7)){S.rota[x]=S.rota[x]||{};if(S.rota[x][t.codigo]===undefined)S.rota[x][t.codigo]=id}}
+  weeks.forEach(wk=>{let any=false;const v={};for(let d=0;d<7;d++){const cur=turnoDe(t,addDays(wk,d===0?6:d-1));if(cur===id){v[d]=nid;any=true}else v[d]=cur}if(any){S.rota[wk]=S.rota[wk]||{};S.rota[wk][t.codigo]=v}});
+  if(mode==='from'&&t.turno===id)t.turno=nid});
+ logH('Turno '+o.nombre,'versión '+lab,turnoName(nid));U.tsel=nid;save();return nid}
+function tecPrimeraSemana(t){let f=t.alta||'';const r=live().filter(x=>x.tec===t.codigo).map(x=>x.fecha).sort()[0];if(r&&(!f||r<f))f=r;return f?monday(f):''}
+function tecCongelar(c){if(!c||!c.registra)return;const first=tecPrimeraSemana(c),hoyW=monday(today());if(!first)return;S.rota=S.rota||{};for(let x=first;x<hoyW;x=addDays(x,7)){S.rota[x]=S.rota[x]||{};if(S.rota[x][c.codigo]===undefined)S.rota[x][c.codigo]=c.turno}}
 /* ---------- Turnos: editar, desactivar, eliminar, asignar personal, programación semanal ---------- */
 function pTurnos(){
  return `<div class="tabs" style="margin-bottom:16px"><button class="${U.tab==='cfg'?'on':''}" data-act="tab" data-v="cfg">Turnos y horarios</button><button class="${U.tab==='sem'?'on':''}" data-act="tab" data-v="sem">Programación semanal del personal</button></div>`+(U.tab==='sem'?turnosSem():turnosCfg());
@@ -2063,7 +2091,7 @@ function turnosCfg(){
  const cmp=S.turnos.map(x=>({x,h:semanaH(x),n:S.tecnicos.filter(y=>y.registra&&y.activo!==false&&y.turno===x.id).length}));const sc=Math.max(meta,...cmp.map(c=>c.h))*1.12;
  const cmpH=cmp.map(({x,h,n})=>{const col=Math.abs(h-meta)<.01?'var(--ok)':h<meta?'var(--wa)':'var(--er)';return `<div style="margin-bottom:14px;${x.activo===0?'opacity:.55':''}"><div class="prh"><span>${esc(x.nombre)}${x.activo===0?' '+badge('inactivo','n'):''}</span><span class="prn">${hh(h)} <em>/ ${meta} HH · ${n} persona${n===1?'':'s'}</em></span></div><div class="cbar"><i style="width:${h/sc*100}%;background:${col}"></i><b class="mk" style="left:${meta/sc*100}%"></b></div></div>`}).join('');
  return `<div class="tabs">${S.turnos.map(x=>`<button class="${x.id===t.id?'on':''}" data-act="tSel" data-v="${x.id}">${esc(x.nombre)}${x.activo===0?' · inactivo':''}</button>`).join('')}${G?btn(icon('plus',15)+' Nuevo turno','newTurno','','sm ghost'):''}</div>
- <div class="g12"><div class="c8">${card(esc(t.nombre)+(t.activo===0?' '+badge('Inactivo','n'):''),'Horas efectivas = salida − entrada (si termina al día siguiente se suma 24 h) − receso − alimentación',days+`<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:16px">${est}<span class="mut3" style="font-size:12.5px">Última modificación: ${t.mod&&t.mod.ts?dlabel(ymd(new Date(t.mod.ts)))+' por '+esc(t.mod.por):esc((t.mod&&t.mod.por)||'')}</span></div>${G?`<div class="acts" style="margin-top:14px">${btn(icon('edit',14)+' Renombrar','renTurno','','sm ghost')}${btn(t.activo===0?'Volver a activar':'Sacar de funcionamiento','tActive','','sm ghost')}${btn(icon('trash',14)+' Eliminar turno','tDel','','sm dng')}</div>`:''}`)}</div>
+ <div class="g12"><div class="c8">${card(esc(t.nombre)+(t.activo===0?' '+badge('Inactivo','n'):''),'Horas efectivas = salida − entrada (si termina al día siguiente se suma 24 h) − receso − alimentación',days+`<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:16px">${est}${turnoSemUsadas(t.id).length?badge('Usado en '+turnoSemUsadas(t.id).length+' semana(s) ya trabajadas','i'):''}<span class="mut3" style="font-size:12.5px">Última modificación: ${t.mod&&t.mod.ts?dlabel(ymd(new Date(t.mod.ts)))+' por '+esc(t.mod.por):esc((t.mod&&t.mod.por)||'')}</span></div>${G?`<div class="acts" style="margin-top:14px">${btn(icon('edit',14)+' Renombrar','renTurno','','sm ghost')}${btn('Versión por fechas…','tfNew','','sm ghost')}${btn(t.activo===0?'Volver a activar':'Sacar de funcionamiento','tActive','','sm ghost')}${btn(icon('trash',14)+' Eliminar turno','tDel','','sm dng')}</div>`:''}`)}</div>
  <div class="c4">${card('Comparativo semanal de turnos','¿Qué compara? Las HH efectivas por semana de cada turno frente a la meta semanal ('+meta+' HH). La línea blanca es la meta; verde cumple, amarillo queda por debajo, rojo se pasa.',cmpH)}
  ${card('Personal asignado a este turno',asg.length+' persona'+(asg.length===1?'':'s')+' con este turno por defecto',(asg.length?asg.map(x=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--bd)"><div class="av" style="width:30px;height:30px;font-size:11px">${esc(x.ini)}</div><div style="flex:1"><b>${esc(x.nombre)}</b><div class="mut3" style="font-size:12px">${esc(x.area)}</div></div>${G?`<button class="ib" style="width:30px;height:30px" data-act="unasg" data-c="${x.codigo}" aria-label="Quitar del turno">${icon('x',14)}</button>`:''}</div>`).join(''):empty('Nadie asignado todavía'))+(G&&otros.length?`<div class="fld" style="margin-top:12px"><label>Agregar personal a este turno</label><select class="sel" data-asg="${t.id}"><option value="">Seleccionar persona…</option>${otros.map(x=>`<option value="${x.codigo}">${esc(x.nombre)} · ahora en ${esc(turnoName(x.turno))}</option>`).join('')}</select></div>`:''))}</div></div>`;
 }
@@ -2808,14 +2836,14 @@ Object.assign(A,{
  tActive:()=>{const t=S.turnos.find(x=>x.id===U.tsel);const n=S.tecnicos.filter(x=>x.turno===t.id&&x.registra&&x.activo!==false).length;logH('Turno '+t.nombre,t.activo===0?'inactivo':'activo',t.activo===0?'activo':'inactivo');t.activo=t.activo===0?1:0;t.mod={ts:new Date().toISOString(),por:U.name+' ('+U.role+')'};save();renderPage(true);toast(t.activo===0?'Turno fuera de funcionamiento'+(n?'. Reasigna a sus '+n+' personas':''):'Turno activo de nuevo',t.activo===0&&n?'wa':'ok')},
  tDel:()=>{const t=S.turnos.find(x=>x.id===U.tsel);const n=S.tecnicos.filter(x=>x.turno===t.id).length;if(n){toast('Primero reasigna a las '+n+' personas de este turno, o sácalo de funcionamiento.','wa');return}if(S.turnos.length<=1){toast('Debe existir al menos un turno','wa');return}
   confirmM('Eliminar turno','Se eliminará “'+esc(t.nombre)+'”. Los registros históricos conservan el nombre del turno. Si solo quieres dejar de usarlo, mejor sácalo de funcionamiento.','Eliminar turno',()=>{logH('Turno eliminado',t.nombre,'');S.turnos=S.turnos.filter(x=>x.id!==t.id);U.tsel=S.turnos[0].id;save();closeModal();renderPage(true);toast('Turno eliminado','ok')},1)},
- unasg:t=>{const c=S.tecnicos.find(x=>x.codigo===t.dataset.c);const otro=activeTurnos().find(x=>x.id!==c.turno);if(!otro){toast('No hay otro turno al que moverlo','wa');return}logH('Turno de '+c.nombre,turnoName(c.turno),turnoName(otro.id),c.codigo);c.turno=otro.id;save();renderPage(true);toast(c.nombre+' pasó a '+otro.nombre,'ok')},
+ unasg:t=>{const c=S.tecnicos.find(x=>x.codigo===t.dataset.c);const otro=activeTurnos().find(x=>x.id!==c.turno);if(!otro){toast('No hay otro turno al que moverlo','wa');return}logH('Turno de '+c.nombre,turnoName(c.turno),turnoName(otro.id),c.codigo);tecCongelar(c);c.turno=otro.id;save();renderPage(true);toast(c.nombre+' pasó a '+otro.nombre,'ok')},
  tecToggle:t=>{const c=S.tecnicos.find(x=>x.codigo===t.dataset.c);logH('Técnico '+c.nombre,c.activo===false?'inactivo':'activo',c.activo===false?'activo':'inactivo',c.codigo);c.activo=c.activo===false;save();renderPage(true)},
  hallQuick:()=>{const p=val('hq_p');if(!p){toast('Primero crea un proyecto','wa');return}const c=hallNext(p);S.hallazgos.push({codigo:c,proy:p,desc:(val('hq_d')||'').trim(),estado:'Abierto',fecha:today()});save();renderPage(true);toast('Hallazgo '+c+' creado','ok')},
  hallToggle:t=>{const h=S.hallazgos.find(x=>x.codigo===t.dataset.c);const n=h.estado==='Cerrado'?'Abierto':'Cerrado';logH('Hallazgo '+h.codigo,h.estado||'Abierto',n);h.estado=n;save();renderPage(true)}
 });
 document.addEventListener('change',e=>{const t=e.target;
  if(t.dataset.rota){const w=U.semW;S.rota[w]=S.rota[w]||{};const c=S.tecnicos.find(x=>x.codigo===t.dataset.rota);logH('Programación '+dlabel(w)+' · '+c.nombre,turnoName(rotaDe(w,c.codigo)),t.value==='LIBRE'?'Libre':turnoName(t.value));S.rota[w][c.codigo]=t.value;save();renderPage(true)}
- if(t.dataset.asg&&t.value){const c=S.tecnicos.find(x=>x.codigo===t.value);logH('Turno de '+c.nombre,turnoName(c.turno),turnoName(t.dataset.asg),c.codigo);c.turno=t.dataset.asg;save();renderPage(true);toast(c.nombre+' asignado','ok')}
+ if(t.dataset.asg&&t.value){const c=S.tecnicos.find(x=>x.codigo===t.value);logH('Turno de '+c.nombre,turnoName(c.turno),turnoName(t.dataset.asg),c.codigo);tecCongelar(c);c.turno=t.dataset.asg;save();renderPage(true);toast(c.nombre+' asignado','ok')}
 });
 /* ===== v2.4 · Programación por día y programación profesional para compartir ===== */
 const MESL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -4028,7 +4056,7 @@ Object.assign(A,{
   if(!otros.length){toast('No hay otro turno activo al que pasarlo. Crea o activa otro turno primero.','wa');return}
   openModal(mh('Cambiar de turno a '+esc(c.nombre))+`<p class="mut" style="margin-bottom:10px">Una persona siempre debe tener un turno por defecto. Hoy está en <b style="color:var(--tx)">${esc(turnoName(c.turno))}</b>. ¿A cuál turno pasa?</p>`+fld('Nuevo turno',selM('un_t',otros.map(x=>[x.id,x.nombre]),otros[0].id))+`<div class="mf">${btn('Cancelar','mClose','','ghost')}${btn('Cambiar de turno','unasgDo','data-c="'+esc(c.codigo)+'"')}</div>`,'s')},
  unasgDo:t=>{const c=S.tecnicos.find(x=>x.codigo===t.dataset.c),n=val('un_t');if(!c||!n)return;
-  logH('Turno de '+c.nombre,turnoName(c.turno),turnoName(n),c.codigo);c.turno=n;save();closeModal();renderPage(true);toast(c.nombre+' pasó a '+turnoName(n),'ok')}});
+  logH('Turno de '+c.nombre,turnoName(c.turno),turnoName(n),c.codigo);tecCongelar(c);c.turno=n;save();closeModal();renderPage(true);toast(c.nombre+' pasó a '+turnoName(n),'ok')}});
 /* ================= v3.7 · FOTOS en hallazgos (fase 2) ================= */
 const HF_MOM={apertura:'Apertura',correccion:'Corrección',verificacion:'Verificación'};
 const HF_MAX=3,HF_LADO=1600;
