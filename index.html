@@ -1283,7 +1283,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.9.8';
+const APP_VER='5.0.0';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1386,7 +1386,7 @@ async function fotosZip(){
 const AU='Auditoría',G_=['Gerencia'],GS=['Gerencia','Supervisor',AU],GSC=['Gerencia','Supervisor','Calidad',AU],GA=['Gerencia',AU];
 const NAV=[
 {g:'Operación',items:[['captura','Captura rápida','clock',['Gerencia','Supervisor','Técnico',AU]],['faltantes','Horas faltantes','warn',['Gerencia','Supervisor','Técnico',AU]],['supervisor','Panel de supervisor','users',GS],['revision','Revisión de registros','check',['Gerencia','Supervisor']],['registros','Registros','db',GSC],['alertas','Alertas','bell',GS]]},
-{g:'Análisis',items:[['dashboard','Panel de Gerencia','dash',GS],['etapas','Comparar etapas','layers',GS],['retrabajo','Retrabajo','redo',GSC],['auditoria','Auditoría','search',['Gerencia',AU]],['hist','Histórico anterior','cal',GA]]},
+{g:'Análisis',items:[['dashboard','Panel de Gerencia','dash',GS],['etapas','Comparar etapas','layers',GS],['retrabajo','Retrabajo','redo',GSC],['desempeno','Desempeño','trend',GSC],['auditoria','Auditoría','search',['Gerencia',AU]],['hist','Histórico anterior','cal',GA]]},
 {g:'Gestión',items:[['proyectos','Proyectos','folder',GSC],['expectativas','Expectativas','sliders',GS],['tecnicos','Técnicos','user',GA],['turnos','Turnos','cal',GS],['hallazgos','Hallazgos','flag',GSC],['liberaciones','Liberaciones','check',GSC],['calidad','Gestión de Calidad','trend',GSC]]},
 {g:'Sistema',items:[['respaldo','Copia de seguridad','down',['Gerencia','Supervisor','Calidad']],['catalogo','Etapas y actividades','layers',GA],['listas','Otro tiempo y líneas','sliders',GA],['ajustes','Ajustes y QR','qr',G_]]}];
 const ALLN=NAV.flatMap(g=>g.items.map(i=>({id:i[0],t:i[1],ic:i[2],r:i[3],g:g.g})));
@@ -2045,13 +2045,13 @@ function capForm(tec){
  const bar=`<div class="savebar"><div class="sv-t"><span class="stat" style="--c:${miss.length?'#F59E0B':'#22C55E'}"></span><div><b>${miss.length?'Completa los campos obligatorios':'Listo para guardar'}</b><small>${miss.length?'Falta: '+miss.join(', '):esc(tec.nombre.split(' ')[0])+' · '+esc(c.modo==='proy'?c.tipo:c.modo==='aus'?'Ausencia':'Otro tiempo')+' · '+hh(h)+' HH'+(soft.length?' · retrabajo incompleto: '+soft.join(', '):'')}</small></div></div><button class="btn" data-act="capSave">${icon('check',18)} Guardar</button></div>`;
  const rec=live().filter(r=>r.tec===tec.codigo).sort((a,b)=>a.fecha<b.fecha?1:a.fecha>b.fecha?-1:a.ts<b.ts?1:-1).slice(0,8);
  const list=rec.length?sec('•','Últimos registros','Tus 8 movimientos más recientes',rec.map(r=>`<div style="display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--bd)"><span style="width:8px;height:8px;border-radius:50%;background:${CL[r.clase].c};flex:none"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">${r.proy?r.proy+' · ':''}${esc(r.macro||r.tipo)}${r.fecha===c.fecha?' <span class="bd i">este día</span>':''}</div><div class="sub mut3" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.act)} · ${dlabel(r.fecha)} · ${esc(CL[r.clase].n)}${r.estado==='Incompleto'?' · incompleto':''}</div></div>${badge(hh(r.horas)+' HH',r.clase==='retrabajo'?'wa':r.clase==='improd'?'er':'ok')}${can(['Gerencia','Supervisor'])?`<button class="ib" style="width:30px;height:30px" data-act="editReg" data-id="${r.id}" aria-label="Editar">${icon('edit',15)}</button>`:''}</div>`).join('')):'';
- return `<div class="cap">${head}${sec(1,'Tipo de registro','Elige de las listas, sin escribir',modes)}${sec(2,'Trabajo ejecutado','',s2)}${s3}${desc}${typeof libTecCard==='function'?libTecCard():''}${list}${bar}</div>`;
+ return `<div class="cap">${head}${sec(1,'Tipo de registro','Elige de las listas, sin escribir',modes)}${sec(2,'Trabajo ejecutado','',s2)}${s3}${desc}${(typeof libTecCard==='function'?libTecCard():'')+(typeof dpTecCard==='function'?dpTecCard():'')}${list}${bar}</div>`;
 }
 
 
-/* ---------- v4.9.8 · ajustes de horario por persona y día (sin crear turnos) ---------- */
+/* ---------- v5.0.0 · ajustes de horario por persona y día (sin crear turnos) ---------- */
 /* S.settings.ajh = { 'AAAA-MM-DD': { CODIGO: {i:entrada,o:salida,r:receso,a:alimentación,l:1 si libre,m:motivo,u:quién,t:cuándo} } } */
-/* v4.9.8 · fecha de retiro: S.settings.ret = { CODIGO: 'AAAA-MM-DD' } (último día laborado) */
+/* v5.0.0 · fecha de retiro: S.settings.ret = { CODIGO: 'AAAA-MM-DD' } (último día laborado) */
 const retDe=t=>(S.settings.ret&&t&&S.settings.ret[t.codigo])||'';
 const vig=t=>t.activo!==false||!!retDe(t);
 function retPon(t,f){S.settings.ret=S.settings.ret||{};const a=S.settings.ret[t.codigo]||'';if(f){if(a!==f)logH('Técnico fecha de retiro',a||'—',f,t.codigo);S.settings.ret[t.codigo]=f}else if(a){logH('Técnico fecha de retiro',a,'quitada',t.codigo);delete S.settings.ret[t.codigo]}}
@@ -3121,6 +3121,8 @@ function nbRows(){
  if(Array.isArray(st.lineas)&&st.lineas.length)out.ajustes.set('lineas',nbJ({clave:'lineas',valor:st.lineas.join('|')}));
  if(Array.isArray(st.frases)&&st.frases.length)out.ajustes.set('frases',nbJ({clave:'frases',valor:st.frases.join('|')}));
  if(st.msgsem&&Object.keys(st.msgsem).length)out.ajustes.set('msgsem',nbJ({clave:'msgsem',valor:JSON.stringify(st.msgsem)}));
+ if(st.desemp)out.ajustes.set('desemp',nbJ({clave:'desemp',valor:JSON.stringify(st.desemp)}));
+ ['danos','evals','desemp_pub'].forEach(k=>{if(st[k]!==undefined)out.ajustes.set(k,nbJ({clave:k,valor:JSON.stringify(st[k])}))});
  if(st.ret!==undefined)out.ajustes.set('ret',nbJ({clave:'ret',valor:JSON.stringify(st.ret)}));
  if(st.ajh!==undefined)out.ajustes.set('ajh',nbJ({clave:'ajh',valor:JSON.stringify(st.ajh)}));
  out.turnos=mk();out.turno_dias=mk();
@@ -3183,7 +3185,7 @@ async function nbLoad(){
   rg=await nbSel('registros_hh','select=*&order=registrado_en.asc,id.asc'+(since?'&fecha=gte.'+since:''));
   if(NB.perfil&&(NB.perfil.rol==='Gerencia'||NB.perfil.rol==='Auditoría')){[his,per,pnh]=await Promise.all([safe(nbSel('historial','select=*&order=id.desc'),[]).then(x=>x.slice(0,400)),safe(nbSel('perfiles'),[]),safe(nbSel('perfil_nombres','select=*&order=desde.asc'),[])]);NB.perfs=per;NB.pnh=pnh}}
  const st={...NB_DEF,webapp:'',url:'',empresa:'LATAMKS S.A.S.'};
- aj.forEach(a=>{if(a.clave==='meta_semanal')st.meta=+a.valor;else if(['rec','ali','recSab'].includes(a.clave))st[a.clave]=+a.valor;else if(['empresa','url'].includes(a.clave))st[a.clave]=a.valor;else if(a.clave==='ultimo_respaldo')st.respaldo=a.valor;else if(a.clave==='capacidades')st.caps=String(a.valor).split(',').map(Number).filter(n=>n>0);else if(a.clave==='frases')st.frases=String(a.valor).split('|').filter(Boolean);else if(a.clave==='ret'){try{st.ret=JSON.parse(a.valor)||{}}catch(_){st.ret={}}}else if(a.clave==='ajh'){try{st.ajh=JSON.parse(a.valor)||{}}catch(_){st.ajh={}}}else if(a.clave==='msgsem'){try{st.msgsem=JSON.parse(a.valor)||{}}catch(_){st.msgsem={}}}else if(a.clave==='meta_productividad')st.metaProd=+a.valor;else if(a.clave==='umbral_alcance')st.umbAlc=+a.valor;else if(a.clave==='lineas')st.lineas=String(a.valor).split('|').filter(Boolean)});
+ aj.forEach(a=>{if(a.clave==='meta_semanal')st.meta=+a.valor;else if(['rec','ali','recSab'].includes(a.clave))st[a.clave]=+a.valor;else if(['empresa','url'].includes(a.clave))st[a.clave]=a.valor;else if(a.clave==='ultimo_respaldo')st.respaldo=a.valor;else if(a.clave==='capacidades')st.caps=String(a.valor).split(',').map(Number).filter(n=>n>0);else if(a.clave==='frases')st.frases=String(a.valor).split('|').filter(Boolean);else if(a.clave==='desemp'){try{st.desemp=JSON.parse(a.valor)||undefined}catch(_){}}else if(['danos','evals','desemp_pub'].includes(a.clave)){try{st[a.clave]=JSON.parse(a.valor)}catch(_){}}else if(a.clave==='ret'){try{st.ret=JSON.parse(a.valor)||{}}catch(_){st.ret={}}}else if(a.clave==='ajh'){try{st.ajh=JSON.parse(a.valor)||{}}catch(_){st.ajh={}}}else if(a.clave==='msgsem'){try{st.msgsem=JSON.parse(a.valor)||{}}catch(_){st.msgsem={}}}else if(a.clave==='meta_productividad')st.metaProd=+a.valor;else if(a.clave==='umbral_alcance')st.umbAlc=+a.valor;else if(a.clave==='lineas')st.lineas=String(a.valor).split('|').filter(Boolean)});
  const tmap={},turnoByName={};
  const turnos=tu.map((t,i)=>{const id='T'+(i+1);tmap[t.id]=id;turnoByName[t.nombre]=turnoByName[t.nombre]||id;const dias={};for(let k=0;k<7;k++)dias[k]=mkDia(0,'07:30','17:00',0,0);
   td.filter(d=>d.turno_id===t.id).forEach(d=>{dias[d.dia]=mkDia(d.activo?1:0,String(d.hora_inicio||'07:30').slice(0,5),String(d.hora_fin||'17:00').slice(0,5),d.receso_min||0,d.alimentacion_min||0)});
@@ -3208,7 +3210,7 @@ async function nbLoad(){
  if(seeded){if(NB.perfil&&NB.perfil.rol==='Gerencia'){nbSave()}else NB.snap=nbSnapNow()}
  NB.sig=nbSig()}
 function nbSnapNow(){const r=nbRows();const o={};NB_ORDER.forEach(([c])=>{o[c]=r[c]});return o}
-function nbSig(){let h=0;const s=ETAPAS.join()+JSON.stringify(ETINFO)+ACT.map(a=>a[0]+a[1]+a[2]+(a[3]||[]).join()+a[4]).join()+S.registros.map(r=>r.id+r.estado+r.horas+(r.pend?1:0)+(r.hallazgo||'')+(r.causa||'')+(r.origen||'')+(r.persona||'')).join('|')+S.proyectos.map(p=>p.num+p.estado+((p.exp||{}).total||0)).join(',')+S.tecnicos.map(t=>t.codigo+t.activo+t.turno).join(',')+S.hallazgos.map(x=>x.codigo+x.estado+(x.ciclos||0)+(x.esc?1:0)+(x.autEn?1:0)+(x.asigIni||'')).join(',')+(S.hhist||[]).length+'L'+(S.lib||[]).map(x=>x.codigo+x.estado+(x.asigIni||'')).join(',')+'f'+(S.hfotos||[]).length+JSON.stringify(S.rota)+JSON.stringify(S.settings.ajh||{})+JSON.stringify(S.settings.ret||{})+S.turnos.map(t=>t.nombre+nbJ(t.dias)).join('');
+function nbSig(){let h=0;const s=ETAPAS.join()+JSON.stringify(ETINFO)+ACT.map(a=>a[0]+a[1]+a[2]+(a[3]||[]).join()+a[4]).join()+S.registros.map(r=>r.id+r.estado+r.horas+(r.pend?1:0)+(r.hallazgo||'')+(r.causa||'')+(r.origen||'')+(r.persona||'')).join('|')+S.proyectos.map(p=>p.num+p.estado+((p.exp||{}).total||0)).join(',')+S.tecnicos.map(t=>t.codigo+t.activo+t.turno).join(',')+S.hallazgos.map(x=>x.codigo+x.estado+(x.ciclos||0)+(x.esc?1:0)+(x.autEn?1:0)+(x.asigIni||'')).join(',')+(S.hhist||[]).length+'L'+(S.lib||[]).map(x=>x.codigo+x.estado+(x.asigIni||'')).join(',')+'f'+(S.hfotos||[]).length+JSON.stringify(S.rota)+JSON.stringify(S.settings.ajh||{})+JSON.stringify(S.settings.ret||{})+JSON.stringify(S.settings.desemp||{})+JSON.stringify(S.settings.danos||[]).length+JSON.stringify(S.settings.evals||[]).length+JSON.stringify(S.settings.desemp_pub||{}).length+S.turnos.map(t=>t.nombre+nbJ(t.dias)).join('');
  for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return s.length+':'+h}
 
 /* ---------- Guardado en la nube (solo cambios) ---------- */
@@ -3356,7 +3358,7 @@ function nbIdleArm(){
   nbPoll()})}
 
 /* ---------- Técnico por QR (sin contraseña) ---------- */
-function nbKioskReset(){S.tecnicos=[];S.registros=[];NB.cred=null;NB.ctxProg={}}
+function nbKioskReset(){S.tecnicos=[];S.registros=[];NB.cred=null;NB.ctxProg={};NB.dp=undefined}
 async function nbCtx(fecha){
  const r=await nbRpc('contexto_captura',{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_fecha:fecha},false);
  if(!r)throw new Error('No se pudo cargar tu jornada.');
@@ -4505,6 +4507,169 @@ function pCalidad(){
  <div class="g12"><div class="c5">${nq}</div><div class="c7">${aten}</div></div>`}
 Object.assign(A,{cqPer:t=>{cqQ().per=t.dataset.v;renderPage(true)}});
 PAGES.calidad=pCalidad;
+
+/* ===================== v5.0.0 · Desempeño (etapa 1: motor + Individual + Equipo + Metas) ===================== */
+const DS_DIMS=[['cump','Cumplimiento de jornada','Horas registradas dentro de la jornada ÷ horas programadas','#38bdf8'],
+ ['prod','Productividad','HH productivas ÷ horas de jornada programadas','#8b5cf6'],
+ ['act','Actividades','Variedad de actividades productivas realizadas (objetivo: 8 distintas)','#22c55e'],
+ ['efi','Eficiencia','HH ganadas ÷ HH reales en etapas cerradas, según lo esperado del proyecto','#06b6d4'],
+ ['cal','Calidad (hallazgos)','Hallazgos asignados por cada 100 h trabajadas, y devoluciones','#a3e635'],
+ ['ret','Errores en retrabajo','Horas de retrabajo en que la persona figura como relacionada ÷ sus horas','#f59e0b'],
+ ['lib','Liberaciones','Liberaciones pedidas que Calidad aprobó a la primera','#f472b6'],
+ ['dan','Daños y fallas','Daños y fallas registrados por Supervisión o Calidad, según su gravedad por cada 100 h','#fb7185'],
+ ['reg','Oportunidad de registro','Registros hechos el mismo día que el trabajo','#60a5fa'],
+ ['pol','Polivalencia','Etapas distintas dominadas (≥ 4 h; objetivo: 4 etapas)','#c084fc']];
+const DS_DEF={metas:[95,80,75,85,85,85,90,90,90,70],pesos:[14,14,8,10,12,12,8,6,10,6],minPct:60,wEval:70,pubAuto:0,visRank:1,visNom:1,visDet:1};
+const DS_TIPOS=['Daño a equipo o herramienta','Daño a material o pieza','Falla de proceso','Falla de seguridad','Otro'],DS_SEV=[['Leve',1],['Moderado',3],['Grave',6]];
+const dsDanos=()=>S.settings.danos||[];
+function dsCfg(){const c=S.settings.desemp||{};const ok=(a,d)=>Array.isArray(a)&&a.length===10?a.map(Number):d.slice();return{metas:ok(c.metas,DS_DEF.metas),pesos:ok(c.pesos,DS_DEF.pesos),minPct:c.minPct!=null?+c.minPct:DS_DEF.minPct,wEval:c.wEval!=null?+c.wEval:DS_DEF.wEval,pubAuto:!!c.pubAuto,visRank:c.visRank==null?1:+c.visRank,visNom:c.visNom==null?1:+c.visNom,visDet:c.visDet==null?1:+c.visDet}}
+const dsQ=()=>{U.ds=U.ds||{tab:'ind',per:'30',desde:'',hasta:'',tec:''};return U.ds};
+function dsRange(){const q=dsQ(),t0=today();let d0,d1=addDays(t0,-1);
+ if(q.per==='mes'){d0=t0.slice(0,8)+'01'}else if(q.per==='cust'){d0=q.desde||addDays(t0,-29);if(q.hasta&&q.hasta<d1)d1=q.hasta}else d0=addDays(t0,-(+q.per||30));
+ if(d0<ALERTAS_DESDE)d0=ALERTAS_DESDE;if(d1<d0)d1=d0;return{d0,d1}}
+const DS_PROD=['normal','alcance','noplan','apoyo','insp'];
+function dsCtx(){const tot={};live().forEach(r=>{if(r.proy&&r.macro&&DS_PROD.includes(r.clase)){const k=r.proy+'|'+r.macro;tot[k]=(tot[k]||0)+r.horas}});return{tot,proj:Object.fromEntries(S.proyectos.map(p=>[p.num,p]))}}
+function dsMetrics(t,d0,d1,cx){
+ const rs=live().filter(r=>r.tec===t.codigo&&r.fecha>=d0&&r.fecha<=d1);const by={};let G=0;rs.forEach(r=>{by[r.fecha]=(by[r.fecha]||0)+r.horas;G+=r.horas});
+ let P=0,cov=0;for(let d=d0;d<=d1;d=addDays(d,1)){const p=prog(t,d);if(p<=0)continue;P+=p;cov+=Math.min(by[d]||0,p)}
+ const pr=rs.filter(r=>DS_PROD.includes(r.clase)),prodH=sum(pr);const o={};
+ o.cump=P>0?Math.min(100,cov/P*100):null;
+ o.prod=P>0?Math.min(100,prodH/P*100):null;
+ const acts=new Set(pr.map(r=>(r.act||'').trim()).filter(Boolean));o.act=pr.length?Math.min(100,acts.size/8*100):null;
+ let gan=0,real=0;const sh={};pr.forEach(r=>{if(r.proy&&r.macro){const k=r.proy+'|'+r.macro;sh[k]=(sh[k]||0)+r.horas}});
+ Object.keys(sh).forEach(k=>{const [pn,mc]=k.split('|'),p=cx.proj[pn];if(!p||!p.exp)return;if(!((p.exp.cerradas||[]).includes(mc)))return;const ex=+(p.exp.et&&p.exp.et[mc])||0;const tt=cx.tot[k]||0;if(!ex||!tt)return;gan+=ex*(sh[k]/tt);real+=sh[k]});
+ o.efi=real>0?Math.min(100,gan/real*100):null;
+ const hs=S.hallazgos.filter(h=>h.asigCod===t.codigo&&h.fecha>=d0&&h.fecha<=d1);
+ o.cal=G>0?Math.max(0,100-hs.length/G*100*12.5-hs.reduce((a,h)=>a+Math.max(0,(h.ciclos||0)-1)*5,0)):null;
+ const mine=[t.codigo,t.nombre,t.ini].filter(Boolean);const rt=live().filter(r=>r.clase==='retrabajo'&&r.fecha>=d0&&r.fecha<=d1&&r.persona&&mine.includes(r.persona));
+ o.ret=G>0?Math.max(0,100-sum(rt)/G*100*4):null;
+ const ls=(S.lib||[]).filter(l=>l.solCod===t.codigo&&(l.intento||1)===1&&['Liberada','Rechazada'].includes(l.estado)&&(l.fecha||'')>=d0&&(l.fecha||'')<=d1);
+ o.lib=ls.length?ls.filter(l=>l.estado==='Liberada').length/ls.length*100:null;
+ const dv=dsDanos().filter(e=>!e.x&&e.c===t.codigo&&e.f>=d0&&e.f<=d1);o.dan=(G>0&&dsDanos().length)?Math.max(0,100-dv.reduce((a,e)=>a+((DS_SEV.find(z=>z[0]===e.s)||[0,1])[1]),0)/G*100*5):null;
+ const own=rs.filter(r=>!/Supervisor|Gerencia|Calidad/i.test(r.por||''));
+ o.reg=own.length?own.filter(r=>r.ts&&ymd(new Date(r.ts))===r.fecha).length/own.length*100:null;
+ const ph={};pr.forEach(r=>{if(r.macro)ph[r.macro]=(ph[r.macro]||0)+r.horas});o.pol=pr.length?Math.min(100,Object.values(ph).filter(h=>h>=4).length/4*100):null;
+ return{t,P,G,cov,prodH,cob:P>0?G/P*100:0,d:o,n:{dan:dv.length,hall:hs.length,ret:sum(rt),lib:ls.length,acts:acts.size,regs:rs.length}}}
+function dsIndex(m,cf){let a=0,w=0;DS_DIMS.forEach((k,j)=>{const v=m.d[k[0]];if(v==null)return;a+=v*cf.pesos[j];w+=cf.pesos[j]});m.idx=w>0?a/w:null;m.wUsed=w;m.ok=m.P>0&&m.cob>=cf.minPct;return m}
+function dsAll(){const {d0,d1}=dsRange(),cf=dsCfg(),cx=dsCtx();const L=S.tecnicos.filter(t=>t.registra&&vig(t)).map(t=>dsIndex(dsMetrics(t,d0,d1,cx),cf)).filter(m=>m.P>0);
+ const rk=L.filter(m=>m.ok&&m.idx!=null).sort((a,b)=>b.idx-a.idx);rk.forEach((m,i)=>m.rk=i+1);return{L,rk,d0,d1,cf}}
+const dsCol=v=>v==null?'var(--mut3)':v>=85?'var(--ok)':v>=70?'var(--wa)':'var(--er)';
+const dsF=v=>v==null?'—':nf(v,0);
+function dsBar(v,meta,c){return `<div class="prog" style="position:relative;height:10px"><i style="width:${v==null?0:Math.min(100,v)}%;background:${c}"></i><u style="position:absolute;left:${meta}%;top:-3px;bottom:-3px;width:2px;background:var(--tx);opacity:.7"></u></div>`}
+function dsHdr(R){const q=dsQ();const seg=(arr,key,cur)=>`<div class="seg" role="group">${arr.map(([v,l])=>`<button class="${cur===v?'on':''}" data-act="dsSet" data-k="${key}" data-v="${v}">${l}</button>`).join('')}</div>`;
+ return `<div class="fbar">${seg([['ind','Individual'],['eq','Equipo y ranking'],['dan','Daños y fallas'],['ev','Evaluación'],['met','Metas y publicación']],'tab',q.tab)}${seg([['7','7 días'],['30','30 días'],['mes','Este mes'],['cust','Personalizado']],'per',q.per)}${q.per==='cust'?`<input type="date" class="inp" style="max-width:150px" data-f="ds.desde" value="${esc(q.desde||R.d0)}"><input type="date" class="inp" style="max-width:150px" data-f="ds.hasta" value="${esc(q.hasta||R.d1)}">`:''}<span class="mut3" style="font-size:12.5px;margin-left:auto">Del ${dlabel(R.d0)} al ${dlabel(R.d1)} · solo días ya cerrados</span></div>`}
+function dsInd(R){const q=dsQ(),cf=R.cf;if(!R.L.length)return card('Desempeño individual','',empty('No hay personas con horas programadas en este periodo'));
+ if(!q.tec||!R.L.find(m=>m.t.codigo===q.tec))q.tec=R.L[0].t.codigo;const m=R.L.find(x=>x.t.codigo===q.tec);
+ const pick=`<div class="fbar">${sel('ds.tec',R.L.map(x=>[x.t.codigo,x.t.nombre+' · '+x.t.area]),q.tec)}<div class="acts" style="margin-left:auto">${btn(icon('copy',15)+' Informe individual / PDF','dsRep',`data-c="${esc(q.tec)}"`,'sm ghost')}</div></div>`;
+ const T=m.wUsed,gain=DS_DIMS.map((k,j)=>({j,g:m.d[k[0]]==null?0:Math.max(0,cf.metas[j]-m.d[k[0]])*cf.pesos[j]/T})).sort((a,b)=>b.g-a.g)[0];
+ const rkTxt=m.ok&&m.idx!=null?`Puesto <b>${m.rk}</b> de ${R.rk.length}`:`Fuera del ranking: registró ${nf(m.cob,0)} % de sus horas programadas (mínimo ${cf.minPct} %)`;
+ const hero=`<div class="g12"><div class="c5"><section class="card" style="background:linear-gradient(135deg,#a3e635,#65a30d);color:#10200a"><div style="font-size:12px;font-weight:700;letter-spacing:.06em">ÍNDICE DE DESEMPEÑO</div><div style="font-size:64px;font-weight:800;line-height:1.05">${m.idx==null?'—':nf(m.idx,1)}</div><div style="font-weight:600">${esc(m.t.nombre)}</div><div style="margin-top:6px">${rkTxt}</div><div style="display:flex;gap:18px;margin-top:14px;font-size:13px"><span><b>${hh(m.G)}</b><br>HH registradas</span><span><b>${hh(m.P)}</b><br>HH programadas</span><span><b>${nf(m.cob,0)} %</b><br>cobertura</span></div></section></div>
+ <div class="c3"><section class="card" style="background:linear-gradient(135deg,#fb923c,#ea580c);color:#2a1004"><div style="font-size:12px;font-weight:700;letter-spacing:.06em">MAYOR OPORTUNIDAD</div>${gain&&gain.g>0.05?`<div style="font-size:40px;font-weight:800">+${nf(gain.g,1)}<small style="font-size:15px"> puntos</small></div><p style="margin-top:6px;font-size:13.5px">Si <b>${DS_DIMS[gain.j][1]}</b> pasa de ${dsF(m.d[DS_DIMS[gain.j][0]])} a la meta ${cf.metas[gain.j]}, el índice sube ${nf(gain.g,1)}.</p>`:`<p style="margin-top:10px;font-size:14px">Todas las dimensiones con datos están en meta o por encima.</p>`}</section></div>
+ <div class="c4">${card('Resumen del periodo','',`<dl class="kv"><dt>Hallazgos asignados</dt><dd>${m.n.hall}</dd><dt>Daños y fallas</dt><dd>${m.n.dan}</dd><dt>Retrabajo atribuido</dt><dd>${hh(m.n.ret)} HH</dd><dt>Liberaciones decididas</dt><dd>${m.n.lib}</dd><dt>Actividades distintas</dt><dd>${m.n.acts}</dd><dt>Registros</dt><dd>${m.n.regs}</dd></dl>`)}</div></div>`;
+ let tot=0;const rows=DS_DIMS.map((k,j)=>{const v=m.d[k[0]],a=v==null?0:v*cf.pesos[j]/T;tot+=a;return `<tr><td><span style="display:inline-block;width:20px;height:20px;border-radius:6px;background:${k[3]};color:#fff;font-size:12px;text-align:center;line-height:20px;font-weight:700">${j+1}</span></td><td><b>${k[1]}</b><div class="mut3" style="font-size:12px">${k[2]}</div></td><td style="min-width:200px">${v==null?'<span class="mut3" style="font-size:12.5px">Sin datos en el periodo: no cuenta</span>':dsBar(v,cf.metas[j],dsCol(v))}</td><td class="num"><b style="color:${dsCol(v)}">${dsF(v)}</b></td><td class="num mut3">meta ${cf.metas[j]}</td><td class="num">× ${cf.pesos[j]}</td><td class="num"><b>${v==null?'—':'+'+nf(a,1)}</b></td></tr>`}).join('');
+ const build=card('Cómo se construye el índice','Cada dimensión va de 0 a 100. La raya es la meta. Aporte = resultado × peso ÷ suma de pesos de las dimensiones con datos',`<div class="tw"><table class="t"><thead><tr><th></th><th>Dimensión · qué mide</th><th>Resultado frente a la meta</th><th class="r">Valor</th><th class="r">Meta</th><th class="r">Peso</th><th class="r">Aporta</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td colspan="6"><b>Índice de desempeño</b> <span class="mut3">= Σ (resultado × peso) ÷ ${T}</span></td><td class="num"><b style="font-size:18px">${nf(tot,1)}</b></td></tr></tfoot></table></div>`);
+ return pick+hero+build}
+function dsEq(R){if(!R.L.length)return card('Equipo y ranking','',empty('No hay personas con horas programadas en este periodo'));
+ const cf=R.cf,all=[...R.rk,...R.L.filter(m=>!R.rk.includes(m)).sort((a,b)=>(b.idx||0)-(a.idx||0))];
+ const avg=DS_DIMS.map((k,j)=>{const v=R.rk.map(m=>m.d[k[0]]).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null});
+ const head=`<tr><th>#</th><th>Persona</th><th class="r">Índice</th>${DS_DIMS.map((k,j)=>`<th class="c" data-tip="${esc(k[1])}">${j+1}</th>`).join('')}<th class="r">Cobertura</th></tr>`;
+ const body=all.map(m=>`<tr ${m.ok?'':'style="opacity:.6"'}><td>${m.rk||'—'}</td><td><b>${esc(m.t.nombre)}</b><div class="mut3" style="font-size:12px">${esc(m.t.area)}${m.ok?'':' · fuera del ranking'}</div></td><td class="num"><b style="color:${dsCol(m.idx)}">${m.idx==null?'—':nf(m.idx,1)}</b></td>${DS_DIMS.map((k,j)=>{const v=m.d[k[0]];return `<td class="c" style="color:${v==null?'var(--mut3)':v>=cf.metas[j]?'var(--ok)':v>=cf.metas[j]-10?'var(--wa)':'var(--er)'}">${dsF(v)}</td>`}).join('')}<td class="num">${nf(m.cob,0)} %</td></tr>`).join('');
+ const foot=`<tr><td></td><td><b>Promedio del equipo</b></td><td class="num"><b>${R.rk.length?nf(R.rk.reduce((a,m)=>a+m.idx,0)/R.rk.length,1):'—'}</b></td>${avg.map(v=>`<td class="c">${dsF(v)}</td>`).join('')}<td></td></tr>`;
+ const leg=`<p class="mut3" style="font-size:12.5px;margin-top:10px">${DS_DIMS.map((k,j)=>`<b>${j+1}</b> ${k[1]}`).join(' · ')}. Verde = en meta, amarillo = hasta 10 puntos debajo, rojo = más abajo. Para entrar al ranking, la persona debe haber registrado al menos ${cf.minPct} % de sus horas programadas.</p>`;
+ return card('Equipo y ranking','Del mejor índice al más bajo en el periodo elegido',`<div class="tw"><table class="t"><thead>${head}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table></div>${leg}`,{acts:btn(icon('copy',15)+' Informe del equipo / PDF','dsRepAll','','sm ghost')})}
+function dsMet(){const G=can(['Gerencia']),cf=dsCfg();const inp=(id,v,w)=>`<input type="number" class="inp" id="${id}" value="${v}" min="0" max="100" style="width:${w||80}px" ${G?'':'disabled'}>`;
+ const rows=DS_DIMS.map((k,j)=>`<tr><td><b>${j+1}. ${k[1]}</b><div class="mut3" style="font-size:12px">${k[2]}</div></td><td>${inp('dsm'+j,cf.metas[j])}</td><td>${inp('dsp'+j,cf.pesos[j])}</td></tr>`).join('');
+ return card('Metas, pesos y reglas','Valores de partida propuestos. Puedes cambiarlos cuando quieras; el cambio queda en el historial y se aplica a todo el cálculo.',`<div class="tw"><table class="t"><thead><tr><th>Dimensión</th><th>Meta (0–100)</th><th>Peso</th></tr></thead><tbody>${rows}</tbody></table></div>
+ <div class="two" style="margin-top:14px">${fld('Mínimo para entrar al ranking (% de horas programadas registradas)',inp('ds_min',cf.minPct,110))}${fld('Evaluación formal: % del resultado de la app (el resto es la evaluación del supervisor)',inp('ds_we',cf.wEval,110))}</div>
+ ${G?`<div class="acts" style="margin-top:14px">${btn('Guardar metas y pesos','dsSave','','')}${btn('Volver a los valores propuestos','dsReset','','ghost')}</div>`:`<p class="mut3">Solo Gerencia puede cambiar estos valores.</p>`}`)+dsPubCard()}
+function dsSave(){const cf={metas:[],pesos:[],minPct:Math.max(0,Math.min(100,+val('ds_min')||0)),wEval:Math.max(0,Math.min(100,+val('ds_we')||0)),pubAuto:dsCfg().pubAuto?1:0,visRank:dsCfg().visRank,visNom:dsCfg().visNom,visDet:dsCfg().visDet};
+ for(let j=0;j<10;j++){cf.metas.push(Math.max(0,Math.min(100,+val('dsm'+j)||0)));cf.pesos.push(Math.max(0,+val('dsp'+j)||0))}
+ if(!cf.pesos.some(x=>x>0)){toast('Al menos un peso debe ser mayor que 0','er');return}
+ logH('Desempeño · metas y pesos',JSON.stringify(dsCfg()),JSON.stringify(cf));S.settings.desemp=cf;save();renderPage(true);toast('Metas y pesos guardados','ok')}
+function dsReset(){logH('Desempeño · metas y pesos','personalizados','valores propuestos');S.settings.desemp={...DS_DEF,metas:DS_DEF.metas.slice(),pesos:DS_DEF.pesos.slice()};save();renderPage(true);toast('Valores propuestos restablecidos','ok')}
+function pDesempeno(){const q=dsQ(),R=dsAll();return dsHdr(R)+(q.tab==='eq'?dsEq(R):q.tab==='dan'?dsDan(R):q.tab==='ev'?dsEv(R):q.tab==='met'?dsMet():dsInd(R))}
+Object.assign(A,{dsSet:t=>{dsQ()[t.dataset.k]=t.dataset.v;renderPage(true)},dsSave:dsSave,dsReset:dsReset});
+
+
+/* ---------- etapa 2: daños y fallas, evaluación, informe y publicación ---------- */
+function dsDan(R){const ok=can(['Gerencia','Supervisor','Calidad']),ppl=S.tecnicos.filter(t=>t.registra&&vig(t));
+ const form=ok?card('Registrar daño o falla','Lo registra Supervisión o Calidad. Resta puntos a la dimensión 8 (Daños y fallas) de la persona relacionada.',`<div class="two">${fld('Persona',selM('dn_p',ppl.map(t=>[t.codigo,t.nombre]),'','Selecciona…'))}${fld('Fecha',`<input type="date" class="inp" id="dn_f" value="${addDays(today(),-1)}" max="${today()}">`)}</div><div class="two">${fld('Tipo',selM('dn_t',DS_TIPOS.map(x=>[x,x]),DS_TIPOS[0]))}${fld('Gravedad',selM('dn_s',DS_SEV.map(z=>[z[0],z[0]+' ('+z[1]+' pt)']),'Leve'))}</div>${fld('Qué pasó (obligatorio)',`<input class="inp" id="dn_d" maxlength="200" placeholder="Ej.: golpe a la plegadora al cambiar la herramienta">`)}<div class="acts" style="margin-top:10px">${btn('Registrar','dnSave')}</div>`):'';
+ const L=dsDanos().filter(e=>!e.x&&e.f>=R.d0&&e.f<=R.d1).sort((a,b)=>a.f<b.f?1:-1);
+ const nm=c=>{const t=S.tecnicos.find(x=>x.codigo===c);return t?t.nombre:c};
+ const list=card('Daños y fallas del periodo','Del '+dlabel(R.d0)+' al '+dlabel(R.d1),L.length?`<div class="tw"><table class="t"><thead><tr><th>Fecha</th><th>Persona</th><th>Tipo</th><th>Gravedad</th><th>Qué pasó</th><th>Registró</th><th></th></tr></thead><tbody>${L.map(e=>`<tr><td>${dlabel(e.f)}</td><td><b>${esc(nm(e.c))}</b></td><td>${esc(e.t)}</td><td>${badge(esc(e.s),e.s==='Grave'?'er':e.s==='Moderado'?'wa':'n')}</td><td>${esc(e.d)}</td><td class="mut3">${esc(e.u||'')}</td><td>${ok?`<button class="ib" style="width:30px;height:30px" data-act="dnVoid" data-id="${esc(e.id)}" aria-label="Anular">${icon('x',14)}</button>`:''}</td></tr>`).join('')}</tbody></table></div>`:empty('No hay daños ni fallas registrados en este periodo'));
+ const nota=dsDanos().length?'':`<div class="alrt i" style="margin-bottom:12px"><div class="ai">${icon('info',17)}</div><div><b>Aún no hay eventos registrados</b><small>Mientras no exista ninguno, la dimensión «Daños y fallas» no cuenta en el índice. Se activa sola con el primer registro.</small></div></div>`;
+ return nota+form+list}
+function dnSave(){const c=val('dn_p'),f=val('dn_f'),d=(val('dn_d')||'').trim();if(!c){toast('Elige la persona','wa');return}if(!/^\d{4}-\d{2}-\d{2}$/.test(f)||f>today()){toast('La fecha no es válida','er');return}if(d.length<6){toast('Cuenta brevemente qué pasó','wa');return}
+ const e={id:uid(),f,c,t:val('dn_t'),s:val('dn_s'),d,u:U.name,ts:new Date().toISOString()};S.settings.danos=[...dsDanos(),e];const t=S.tecnicos.find(x=>x.codigo===c);
+ logH('Daño o falla · '+(t?t.nombre:c),'',e.t+' · '+e.s+' · '+d,c);save();renderPage(true);toast('Registrado','ok')}
+function dnVoid(id){const e=dsDanos().find(x=>x.id===id);if(!e)return;confirmM('Anular daño o falla','Se quita del cálculo y queda en el historial. ¿Anular «'+esc(e.d.slice(0,60))+'»?','Anular',()=>{e.x=1;e.xu=U.name;logH('Daño o falla anulado',e.t+' · '+e.s,e.d,e.c);save();renderPage(true);toast('Anulado','ok')})}
+Object.assign(A,{dnSave:dnSave,dnVoid:t=>dnVoid(t.dataset.id)});
+/* evaluación formal */
+const DS_COMP=['Calidad del trabajo y apego a procedimientos','Seguridad y orden en el puesto','Trabajo en equipo','Responsabilidad y puntualidad','Iniciativa y aprendizaje','Comunicación y actitud'];
+const DS_DEC=['Continuar sin cambios','Reconocimiento','Plan de mejora','Capacitación','Evaluar cambio de rol o cargo','Seguimiento con RR. HH.'];
+const dsE=()=>{U.dsE=U.dsE||{};return U.dsE};
+function dsEvalCalc(m,cf){const e=dsE(),sc=DS_COMP.map((x,i)=>+e['c'+i]||0),n=sc.filter(x=>x>0).length,av=n?sc.reduce((a,b)=>a+b,0)/n:null,sup=av==null?null:av/5*100;
+ const fin=(m.idx!=null&&sup!=null)?m.idx*cf.wEval/100+sup*(100-cf.wEval)/100:null;return{sc,n,av,sup,fin}}
+function dsEv(R){const q=dsQ(),cf=R.cf,ok=can(['Gerencia','Supervisor','Calidad']);if(!R.L.length)return card('Evaluación','',empty('No hay personas con horas programadas en este periodo'));
+ if(!q.tec||!R.L.find(m=>m.t.codigo===q.tec))q.tec=R.L[0].t.codigo;const m=R.L.find(x=>x.t.codigo===q.tec),e=dsE();if(e.para!==q.tec){Object.keys(e).forEach(k=>delete e[k]);e.para=q.tec}const c=dsEvalCalc(m,cf);
+ const sug=c.fin==null?'':c.fin>=90?'Reconocimiento':c.fin>=75?'Continuar sin cambios':c.fin>=60?'Plan de mejora':'Capacitación';
+ const hist=(S.settings.evals||[]).filter(x=>x.c===m.t.codigo).sort((a,b)=>a.ts<b.ts?1:-1).slice(0,5);
+ const comp=DS_COMP.map((x,i)=>`<tr><td>${i+1}. ${x}</td><td style="width:140px">${sel('dsE.c'+i,[['','—'],['1','1 · Muy bajo'],['2','2 · Bajo'],['3','3 · Cumple'],['4','4 · Alto'],['5','5 · Excelente']],e['c'+i]||'')}</td></tr>`).join('');
+ const hechos=`Cumplimiento ${dsF(m.d.cump)} · Productividad ${dsF(m.d.prod)} · Hallazgos asignados ${m.n.hall} · Retrabajo atribuido ${hh(m.n.ret)} HH · Daños y fallas ${m.n.dan} · Liberaciones decididas ${m.n.lib}`;
+ return `<div class="fbar">${sel('ds.tec',R.L.map(x=>[x.t.codigo,x.t.nombre+' · '+x.t.area]),q.tec)}</div>`+
+ card('Evaluación de desempeño · '+esc(m.t.nombre),'Del '+dlabel(R.d0)+' al '+dlabel(R.d1)+' · apoyo para decidir, no reemplaza el criterio del responsable',
+ `<div class="g12"><div class="c4"><section class="card flat"><div class="mut3" style="font-size:12px;font-weight:700">A · RESULTADO DE LA APP (${cf.wEval} %)</div><div style="font-size:38px;font-weight:800">${m.idx==null?'—':nf(m.idx,1)}</div><div class="mut3" style="font-size:12.5px">${m.ok?'Puesto '+m.rk+' de '+R.rk.length:'Fuera del ranking (cobertura '+nf(m.cob,0)+' %)'}</div></section></div>
+ <div class="c4"><section class="card flat"><div class="mut3" style="font-size:12px;font-weight:700">B · EVALUACIÓN DEL SUPERVISOR (${100-cf.wEval} %)</div><div style="font-size:38px;font-weight:800">${c.sup==null?'—':nf(c.sup,1)}</div><div class="mut3" style="font-size:12.5px">${c.n} de 6 competencias calificadas</div></section></div>
+ <div class="c4"><section class="card flat" style="border-color:var(--pri)"><div class="mut3" style="font-size:12px;font-weight:700">NOTA FINAL</div><div style="font-size:38px;font-weight:800;color:${dsCol(c.fin)}">${c.fin==null?'—':nf(c.fin,1)}</div><div class="mut3" style="font-size:12.5px">${sug?'Sugerencia: '+sug:'Califica las competencias'}</div></section></div></div>
+ <h4 style="margin:14px 0 6px">B · Competencias (las califica quien supervisa)</h4><div class="tw"><table class="t"><tbody>${comp}</tbody></table></div>
+ <h4 style="margin:14px 0 6px">C · Hechos del periodo (de la app)</h4><p class="mut" style="font-size:13.5px">${hechos}</p>
+ ${fld('D · Fortalezas observadas',`<textarea class="inp" data-f="dsE.fort" data-nr rows="2">${esc(e.fort||'')}</textarea>`)}${fld('Aspectos a mejorar y compromisos',`<textarea class="inp" data-f="dsE.mej" data-nr rows="2">${esc(e.mej||'')}</textarea>`)}
+ <h4 style="margin:14px 0 6px">E · Decisión</h4>${sel('dsE.dec',[['','Elige…'],...DS_DEC],e.dec||'')}
+ <p class="mut3" style="font-size:12.5px;margin-top:10px">Si esta evaluación se usa para ascensos, sanciones o terminación de contrato, debe revisarse con Recursos Humanos o el área jurídica. Esta herramienta no es asesoría legal.</p>
+ ${ok?`<div class="acts" style="margin-top:12px">${btn('Guardar evaluación','evSave')}${btn(icon('copy',15)+' Informe / PDF','dsRep',`data-c="${esc(m.t.codigo)}" data-ev="1"`,'ghost')}</div>`:''}`)+
+ (hist.length?card('Evaluaciones guardadas','',`<div class="tw"><table class="t"><thead><tr><th>Fecha</th><th>Periodo</th><th class="r">App</th><th class="r">Supervisor</th><th class="r">Final</th><th>Decisión</th><th>Por</th></tr></thead><tbody>${hist.map(x=>`<tr><td>${dlabel(x.ts.slice(0,10))}</td><td>${dlabel(x.d0)} – ${dlabel(x.d1)}</td><td class="num">${nf(x.app,1)}</td><td class="num">${x.sup==null?'—':nf(x.sup,1)}</td><td class="num"><b>${nf(x.fin,1)}</b></td><td>${esc(x.dec||'—')}</td><td class="mut3">${esc(x.u||'')}</td></tr>`).join('')}</tbody></table></div>`):'')}
+function evSave(){const R=dsAll(),q=dsQ(),m=R.L.find(x=>x.t.codigo===q.tec);if(!m)return;const e=dsE(),c=dsEvalCalc(m,R.cf);if(c.fin==null){toast('Califica al menos una competencia','wa');return}if(!e.dec){toast('Elige la decisión','wa');return}
+ const rec={id:uid(),c:m.t.codigo,ts:new Date().toISOString(),d0:R.d0,d1:R.d1,app:m.idx,sup:c.sup,fin:c.fin,sc:c.sc,fort:e.fort||'',mej:e.mej||'',dec:e.dec,u:U.name+' ('+U.role+')'};
+ S.settings.evals=[...(S.settings.evals||[]),rec];logH('Evaluación de desempeño · '+m.t.nombre,'',nf(c.fin,1)+' · '+e.dec,m.t.codigo);save();renderPage(true);toast('Evaluación guardada','ok')}
+Object.assign(A,{evSave:evSave});
+/* informe imprimible (individual o de grupo) */
+function dsRep(code,withEv){const R=dsAll(),cf=R.cf;const css=`body{font:14px/1.5 system-ui,Segoe UI,Arial;color:#0f172a;margin:28px}h1{font-size:22px;margin:0}h2{font-size:16px;margin:22px 0 8px;border-bottom:2px solid #38bdf8;padding-bottom:4px}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #e2e8f0;padding:6px 8px;text-align:left;font-size:13px}th{background:#f1f5f9}.r{text-align:right}.big{font-size:44px;font-weight:800}.mut{color:#64748b;font-size:12px}.bar{height:8px;background:#e2e8f0;border-radius:4px;position:relative}.bar i{display:block;height:8px;border-radius:4px}@media print{button{display:none}}`;
+ const head=(t)=>`<h1>LATAMKS S.A.S. · ${t}</h1><div class="mut">Periodo del ${dlabel(R.d0)} al ${dlabel(R.d1)} · generado el ${dfull(today())} por ${esc(U.name)}</div>`;let body;
+ if(code){const m=R.L.find(x=>x.t.codigo===code);if(!m){toast('Esa persona no tiene horas programadas en el periodo','wa');return}const T=m.wUsed;
+  const rows=DS_DIMS.map((k,j)=>{const v=m.d[k[0]];return `<tr><td>${j+1}. <b>${k[1]}</b><div class="mut">${k[2]}</div></td><td style="width:180px">${v==null?'<span class="mut">sin datos</span>':`<div class="bar"><i style="width:${v}%;background:${k[3]}"></i></div>`}</td><td class="r"><b>${dsF(v)}</b></td><td class="r">${cf.metas[j]}</td><td class="r">${cf.pesos[j]}</td><td class="r">${v==null?'—':nf(v*cf.pesos[j]/T,1)}</td></tr>`}).join('');
+  const e=dsE(),c=dsEvalCalc(m,cf);
+  body=head('Informe de desempeño individual')+`<h2>${esc(m.t.nombre)} · ${esc(m.t.area)}</h2><div style="display:flex;gap:30px;align-items:center"><div><div class="mut">ÍNDICE DE DESEMPEÑO</div><div class="big">${m.idx==null?'—':nf(m.idx,1)}</div></div><div>${m.ok?'Puesto <b>'+m.rk+'</b> de '+R.rk.length:'Fuera del ranking (cobertura '+nf(m.cob,0)+' %, mínimo '+cf.minPct+' %)'}<br>${hh(m.G)} HH registradas de ${hh(m.P)} programadas</div></div>
+  <h2>Cómo se construye el índice</h2><table><thead><tr><th>Dimensión</th><th>Resultado</th><th class="r">Valor</th><th class="r">Meta</th><th class="r">Peso</th><th class="r">Aporta</th></tr></thead><tbody>${rows}</tbody></table>
+  <h2>Hechos del periodo</h2><p>Hallazgos asignados: ${m.n.hall} · Retrabajo atribuido: ${hh(m.n.ret)} HH · Daños y fallas: ${m.n.dan} · Liberaciones decididas: ${m.n.lib} · Actividades distintas: ${m.n.acts}</p>`+
+  (withEv&&c.fin!=null?`<h2>Evaluación formal</h2><p>Resultado app (${cf.wEval} %): <b>${nf(m.idx,1)}</b> · Supervisor (${100-cf.wEval} %): <b>${nf(c.sup,1)}</b> · <b>Nota final: ${nf(c.fin,1)}</b></p><table><tbody>${DS_COMP.map((x,i)=>`<tr><td>${x}</td><td class="r">${e['c'+i]||'—'} / 5</td></tr>`).join('')}</tbody></table><p><b>Fortalezas:</b> ${esc(e.fort||'—')}</p><p><b>A mejorar y compromisos:</b> ${esc(e.mej||'—')}</p><p><b>Decisión:</b> ${esc(e.dec||'—')}</p><div style="display:flex;gap:40px;margin-top:50px"><div style="flex:1;border-top:1px solid #0f172a;padding-top:4px">Evaluador</div><div style="flex:1;border-top:1px solid #0f172a;padding-top:4px">Evaluado</div><div style="flex:1;border-top:1px solid #0f172a;padding-top:4px">Recursos Humanos</div></div><p class="mut" style="margin-top:14px">Para ascensos, sanciones o terminación de contrato, revisar con Recursos Humanos o jurídico. Documento de apoyo, no asesoría legal.</p>`:'')}
+ else{const all=[...R.rk,...R.L.filter(m=>!R.rk.includes(m))];body=head('Informe de desempeño del equipo')+`<h2>Ranking</h2><table><thead><tr><th>#</th><th>Persona</th><th class="r">Índice</th>${DS_DIMS.map((k,j)=>`<th class="r">${j+1}</th>`).join('')}<th class="r">Cob.</th></tr></thead><tbody>${all.map(m=>`<tr><td>${m.rk||'—'}</td><td>${esc(m.t.nombre)}</td><td class="r"><b>${m.idx==null?'—':nf(m.idx,1)}</b></td>${DS_DIMS.map(k=>`<td class="r">${dsF(m.d[k[0]])}</td>`).join('')}<td class="r">${nf(m.cob,0)} %</td></tr>`).join('')}</tbody></table><p class="mut">${DS_DIMS.map((k,j)=>(j+1)+' '+k[1]).join(' · ')}</p>`}
+ const w=window.open('','_blank');if(!w){toast('El navegador bloqueó la ventana. Permite ventanas emergentes e intenta de nuevo.','wa');return}
+ w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Desempeño</title><style>${css}</style></head><body>${body}<p><button onclick="print()">Imprimir o guardar como PDF</button></p></body></html>`);w.document.close()}
+Object.assign(A,{dsRep:t=>dsRep(t.dataset.c||'',!!t.dataset.ev),dsRepAll:()=>dsRep('')});
+/* publicación a los técnicos (QR) */
+function dsSnap(){const R=dsAll(),cf=R.cf,r1=x=>x==null?null:Math.round(x*10)/10,ne={};R.L.filter(m=>!m.ok).forEach(m=>{ne[m.t.codigo]=Math.round(m.cob)});
+ return{pub:new Date().toISOString(),por:U.name,per:{d0:R.d0,d1:R.d1},vis:{rank:cf.visRank,nom:cf.visNom,det:cf.visDet},metas:cf.metas,min:cf.minPct,rk:R.rk.map(m=>({c:m.t.codigo,n:m.t.nombre,p:m.rk,i:r1(m.idx),d:DS_DIMS.map(k=>r1(m.d[k[0]]))})),ne}}
+function dsPublicar(auto){S.settings.desemp_pub=dsSnap();logH('Desempeño publicado',auto?'automático':'manual',dlabel(S.settings.desemp_pub.per.d0)+' – '+dlabel(S.settings.desemp_pub.per.d1));save();if(!auto){renderPage(true);toast('Desempeño publicado: los técnicos lo ven por su QR','ok')}}
+function dsDespublicar(){S.settings.desemp_pub=null;logH('Desempeño publicado','sí','retirado');save();renderPage(true);toast('Publicación retirada','ok')}
+function dsPubSave(){const cf=dsCfg(),n={...cf};n.pubAuto=val('dp_auto')?1:0;n.visRank=val('dp_rank')?1:0;n.visNom=val('dp_nom')?1:0;n.visDet=val('dp_det')?1:0;S.settings.desemp=n;logH('Desempeño · publicación','',`auto ${n.pubAuto} · ranking ${n.visRank} · nombres ${n.visNom} · detalle ${n.visDet}`);save();renderPage(true);toast('Opciones de publicación guardadas','ok')}
+function dsAutoPub(){if(NB.kiosk||NB.guest||U.role!=='Gerencia'||!S.tecnicos.length)return;const cf=dsCfg();if(!cf.pubAuto)return;const p=S.settings.desemp_pub;if(p&&p.pub&&(Date.now()-new Date(p.pub))<6.5*864e5)return;try{dsPublicar(true)}catch(e){console.error(e)}}
+function dsPubCard(){const G=can(['Gerencia']),cf=dsCfg(),p=S.settings.desemp_pub,chk=(id,v,l)=>`<label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="${id}" ${v?'checked':''} ${G?'':'disabled'}> ${l}</label>`;
+ return card('Publicación a los técnicos (QR)','Lo que cada técnico ve de su desempeño al entrar por su QR. Nadie ve nada hasta que publiques.',
+ `${p&&p.pub?`<div class="alrt ok" style="margin-bottom:10px"><div class="ai">${icon('check',17)}</div><div><b>Publicado el ${dfull(p.pub.slice(0,10))}</b><small>Periodo del ${dlabel(p.per.d0)} al ${dlabel(p.per.d1)} · ${p.rk.length} personas en el ranking</small></div></div>`:`<p class="mut3" style="margin-bottom:8px">Hoy no hay nada publicado.</p>`}
+ ${chk('dp_rank',cf.visRank,'Mostrar el ranking (puesto e índice de todos)')}${chk('dp_nom',cf.visNom,'Mostrar los nombres en el ranking (si lo apagas, cada técnico solo ve el suyo)')}${chk('dp_det',cf.visDet,'Mostrar a cada técnico el detalle de sus 10 dimensiones')}
+ <div style="border-top:1px solid var(--bd);margin-top:10px;padding-top:10px">${chk('dp_auto',cf.pubAuto,'<b>Publicar automáticamente cada semana</b> (interruptor encendido/apagado; si lo apagas, publicas tú con el botón)')}</div>
+ ${G?`<div class="acts" style="margin-top:12px">${btn('Guardar opciones','dpSave','','ghost')}${btn('Publicar desempeño ahora','dpPub')}${p&&p.pub?btn('Retirar publicación','dpOff','','ghost'):''}</div>`:''}`)}
+Object.assign(A,{dpSave:dsPubSave,dpPub:()=>dsPublicar(false),dpOff:dsDespublicar});
+setTimeout(dsAutoPub,9000);setInterval(dsAutoPub,600000);
+/* tarjeta para el técnico (entra por QR) */
+function dpTecCard(){if(!NB.kiosk||!NB.cred)return '';
+ if(NB.dp===undefined){NB.dp=null;nbRpc('desempeno_publicado',{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini},false).then(r=>{NB.dp=r||{};if(U.page==='captura')renderPage(true)}).catch(()=>{NB.dp={}});return ''}
+ const d=NB.dp;if(!d||!d.pub)return '';const mio=d.mio,vis=d.vis||{};
+ const top=mio?`<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div style="font-size:46px;font-weight:800;color:${dsCol(mio.i)}">${nf(mio.i,1)}</div><div><b>Puesto ${mio.p}</b> de ${(d.rk||[]).length||'—'}<div class="mut3" style="font-size:12.5px">Periodo del ${dlabel(d.per.d0)} al ${dlabel(d.per.d1)}</div></div></div>`:`<p class="mut" style="font-size:13.5px">${d.ne!=null?'Todavía no entras al ranking: registraste '+d.ne+' % de tus horas programadas (mínimo '+(d.min||60)+' %).':'Este periodo no apareces en el ranking.'}</p>`;
+ const det=mio&&mio.d?`<div style="margin-top:10px">${DS_DIMS.map((k,j)=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span>${k[1]}</span><b style="color:${dsCol(mio.d[j])}">${mio.d[j]==null?'—':nf(mio.d[j],0)}</b></div>`).join('')}</div>`:'';
+ const rk=(d.rk&&d.rk.length)?`<div style="margin-top:12px;border-top:1px solid var(--bd);padding-top:8px">${d.rk.slice(0,10).map(x=>`<div style="display:flex;gap:10px;font-size:13px;padding:3px 0;${x.yo?'font-weight:700':''}"><span style="width:24px">${x.p}</span><span style="flex:1">${x.n?esc(x.n):'Compañero'}${x.yo?' (tú)':''}</span><b>${nf(x.i,1)}</b></div>`).join('')}</div>`:'';
+ return `<div class="card flat" style="margin-top:16px"><div class="ch"><div><h3>Mi desempeño</h3><p>Publicado por Gerencia el ${dfull(d.pub.slice(0,10))}</p></div></div>${top}${det}${rk}</div>`}
+PAGES.desempeno=pDesempeno;
 
 
 /* ---------- Técnico por QR: pedir liberación y ver el estado ---------- */
