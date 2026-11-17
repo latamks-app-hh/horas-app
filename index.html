@@ -591,7 +591,7 @@ function monday(s){return addDays(s,-((dow(s)+6)%7))}
 function turnoDe(tec,fecha){const w=S.rota&&S.rota[monday(fecha)];const v=w&&w[tec.codigo];if(v&&typeof v==='object')return v[dow(fecha)]||tec.turno;return v||tec.turno}
 function rolDe(area){return area==='Calidad'?'Calidad':area==='Ingeniería / Diseño'?'Ingeniería':area==='Almacén / Recepción'?'Almacén':'Técnico'}
 const semanaH=t=>[1,2,3,4,5,6,0].reduce((a,k)=>a+horasDia(t.dias[k]),0);
-function prog(tec,fecha){if(NB.kiosk)return +NB.ctxProg[fecha]||0;if(tec&&tec.alta&&fecha<tec.alta)return 0;const t=S.turnos.find(x=>x.id===turnoDe(tec,fecha));return t?horasDia(t.dias[dow(fecha)]):0}
+function prog(tec,fecha){if(NB.kiosk)return +NB.ctxProg[fecha]||0;if(tec&&tec.alta&&fecha<tec.alta)return 0;const d=diaCfg(tec,fecha);return d?horasDia(d):0}
 
 /* ---- construcción de un registro ---- */
 function buildReg(o){
@@ -1283,7 +1283,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='4.9.6';
+const APP_VER='4.9.7';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1929,7 +1929,7 @@ const A={
  editExp:t=>expOpen(t.dataset.p),expSave,xUse:()=>{const s=$$('[data-xe]').reduce((a,e)=>a+num(e.value),0);$('#x_tot').value=s;expLive()},
  newTec:()=>tecOpen(''),editTec:t=>tecOpen(t.dataset.c),tecSave,newHall:hallOpen,hallSave,
  tSel:t=>{U.tsel=t.dataset.v;renderPage(true)},
- tDay:t=>{if(tfGuard(t.dataset.k,'on',0))return;tfApply(U.tsel,t.dataset.k,'on',0)},tfNew:()=>tfModal(null),tfGo:t=>tfGo(t),
+ tDay:t=>{tfApply(U.tsel,t.dataset.k,'on',0)},ajhOpen:t=>ajhOpen(t.dataset.c,t.dataset.k),ajhSave:ajhSave,ajhDel:ajhDel,ajhDia:t=>ajhDiaOpen(t.dataset.k),
  tSave:()=>{const tu=S.turnos.find(x=>x.id===U.tsel);tu.mod={ts:new Date().toISOString(),por:U.name+' ('+U.role+')'};save();renderPage(true);toast('Turno guardado','ok')},
  newTurno:()=>{M={type:'nt'};openModal(mh('Nuevo turno')+fld('Nombre',`<input class="inp" id="nt_n" placeholder="Ej.: Turno 3 · Sábados alternos">`)+`<p class="mut3" style="font-size:12.5px;margin-top:10px">Se crea como copia del turno seleccionado; luego ajusta los horarios por día.</p>`+mf('Crear turno','ntSave'))},
  ntSave:()=>{const n=(val('nt_n')||'').trim();if(!n){toast('Escribe un nombre','wa');return}const b=S.turnos.find(x=>x.id===U.tsel)||S.turnos[0];const id='T'+(S.turnos.reduce((m,x)=>Math.max(m,parseInt(x.id.slice(1),10)||0),0)+1);S.turnos.push({id,nombre:n,dias:JSON.parse(JSON.stringify(b.dias)),mod:{ts:new Date().toISOString(),por:U.name+' ('+U.role+')'}});U.tsel=id;save();closeModal();renderPage(true);toast('Turno creado','ok')},
@@ -1962,7 +1962,7 @@ document.addEventListener('change',e=>{const t=e.target;
  if(t.dataset.f){setPath(t.dataset.f,t.type==='checkbox'?t.checked:t.value);if(t.hasAttribute('data-nr'))return;if(t.dataset.f==='f.per'){renderAll(true);return}renderPage(true);return}
  if(t.dataset.ot!==undefined){const o=OTROS_CAT.find(x=>x.nombre===t.dataset.ot);if(o&&o.clase!==t.value){logH('Lista Otro tiempo',o.nombre+' · '+(CL[o.clase]||{n:o.clase}).n,o.nombre+' · '+(CL[t.value]||{n:t.value}).n,'Ajustes');otSave([{...o,clase:t.value}],'catalogo_otro_tiempo','nombre','Cambio guardado')}return}
  if(t.dataset.tur){const c=S.tecnicos.find(x=>x.codigo===t.dataset.tur);logH('Turno de '+c.nombre,turnoName(c.turno),turnoName(t.value),c.codigo);tecCongelar(c);c.turno=t.value;save();renderPage(true);toast('Turno asignado','ok');return}
- if(t.dataset.tf){const [k,f]=t.dataset.tf.split('.');const nv=(f==='ini'||f==='fin')?t.value:Math.max(0,+t.value||0);if(tfGuard(k,f,nv)){renderPage(true);return}tfApply(U.tsel,k,f,nv);return}
+ if(t.dataset.tf){const [k,f]=t.dataset.tf.split('.');const nv=(f==='ini'||f==='fin')?t.value:Math.max(0,+t.value||0);tfApply(U.tsel,k,f,nv);return}
  if(t.dataset.hp){const c=$('#h_c');if(c)c.value=hallNext(t.value);return}
  if(t.dataset.mo){const r=S.registros.find(x=>x.id===M.id);const ps=personasPara(t.value);const w=$('#e_persona');if(w)w.innerHTML=`<option value="">No aplica / no identificada</option>`+ps.map(p=>`<option value="${p.codigo}">${esc(p.nombre)}</option>`).join('')}
 });
@@ -2049,31 +2049,42 @@ function capForm(tec){
 }
 
 
-/* ---------- v4.9.6 · horarios con vigencia: un cambio de turno ya no reescribe semanas pasadas ---------- */
-function turnoSemUsadas(id){const hoyW=monday(today()),set={};live().forEach(r=>{if(!r.tec||!r.fecha)return;const w=monday(r.fecha);if(w>=hoyW)return;const t=S.tecnicos.find(x=>x.codigo===r.tec);if(t&&turnoDe(t,r.fecha)===id)set[w]=1});return Object.keys(set).sort()}
+/* ---------- v4.9.7 · ajustes de horario por persona y día (sin crear turnos) ---------- */
+/* S.settings.ajh = { 'AAAA-MM-DD': { CODIGO: {i:entrada,o:salida,r:receso,a:alimentación,l:1 si libre,m:motivo,u:quién,t:cuándo} } } */
+function ajhGet(tec,f){const a=S.settings.ajh&&S.settings.ajh[f];return (a&&tec&&a[tec.codigo])||null}
+function diaCfg(tec,f){const o=ajhGet(tec,f);if(o)return o.l?{on:0,ini:'00:00',fin:'00:00',rec:0,ali:0}:{on:1,ini:o.i,fin:o.o,rec:+o.r||0,ali:+o.a||0};const tu=S.turnos.find(x=>x.id===turnoDe(tec,f));return tu?tu.dias[dow(f)]:null}
+function ajhPon(tec,f,e){S.settings.ajh=S.settings.ajh||{};(S.settings.ajh[f]=S.settings.ajh[f]||{})[tec.codigo]=e}
+function ajhQuita(tec,f){const a=S.settings.ajh&&S.settings.ajh[f];if(a&&a[tec.codigo]){delete a[tec.codigo];if(!Object.keys(a).length)delete S.settings.ajh[f]}}
+function ajhQuitaSem(w,code){const t=S.tecnicos.find(x=>x.codigo===code);if(!t||!S.settings.ajh)return;for(let d=0;d<7;d++)ajhQuita(t,addDays(w,d))}
+function ajhRango(c){return c&&c.on?t12(c.ini).replace(' ','')+' a '+t12(c.fin).replace(' ','')+' ('+hh(horasDia(c))+' h)':'libre'}
+/* Cambiar el horario de un turno rige hacia adelante: las semanas ya trabajadas se congelan solas, persona por persona */
+function ajhCongelar(tu,k){k=+k;const hoyW=monday(today());const fs=live().map(r=>r.fecha).filter(Boolean).sort();if(!fs.length)return 0;const d=tu.dias[k];if(!d||!d.on)return 0;let n=0;
+ S.tecnicos.filter(t=>t.registra).forEach(t=>{for(let w=monday(fs[0]);w<hoyW;w=addDays(w,7)){const dt=dateOfK(w,k);if(dt>=hoyW)continue;if(t.alta&&dt<t.alta)continue;if(ajhGet(t,dt))continue;if(turnoDe(t,dt)!==tu.id)continue;
+  ajhPon(t,dt,{i:d.ini,o:d.fin,r:+d.rec||0,a:+d.ali||0,m:'Horario vigente en esa fecha (congelado al cambiar el turno)',u:U.name,t:new Date().toISOString()});n++}});return n}
 function tfApply(id,k,f,nv){const tu=S.turnos.find(x=>x.id===id),d=tu.dias[k];
+ ajhCongelar(tu,k);
  if(f==='on'){logH('Turno '+tu.nombre+' · '+DN[k],d.on?'con jornada':'sin jornada',d.on?'sin jornada':'con jornada');d.on=d.on?0:1}
  else{logH('Turno '+tu.nombre+' · '+DN[k]+' '+f,d[f],nv);d[f]=nv}
  tu.mod={ts:new Date().toISOString(),por:U.name+' ('+U.role+')'};save();renderPage(true)}
-function tfGuard(k,f,nv){const id=U.tsel;if(U.tfOk&&U.tfOk[id])return false;if(!turnoSemUsadas(id).length)return false;tfModal({id,k,f,nv});return true}
-function tfModal(p){const id=U.tsel,tu=S.turnos.find(x=>x.id===id),ws=turnoSemUsadas(id);M={type:'tf',id,p};
- const w0=U.semW||monday(today());
- openModal(mh(p?'Este cambio tocaría semanas ya trabajadas':'Versión del turno por fechas')+
- `<p class="mut">${p?`El turno <b style="color:var(--tx)">${esc(tu.nombre)}</b> ya se usó en <b style="color:var(--tx)">${ws.length} semana(s) pasadas</b> (${ws.length?dlabel(ws[0])+' … '+dlabel(ws[ws.length-1]):''}). Si cambias sus horas aquí, esas semanas también cambian y se alteran las horas programadas que ya se cuentan.`:`Crea una copia de <b style="color:var(--tx)">${esc(tu.nombre)}</b> que aplica solo desde una fecha, sin tocar el turno original ni las semanas pasadas.`}</p>`+
- fld('Semana de referencia (cualquier fecha dentro de la semana)',`<input type="date" class="inp" id="tf_w" value="${w0}">`)+
- `<div style="display:grid;gap:8px;margin-top:12px">${btn('<b>Solo esa semana</b><br><small>Una excepción, por ejemplo un festivo</small>','tfGo','data-m="week" style="white-space:normal;text-align:left;height:auto;padding:11px 14px;line-height:1.35"')}${btn('<b>Desde esa semana en adelante</b><br><small>Cambio permanente de horario</small>','tfGo','data-m="from" style="white-space:normal;text-align:left;height:auto;padding:11px 14px;line-height:1.35"')}${p?btn('<b>Cambiar todo el historial</b><br><small>Solo para corregir un error de digitación</small>','tfGo','data-m="all" style="white-space:normal;text-align:left;height:auto;padding:11px 14px;line-height:1.35"','ghost'):''}</div><p class="mut3" style="font-size:12.5px;margin-top:10px">Con las dos primeras opciones el turno original no cambia: se crea una versión nueva, se asigna a las personas en esas fechas y tu cambio queda ahí.</p><div class="mf">${btn('Cancelar','mClose','','ghost')}</div>`,'s')}
-function tfGo(t){const m=t.dataset.m,p=M&&M.p,id=M.id;
- if(m==='all'){(U.tfOk=U.tfOk||{})[id]=1;closeModal();if(p)tfApply(id,p.k,p.f,p.nv);toast('Cambio aplicado a todo el historial','wa');return}
- const w=monday(val('tf_w')||today()),nid=turnoFork(id,m,w);closeModal();if(p)tfApply(nid,p.k,p.f,p.nv);else renderPage(true);
- toast('Listo: ahora editas «'+turnoName(nid)+'». El turno original y las semanas pasadas no cambiaron.','ok')}
-function turnoFork(id,mode,w){const o=S.turnos.find(x=>x.id===id),nid='T'+(S.turnos.reduce((m,x)=>Math.max(m,parseInt(x.id.slice(1),10)||0),0)+1),lab=mode==='week'?'semana '+dCorta(w):'desde '+dCorta(w);
- S.turnos.push({id:nid,nombre:o.nombre+' · '+lab,dias:JSON.parse(JSON.stringify(o.dias)),mod:{ts:new Date().toISOString(),por:U.name+' ('+U.role+')'}});S.rota=S.rota||{};
- let weeks=[w];if(mode==='from'){const last=Object.keys(S.rota).sort().pop()||w,lim=addDays(monday(today()),56),end=last>lim?last:lim;weeks=[];for(let x=w;x<=end;x=addDays(x,7))weeks.push(x)}
- S.tecnicos.filter(t=>t.registra).forEach(t=>{
-  if(mode==='from'&&t.turno===id){const first=tecPrimeraSemana(t),lo=addDays(w,-7*52);for(let x=(first&&first>lo?first:lo);first&&x<w;x=addDays(x,7)){S.rota[x]=S.rota[x]||{};if(S.rota[x][t.codigo]===undefined)S.rota[x][t.codigo]=id}}
-  weeks.forEach(wk=>{let any=false;const v={};for(let d=0;d<7;d++){const cur=turnoDe(t,addDays(wk,d===0?6:d-1));if(cur===id){v[d]=nid;any=true}else v[d]=cur}if(any){S.rota[wk]=S.rota[wk]||{};S.rota[wk][t.codigo]=v}});
-  if(mode==='from'&&t.turno===id)t.turno=nid});
- logH('Turno '+o.nombre,'versión '+lab,turnoName(nid));U.tsel=nid;save();return nid}
+function ajhFields(c,o,todos){return `<label style="display:flex;gap:8px;align-items:center;margin:12px 0 4px;font-weight:600"><input type="checkbox" id="aj_l" ${(o&&o.l)||(!o&&!(c&&c.on))?'checked':''}> Libre ese día (no laboró)</label>`+
+ `<div class="two" style="margin-top:8px">${fld('Entrada',`<input type="time" class="inp" id="aj_i" value="${esc((c&&c.on?c.ini:'07:30'))}">`)}${fld('Salida',`<input type="time" class="inp" id="aj_o" value="${esc((c&&c.on?c.fin:'17:00'))}">`)}</div>`+
+ `<div class="two">${fld('Receso (min)',`<input type="number" min="0" class="inp" id="aj_r" value="${c&&c.on?(+c.rec||0):15}">`)}${fld('Alimentación (min)',`<input type="number" min="0" class="inp" id="aj_a" value="${c&&c.on?(+c.ali||0):30}">`)}</div>`+
+ fld('Motivo del ajuste (obligatorio)',`<input type="text" class="inp" id="aj_m" maxlength="140" placeholder="Ej.: se digitó mal el horario de esa semana" value="${o&&o.m&&!/congelado/i.test(o.m)?esc(o.m):''}">`)}
+function ajhOpen(code,k){const w=U.semW,dt=dateOfK(w,+k),t=S.tecnicos.find(x=>x.codigo===code);if(!t)return;const c=diaCfg(t,dt),o=ajhGet(t,dt);M={type:'ajh',code,dt};
+ openModal(mh('Ajustar horario · '+esc(t.nombre))+`<p class="mut" style="margin-bottom:6px"><b style="color:var(--tx)">${dfull(dt)}</b>. Hoy figura: <b style="color:var(--tx)">${ajhRango(c)}</b>. El ajuste cambia solo a esta persona en este día: no modifica ningún turno ni otros días.</p>`+ajhFields(c,o)+mf('Guardar ajuste','ajhSave',o?btn('Quitar ajuste','ajhDel','','ghost'):''))}
+function ajhRead(){const l=val('aj_l'),m=(val('aj_m')||'').trim();if(m.length<5){toast('Escribe el motivo del ajuste (mínimo 5 letras)','er');return null}
+ if(l)return{l:1,m};const i=val('aj_i'),o=val('aj_o');if(!i||!o){toast('Completa entrada y salida','er');return null}return{i,o,r:Math.max(0,+val('aj_r')||0),a:Math.max(0,+val('aj_a')||0),m}}
+function ajhSave(){const e=ajhRead();if(!e)return;const stamp={u:U.name,t:new Date().toISOString()},dt0=M.dt;
+ if(M.type==='ajhdia'){const marc=[...document.querySelectorAll('[data-ajp]')].filter(x=>x.checked).map(x=>x.dataset.ajp);if(!marc.length){toast('Marca al menos una persona','er');return}
+  marc.forEach(code=>{const t=S.tecnicos.find(x=>x.codigo===code),antes=diaCfg(t,M.dt);ajhPon(t,M.dt,{...e,...stamp});logH('Ajuste de horario · '+t.nombre+' · '+dfull(M.dt),ajhRango(antes),(e.l?'libre':ajhRango({on:1,ini:e.i,fin:e.o,rec:e.r,ali:e.a}))+' · '+e.m,code)});
+  save();closeModal();renderPage(true);toast('Ajuste aplicado a '+marc.length+' personas el '+dfull(dt0),'ok');return}
+ const t=S.tecnicos.find(x=>x.codigo===M.code),antes=diaCfg(t,M.dt);ajhPon(t,M.dt,{...e,...stamp});
+ logH('Ajuste de horario · '+t.nombre+' · '+dfull(M.dt),ajhRango(antes),(e.l?'libre':ajhRango({on:1,ini:e.i,fin:e.o,rec:e.r,ali:e.a}))+' · '+e.m,t.codigo);save();closeModal();renderPage(true);toast('Ajuste guardado: '+t.nombre.split(' ')[0]+' · '+dfull(dt0),'ok')}
+function ajhDel(){const t=S.tecnicos.find(x=>x.codigo===M.code);if(!t)return;const antes=diaCfg(t,M.dt);ajhQuita(t,M.dt);const des=diaCfg(t,M.dt);logH('Ajuste de horario quitado · '+t.nombre+' · '+dfull(M.dt),ajhRango(antes),ajhRango(des),t.codigo);save();closeModal();renderPage(true);toast('Ajuste quitado: vuelve al horario del turno','ok')}
+function ajhDiaOpen(k){const w=U.semW,dt=dateOfK(w,+k);const techs=S.tecnicos.filter(t=>t.registra&&t.activo!==false&&!(t.alta&&dt<t.alta));const con=techs.filter(t=>{const c=diaCfg(t,dt);return c&&c.on});if(!con.length){toast('Nadie tiene jornada ese día. Usa el lápiz de cada persona para agregar horas.','wa');return}
+ M={type:'ajhdia',dt};const c=diaCfg(con[0],dt);
+ openModal(mh('Ajustar el día para varias personas · '+dfull(dt))+`<p class="mut" style="margin-bottom:6px">Sirve para un festivo o un día con horario distinto. Se aplica solo a las personas marcadas, solo ese día, y no crea ni cambia turnos.</p>`+
+ `<div style="max-height:170px;overflow:auto;border:1px solid var(--bd);border-radius:10px;padding:8px 12px;margin:8px 0">${con.map(t=>`<label style="display:flex;gap:8px;align-items:center;padding:4px 0"><input type="checkbox" data-ajp="${t.codigo}" checked> <b>${esc(t.nombre)}</b> <span class="mut3" style="font-size:12px">${ajhRango(diaCfg(t,dt))}</span></label>`).join('')}</div>`+ajhFields(c,null)+mf('Aplicar a las personas marcadas','ajhSave'))}
 function tecPrimeraSemana(t){let f=t.alta||'';const r=live().filter(x=>x.tec===t.codigo).map(x=>x.fecha).sort()[0];if(r&&(!f||r<f))f=r;return f?monday(f):''}
 function tecCongelar(c){if(!c||!c.registra)return;const first=tecPrimeraSemana(c),hoyW=monday(today());if(!first)return;S.rota=S.rota||{};for(let x=first;x<hoyW;x=addDays(x,7)){S.rota[x]=S.rota[x]||{};if(S.rota[x][c.codigo]===undefined)S.rota[x][c.codigo]=c.turno}}
 /* ---------- Turnos: editar, desactivar, eliminar, asignar personal, programación semanal ---------- */
@@ -2091,7 +2102,7 @@ function turnosCfg(){
  const cmp=S.turnos.map(x=>({x,h:semanaH(x),n:S.tecnicos.filter(y=>y.registra&&y.activo!==false&&y.turno===x.id).length}));const sc=Math.max(meta,...cmp.map(c=>c.h))*1.12;
  const cmpH=cmp.map(({x,h,n})=>{const col=Math.abs(h-meta)<.01?'var(--ok)':h<meta?'var(--wa)':'var(--er)';return `<div style="margin-bottom:14px;${x.activo===0?'opacity:.55':''}"><div class="prh"><span>${esc(x.nombre)}${x.activo===0?' '+badge('inactivo','n'):''}</span><span class="prn">${hh(h)} <em>/ ${meta} HH · ${n} persona${n===1?'':'s'}</em></span></div><div class="cbar"><i style="width:${h/sc*100}%;background:${col}"></i><b class="mk" style="left:${meta/sc*100}%"></b></div></div>`}).join('');
  return `<div class="tabs">${S.turnos.map(x=>`<button class="${x.id===t.id?'on':''}" data-act="tSel" data-v="${x.id}">${esc(x.nombre)}${x.activo===0?' · inactivo':''}</button>`).join('')}${G?btn(icon('plus',15)+' Nuevo turno','newTurno','','sm ghost'):''}</div>
- <div class="g12"><div class="c8">${card(esc(t.nombre)+(t.activo===0?' '+badge('Inactivo','n'):''),'Horas efectivas = salida − entrada (si termina al día siguiente se suma 24 h) − receso − alimentación',days+`<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:16px">${est}${turnoSemUsadas(t.id).length?badge('Usado en '+turnoSemUsadas(t.id).length+' semana(s) ya trabajadas','i'):''}<span class="mut3" style="font-size:12.5px">Última modificación: ${t.mod&&t.mod.ts?dlabel(ymd(new Date(t.mod.ts)))+' por '+esc(t.mod.por):esc((t.mod&&t.mod.por)||'')}</span></div>${G?`<div class="acts" style="margin-top:14px">${btn(icon('edit',14)+' Renombrar','renTurno','','sm ghost')}${btn('Versión por fechas…','tfNew','','sm ghost')}${btn(t.activo===0?'Volver a activar':'Sacar de funcionamiento','tActive','','sm ghost')}${btn(icon('trash',14)+' Eliminar turno','tDel','','sm dng')}</div>`:''}`)}</div>
+ <div class="g12"><div class="c8">${card(esc(t.nombre)+(t.activo===0?' '+badge('Inactivo','n'):''),'Horas efectivas = salida − entrada (si termina al día siguiente se suma 24 h) − receso − alimentación',days+`<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:16px">${est}<span class="mut3" style="font-size:12.5px">Última modificación: ${t.mod&&t.mod.ts?dlabel(ymd(new Date(t.mod.ts)))+' por '+esc(t.mod.por):esc((t.mod&&t.mod.por)||'')}</span></div>${G?`<div class="acts" style="margin-top:14px">${btn(icon('edit',14)+' Renombrar','renTurno','','sm ghost')}${btn(t.activo===0?'Volver a activar':'Sacar de funcionamiento','tActive','','sm ghost')}${btn(icon('trash',14)+' Eliminar turno','tDel','','sm dng')}</div>`:''}`)}</div>
  <div class="c4">${card('Comparativo semanal de turnos','¿Qué compara? Las HH efectivas por semana de cada turno frente a la meta semanal ('+meta+' HH). La línea blanca es la meta; verde cumple, amarillo queda por debajo, rojo se pasa.',cmpH)}
  ${card('Personal asignado a este turno',asg.length+' persona'+(asg.length===1?'':'s')+' con este turno por defecto',(asg.length?asg.map(x=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--bd)"><div class="av" style="width:30px;height:30px;font-size:11px">${esc(x.ini)}</div><div style="flex:1"><b>${esc(x.nombre)}</b><div class="mut3" style="font-size:12px">${esc(x.area)}</div></div>${G?`<button class="ib" style="width:30px;height:30px" data-act="unasg" data-c="${x.codigo}" aria-label="Quitar del turno">${icon('x',14)}</button>`:''}</div>`).join(''):empty('Nadie asignado todavía'))+(G&&otros.length?`<div class="fld" style="margin-top:12px"><label>Agregar personal a este turno</label><select class="sel" data-asg="${t.id}"><option value="">Seleccionar persona…</option>${otros.map(x=>`<option value="${x.codigo}">${esc(x.nombre)} · ahora en ${esc(turnoName(x.turno))}</option>`).join('')}</select></div>`:''))}</div></div>`;
 }
@@ -2215,7 +2226,7 @@ function pFaltantes(){
  const nowM=new Date().getHours()*60+new Date().getMinutes();const items=[];
  days.forEach(d=>techs.filter(x=>!pu||turnoDe(x,d)===pu).forEach(x=>{
   if(x.alta&&d<x.alta)return;const jj=jornadaInfo(x,d);if(!jj.p||jj.df>=-.01)return;
-  let enTurno=false;if(d===t0){const tu=S.turnos.find(z=>z.id===turnoDe(x,d)),dd=tu&&tu.dias[dow(d)];if(dd&&dd.on&&tmin(dd.fin)>tmin(dd.ini)&&nowM<tmin(dd.fin))enTurno=true}
+  let enTurno=false;if(d===t0){const dd=diaCfg(x,d);if(dd&&dd.on&&tmin(dd.fin)>tmin(dd.ini)&&nowM<tmin(dd.fin))enTurno=true}
   items.push({x,d,jj,enTurno})}));
  items.sort((a,b)=>(a.enTurno-b.enTurno)||(a.d<b.d?1:a.d>b.d?-1:0)||a.x.nombre.localeCompare(b.x.nombre));
  const nEn=items.filter(i=>i.enTurno).length;
@@ -2224,7 +2235,7 @@ function pFaltantes(){
 
  /* mapa de horas faltantes: técnicos x días */
  const mn=+(hf.mn||7),mt=hf.mt||'';const mdays=Array.from({length:mn},(_,i)=>addDays(t0,-(mn-1-i)));
- const enT=(x,d)=>{if(d!==t0)return false;const tu=S.turnos.find(z=>z.id===turnoDe(x,d)),dd=tu&&tu.dias[dow(d)];return !!(dd&&dd.on&&tmin(dd.fin)>tmin(dd.ini)&&nowM<tmin(dd.fin))};
+ const enT=(x,d)=>{if(d!==t0)return false;const dd=diaCfg(x,d);return !!(dd&&dd.on&&tmin(dd.fin)>tmin(dd.ini)&&nowM<tmin(dd.fin))};
  const mrows=techs.filter(x=>!mt||turnoDe(x,t0)===mt).map(x=>{let tot=0,P0=0,G0=0;const cells=mdays.map(d=>{if(x.alta&&d<x.alta)return{d,p:0,g:0,f:0,en:false,pre:true};const jj=jornadaInfo(x,d),en=enT(x,d),f=jj.p?Math.max(0,-jj.df):0;if(jj.p&&!en){P0+=jj.p;G0+=Math.min(jj.g,jj.p);tot+=f}return{d,p:jj.p,g:jj.g,f,en,tu:(S.turnos.find(z=>z.id===turnoDe(x,d))||{}).dias}});return{x,cells,tot,P0,G0}}).filter(r=>r.cells.some(c=>c.p>0)).sort((a,b)=>b.tot-a.tot||a.x.nombre.localeCompare(b.x.nombre));
  const mTot=mrows.reduce((a,r)=>a+r.tot,0),mP=mrows.reduce((a,r)=>a+r.P0,0),mG=mrows.reduce((a,r)=>a+r.G0,0),mPers=mrows.filter(r=>r.tot>.01).length,mJor=mrows.reduce((a,r)=>a+r.cells.filter(c=>c.p>0&&!c.en&&c.f>.01).length,0);
  const cell=(r,c)=>{const x=r.x;if(!c.p)return c.pre?`<td class="c"><span class="cell n" data-tip="${esc(x.nombre+' · antes de su ingreso ('+dfull(x.alta)+'). Si la fecha es incorrecta, corrígela en Técnicos.')}">ant.</span></td>`:`<td class="c"><span class="cell n">·</span></td>`;const dd=(c.tu||{})[dow(c.d)],hr=dd&&dd.on?dd.ini+' – '+dd.fin:'';
@@ -2829,7 +2840,7 @@ Object.assign(A,{
  diaLibre:t=>{if(!can(['Gerencia','Auditoría']))return;diaLibreOpen(+t.dataset.k)},diaLibreOk,
  semNav:t=>{const v=+t.dataset.v;U.semW=v===0?monday(today()):addDays(U.semW,7*v);renderPage(true)},
  semCopy:()=>{const p=addDays(U.semW,-7);S.rota[U.semW]={};S.tecnicos.filter(x=>x.registra).forEach(x=>{S.rota[U.semW][x.codigo]=turnoDe(x,p)});logH('Programación semanal','copiada de '+dlabel(p),dlabel(U.semW));save();renderPage(true);toast('Semana copiada','ok')},
- semReset:()=>{delete S.rota[U.semW];save();renderPage(true);toast('Vuelven los turnos por defecto','ok')},
+ semReset:()=>{delete S.rota[U.semW];S.tecnicos.forEach(t=>ajhQuitaSem(U.semW,t.codigo));save();renderPage(true);toast('Vuelven los turnos por defecto','ok')},
  semShare:()=>shareOpen(''),shareOne:t=>shareOpen(t.dataset.c),
  copyTxt:()=>{const e=$('#shTxt');try{navigator.clipboard.writeText(e.value).then(()=>toast('Texto copiado','ok'),()=>{e.select();document.execCommand('copy');toast('Texto copiado','ok')})}catch(x){e.select();try{document.execCommand('copy');toast('Texto copiado','ok')}catch(y){toast('Selecciona el texto y cópialo manualmente','wa')}}},
  rotaCSV:()=>{const w=U.semW;const cols=[1,2,3,4,5,6,0];const rows=S.tecnicos.filter(t=>t.registra&&t.activo!==false).map(t=>{const tu=S.turnos.find(x=>x.id===rotaDe(w,t.codigo));return [t.codigo,t.nombre,tu?tu.nombre:'Libre',...cols.map(k=>tu&&tu.dias[k]&&tu.dias[k].on?tu.dias[k].ini+'-'+tu.dias[k].fin+' ('+hh(horasDia(tu.dias[k]))+' h)':''),tu?hh(semanaH(tu)):'0']});const hd=['Código','Nombre','Turno',...cols.map(k=>DN[k]),'Total HH'];dl('programacion_'+w+'.csv',csvOf(hd,rows),tsvOf(hd,rows))},
@@ -2842,7 +2853,7 @@ Object.assign(A,{
  hallToggle:t=>{const h=S.hallazgos.find(x=>x.codigo===t.dataset.c);const n=h.estado==='Cerrado'?'Abierto':'Cerrado';logH('Hallazgo '+h.codigo,h.estado||'Abierto',n);h.estado=n;save();renderPage(true)}
 });
 document.addEventListener('change',e=>{const t=e.target;
- if(t.dataset.rota){const w=U.semW;S.rota[w]=S.rota[w]||{};const c=S.tecnicos.find(x=>x.codigo===t.dataset.rota);logH('Programación '+dlabel(w)+' · '+c.nombre,turnoName(rotaDe(w,c.codigo)),t.value==='LIBRE'?'Libre':turnoName(t.value));S.rota[w][c.codigo]=t.value;save();renderPage(true)}
+ if(t.dataset.rota){const w=U.semW;S.rota[w]=S.rota[w]||{};const c=S.tecnicos.find(x=>x.codigo===t.dataset.rota);logH('Programación '+dlabel(w)+' · '+c.nombre,turnoName(rotaDe(w,c.codigo)),t.value==='LIBRE'?'Libre':turnoName(t.value));S.rota[w][c.codigo]=t.value;ajhQuitaSem(w,c.codigo);save();renderPage(true)}
  if(t.dataset.asg&&t.value){const c=S.tecnicos.find(x=>x.codigo===t.value);logH('Turno de '+c.nombre,turnoName(c.turno),turnoName(t.dataset.asg),c.codigo);tecCongelar(c);c.turno=t.dataset.asg;save();renderPage(true);toast(c.nombre+' asignado','ok')}
 });
 /* ===== v2.4 · Programación por día y programación profesional para compartir ===== */
@@ -2863,12 +2874,12 @@ function diaLibreOpen(k){const w=U.semW,dt=dateOfK(w,k);M={type:'dlibre',k};
  (conH.length?`<div class="alrt wa"><div class="ai">${icon('warn',17)}</div><div><b>${conH.length} ${conH.length===1?'persona ya tiene':'personas ya tienen'} horas registradas ese día</b><small>Esas horas no se borran: quedarán como excedente para que las revises. ${esc(conH.map(t=>t.nombre+' ('+hh(jornadaInfo(t,dt).g)+' HH)').join(' · '))}</small></div></div>`:'')+
  `<p class="mut3" style="font-size:12.5px;margin-top:10px">Se puede deshacer: cambia a una persona en la lista de esta pantalla, o usa «Restablecer» para volver toda la semana a los turnos por defecto. Queda registrado en el historial.</p>`+mf('Marcar como no laborado','diaLibreOk'))}
 function diaLibreOk(){const k=M.k,w=U.semW,dt=dateOfK(w,k);S.rota[w]=S.rota[w]||{};let n=0;
- S.tecnicos.filter(t=>t.registra&&t.activo!==false&&!(t.alta&&dt<t.alta)).forEach(t=>{if(prog(t,dt)<=0)return;let v=S.rota[w][t.codigo];if(!v||typeof v==='string'){const base=v||t.turno;v={};for(let d=0;d<7;d++)v[d]=base}v[k]='LIBRE';S.rota[w][t.codigo]=v;n++});
+ S.tecnicos.filter(t=>t.registra&&t.activo!==false&&!(t.alta&&dt<t.alta)).forEach(t=>{if(prog(t,dt)<=0)return;let v=S.rota[w][t.codigo];if(!v||typeof v==='string'){const base=v||t.turno;v={};for(let d=0;d<7;d++)v[d]=base}v[k]='LIBRE';ajhQuita(t,dt);S.rota[w][t.codigo]=v;n++});
  logH('Programación '+dCorta(w)+' · '+DN[k],n+' personas con turno','Día no laborado ('+dfull(dt)+')');save();closeModal();renderPage(true);toast('Listo: '+n+' personas quedaron libres el '+dfull(dt),'ok')}
 function setRotaDay(code,k,val){
  const w=U.semW;S.rota[w]=S.rota[w]||{};const tec=S.tecnicos.find(x=>x.codigo===code);let v=S.rota[w][code];
  if(!v||typeof v==='string'){const base=v||tec.turno;v={};for(let d=0;d<7;d++)v[d]=base}
- const antes=turnoDe(tec,dateOfK(w,k));v[k]=val;S.rota[w][code]=v;
+ const antes=turnoDe(tec,dateOfK(w,k));ajhQuita(tec,dateOfK(w,k));v[k]=val;S.rota[w][code]=v;
  logH('Programación '+dCorta(w)+' · '+tec.nombre+' · '+DN[k],turnoName(antes),val==='LIBRE'?'Libre':turnoName(val),code);save();
 }
 function uniformTurno(t,w){const ids=new Set();[1,2,3,4,5,6,0].forEach(k=>{const id=turnoDe(t,dateOfK(w,k));const tu=S.turnos.find(x=>x.id===id);if(tu&&tu.dias[k]&&tu.dias[k].on)ids.add(id)});return ids.size===1?[...ids][0]:(ids.size===0?'LIBRE':'')}
@@ -2877,24 +2888,24 @@ function turnosSem(){
  const hasSun=techs.some(t=>horasDia((S.turnos.find(x=>x.id===turnoDe(t,dateOfK(w,0)))||{dias:{}}).dias[0])>0);const cols=hasSun?[1,2,3,4,5,6,0]:[1,2,3,4,5,6];
  const opts=sel=>activeTurnos().map(x=>`<option value="${x.id}" ${x.id===sel?'selected':''}>${esc(tCorto(x))}</option>`).join('')+`<option value="LIBRE" ${sel==='LIBRE'?'selected':''}>Libre</option>`;
  const rows=techs.map(t=>{let tt=0;const un=uniformTurno(t,w);
-  const cells=cols.map(k=>{const dt=dateOfK(w,k),id=turnoDe(t,dt),tu=S.turnos.find(x=>x.id===id),d=tu&&tu.dias[k],pre=!!(t.alta&&dt<t.alta),h=(!pre&&d&&d.on)?horasDia(d):0;tt+=h;
+  const cells=cols.map(k=>{const dt=dateOfK(w,k),id=turnoDe(t,dt),tu=S.turnos.find(x=>x.id===id),d=diaCfg(t,dt),ov=ajhGet(t,dt),pre=!!(t.alta&&dt<t.alta),h=(!pre&&d&&d.on)?horasDia(d):0;tt+=h;
    const cur=tu?id:'LIBRE';const inact=tu&&tu.activo===0?`<option value="${id}" selected>${esc(tCorto(tu))} (inactivo)</option>`:'';
-   return `<td style="text-align:center;min-width:104px">${G?`<select class="sel" style="height:32px;padding-left:8px;font-size:13px" data-rd="${t.codigo}|${k}" aria-label="${DN[k]}">${inact}${opts(cur)}</select>`:`<b>${tu?esc(tCorto(tu)):'Libre'}</b>`}<div class="sub mut3" style="font-size:11.5px;margin-top:3px">${pre?'antes de su ingreso':h?hh(h)+' h · '+t12(d.ini).replace(' ',''):'sin jornada'}</div></td>`}).join('');
+   return `<td style="text-align:center;min-width:104px">${G?`<select class="sel" style="height:32px;padding-left:8px;font-size:13px" data-rd="${t.codigo}|${k}" aria-label="${DN[k]}">${inact}${opts(cur)}</select>`:`<b>${tu?esc(tCorto(tu)):'Libre'}</b>`}<div class="sub mut3" style="font-size:11.5px;margin-top:3px">${pre?'antes de su ingreso':h?hh(h)+' h · '+t12(d.ini).replace(' ',''):'sin jornada'}${ov?' '+badge('ajustado','wa'):''}${G&&can(['Gerencia'])&&!pre?` <button class="ib" style="width:24px;height:24px;vertical-align:middle" data-act="ajhOpen" data-c="${t.codigo}" data-k="${k}" data-tip="Ajustar el horario de esta persona en este día" aria-label="Ajustar horario">${icon('edit',12)}</button>`:''}</div></td>`}).join('');
   return `<tr><td><div class="ttl">${esc(t.nombre)}</div><div class="sub">${esc(t.area)}</div></td><td>${G?`<select class="sel" style="height:32px;min-width:128px;font-size:13px" data-rota="${t.codigo}" aria-label="Toda la semana">${un===''?'<option value="" disabled selected hidden>Por día</option>':''}${opts(un)}</select>`:esc(un==='LIBRE'?'Libre':un===''?'Por día':tCorto(S.turnos.find(x=>x.id===un)))}</td>${cells}<td class="num">${badge(hh(tt),Math.abs(tt-meta)<.01?'ok':'wa')}</td><td><button class="ib" style="width:30px;height:30px" data-act="progUno" data-c="${t.codigo}" data-tip="Horario individual para enviar" aria-label="Enviar horario individual">${icon('copy',14)}</button></td></tr>`}).join('');
- const cover=cols.map(k=>{const dt=dateOfK(w,k);let n=0,hs=0;techs.forEach(t=>{if(t.alta&&dt<t.alta)return;const tu=S.turnos.find(x=>x.id===turnoDe(t,dt)),d=tu&&tu.dias[k];if(d&&d.on){n++;hs+=horasDia(d)}});return `<td style="text-align:center"><b>${n}</b><div class="sub mut3" style="font-size:11.5px">${hh(hs)} HH</div></td>`}).join('');
- const pastNote=w<monday(today())?`<div class="alrt i" style="margin-bottom:12px"><div class="ai">${icon('info',17)}</div><div><b>Estás viendo una semana pasada</b><small>Puedes corregir el turno de cualquier día. Las horas faltantes de esos días se recalculan solas y el cambio queda en el historial.</small></div></div>`:'';
+ const cover=cols.map(k=>{const dt=dateOfK(w,k);let n=0,hs=0;techs.forEach(t=>{if(t.alta&&dt<t.alta)return;const d=diaCfg(t,dt);if(d&&d.on){n++;hs+=horasDia(d)}});return `<td style="text-align:center"><b>${n}</b><div class="sub mut3" style="font-size:11.5px">${hh(hs)} HH</div></td>`}).join('');
+ const pastNote=w<monday(today())?`<div class="alrt i" style="margin-bottom:12px"><div class="ai">${icon('info',17)}</div><div><b>Estás viendo una semana pasada</b><small>Puedes cambiar el turno de cualquier día, o usar el lápiz de cada celda para ajustar la entrada, la salida, el receso y la alimentación de una persona en ese día. Las horas faltantes se recalculan solas y todo queda en el historial. Los turnos no se modifican.</small></div></div>`:'';
  return pastNote+`<div class="fbar"><button class="ib" data-act="semNav" data-v="-1" aria-label="Semana anterior">${icon('cl',16)}</button><b style="min-width:230px;text-align:center">Semana del ${dCorta(w)} al ${dCorta(addDays(w,hasSun?6:5))}</b><button class="ib" data-act="semNav" data-v="1" aria-label="Semana siguiente">${icon('cr',16)}</button>${btn('Esta semana','semNav','data-v="0"','sm ghost')}<div style="margin-left:auto" class="acts">${G?btn('Copiar semana anterior','semCopy','','sm ghost')+btn('Restablecer','semReset','','sm ghost'):''}${btn(icon('copy',15)+' Ver y enviar programación','progTodos','','sm')}</div></div>
- ${card('Programación semanal','Elige el turno de cada persona día por día, o toda la semana de una vez con la primera lista. Luego pulsa “Ver y enviar programación” para generar el documento profesional.',`<div class="tw"><table class="t"><thead><tr><th>Técnico</th><th>Toda la semana</th>${cols.map(k=>`<th style="text-align:center">${DN[k].slice(0,3)} ${dCorta(dateOfK(w,k)).split(' ')[0]}</th>`).join('')}<th class="r">Total HH</th><th></th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td colspan="2" class="sub" style="padding-top:12px"><b>Personal programado por día</b></td>${cover}<td></td><td></td></tr>${G?`<tr><td colspan="2" class="sub"><b>¿Ese día no se trabajó?</b><div class="mut3" style="font-size:11.5px">Deja a todos libres de una vez</div></td>${cols.map(k=>`<td style="text-align:center"><button class="btn sm ghost" data-act="diaLibre" data-k="${k}">Día no laborado</button></td>`).join('')}<td></td><td></td></tr>`:''}</tfoot></table></div>`)}`;
+ ${card('Programación semanal','Elige el turno de cada persona día por día, o toda la semana de una vez con la primera lista. Luego pulsa “Ver y enviar programación” para generar el documento profesional.',`<div class="tw"><table class="t"><thead><tr><th>Técnico</th><th>Toda la semana</th>${cols.map(k=>`<th style="text-align:center">${DN[k].slice(0,3)} ${dCorta(dateOfK(w,k)).split(' ')[0]}</th>`).join('')}<th class="r">Total HH</th><th></th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td colspan="2" class="sub" style="padding-top:12px"><b>Personal programado por día</b></td>${cover}<td></td><td></td></tr>${G?`<tr><td colspan="2" class="sub"><b>¿Ese día no se trabajó?</b><div class="mut3" style="font-size:11.5px">Deja a todos libres de una vez</div></td>${cols.map(k=>`<td style="text-align:center"><button class="btn sm ghost" data-act="diaLibre" data-k="${k}">Día no laborado</button>${can(['Gerencia'])?`<div style="margin-top:6px"><button class="btn sm ghost" data-act="ajhDia" data-k="${k}">Ajustar horas del día</button></div>`:''}</td>`).join('')}<td></td><td></td></tr>`:''}</tfoot></table></div>`)}`;
 }
 /* ---- datos de la programación ---- */
 function rotaData(w,code){
  const techs=S.tecnicos.filter(t=>t.registra&&t.activo!==false&&(!code||t.codigo===code));const all=[1,2,3,4,5,6,0];const cell={};
- techs.forEach(t=>all.forEach(k=>{const id=turnoDe(t,dateOfK(w,k)),tu=S.turnos.find(x=>x.id===id),d=tu&&tu.dias[k];if(!d||!d.on||horasDia(d)<=0)return;((cell[id]=cell[id]||{})[k]=cell[id][k]||[]).push(t)}));
+ const pse={};techs.forEach(t=>all.forEach(k=>{const dt=dateOfK(w,k),o=ajhGet(t,dt);let id=turnoDe(t,dt),d;if(o){if(o.l)return;id='AJ|'+o.i+'|'+o.o+'|'+(+o.r||0)+'|'+(+o.a||0);d=diaCfg(t,dt);if(!pse[id])pse[id]={id,nombre:'Horario ajustado '+t12(o.i).replace(' ','')+'–'+t12(o.o).replace(' ',''),area:'',dias:{},activo:1};pse[id].dias[k]=d}else{const tu=S.turnos.find(x=>x.id===id);d=tu&&tu.dias[k]}if(!d||!d.on||horasDia(d)<=0)return;((cell[id]=cell[id]||{})[k]=cell[id][k]||[]).push(t)}));
  const sun=Object.values(cell).some(c=>c[0]&&c[0].length);const days=(sun?all:[1,2,3,4,5,6]).map(k=>({k,date:dateOfK(w,k)}));
- const rows=S.turnos.filter(tu=>cell[tu.id]).map(tu=>({tu,cells:cell[tu.id],sem:semanaH(tu)}));
+ const rows=[...S.turnos,...Object.values(pse)].filter(tu=>cell[tu.id]).map(tu=>({tu,cells:cell[tu.id],sem:semanaH(tu)}));
  return{w,days,rows,techs,gen:new Date()};
 }
-function personWeek(code,w){const t=S.tecnicos.find(x=>x.codigo===code);const out=[];let tot=0;[1,2,3,4,5,6,0].forEach(k=>{const id=turnoDe(t,dateOfK(w,k)),tu=S.turnos.find(x=>x.id===id),d=tu&&tu.dias[k];const h=d&&d.on?horasDia(d):0;tot+=h;if(k===0&&!h)return;out.push({k,date:dateOfK(w,k),tu:h?tu:null,d:h?d:null,h})});return{t,days:out,tot}}
+function personWeek(code,w){const t=S.tecnicos.find(x=>x.codigo===code);const out=[];let tot=0;[1,2,3,4,5,6,0].forEach(k=>{const dt=dateOfK(w,k),id=turnoDe(t,dt),tu0=S.turnos.find(x=>x.id===id),d=diaCfg(t,dt);const h=d&&d.on?horasDia(d):0;tot+=h;if(k===0&&!h)return;out.push({k,date:dt,tu:h?(ajhGet(t,dt)?{id:'AJ',nombre:'Horario ajustado',dias:{}}:tu0):null,d:h?d:null,h})});return{t,days:out,tot}}
 /* ---- dibujo (canvas) ---- */
 const PAL_P={dark:{bg:'#0B111A',head:'#070A0F',panel:'#101722',panel2:'#162131',tx:'#F5F7FA',sub:'#8B95A7',line:'rgba(255,255,255,.10)'},light:{bg:'#F3F6FB',head:'#0F172A',panel:'#FFFFFF',panel2:'#EAF0F7',tx:'#0F172A',sub:'#64748B',line:'#D8E1EC'}};
 const TCOL=['#38BDF8','#8B5CF6','#F59E0B','#22C55E','#F472B6','#22D3EE'];
@@ -3024,7 +3035,7 @@ function progRender(){
 function progAbrir(code){M={type:'prog',code:code||'',theme:'dark'};progRender()}
 const progNombre=ext=>(M.code?'horario_'+M.code+'_':'programacion_turnos_')+U.semW+'.'+ext;
 Object.assign(A,{
- rotaCSV:()=>{const w=U.semW,cols=[1,2,3,4,5,6,0];const rows=S.tecnicos.filter(t=>t.registra&&t.activo!==false).map(t=>{let tot=0;const cs=cols.map(k=>{const tu=S.turnos.find(x=>x.id===turnoDe(t,dateOfK(w,k))),d=tu&&tu.dias[k];const h=d&&d.on?horasDia(d):0;tot+=h;return h?tCorto(tu)+' '+rango(d)+' ('+hh(h)+' h)':''});return [t.codigo,t.nombre,...cs,hh(tot)]});const hd=['Código','Nombre',...cols.map(k=>DN[k]+' '+dCorta(dateOfK(w,k))),'Total HH'];dl('programacion_'+w+'.csv',csvOf(hd,rows),tsvOf(hd,rows))},
+ rotaCSV:()=>{const w=U.semW,cols=[1,2,3,4,5,6,0];const rows=S.tecnicos.filter(t=>t.registra&&t.activo!==false).map(t=>{let tot=0;const cs=cols.map(k=>{const tu=S.turnos.find(x=>x.id===turnoDe(t,dateOfK(w,k))),d=diaCfg(t,dateOfK(w,k));const h=d&&d.on?horasDia(d):0;tot+=h;return h?(ajhGet(t,dateOfK(w,k))?'Ajustado':tCorto(tu))+' '+rango(d)+' ('+hh(h)+' h)':''});return [t.codigo,t.nombre,...cs,hh(tot)]});const hd=['Código','Nombre',...cols.map(k=>DN[k]+' '+dCorta(dateOfK(w,k))),'Total HH'];dl('programacion_'+w+'.csv',csvOf(hd,rows),tsvOf(hd,rows))},
  progTodos:()=>progAbrir(''),progUno:t=>progAbrir(t.dataset.c),semShare:()=>progAbrir(''),shareOne:t=>progAbrir(t.dataset.c),
  progTheme:t=>{M.theme=t.dataset.v;progRender()},
  msgApply:()=>{if(!can(GA))return;msgGuardar(($('#pm_mot').value||'').trim(),($('#pm_tec').value||'').trim());M.msgOpen=true;progRender();toast('Mensajes aplicados a la imagen','ok')},
@@ -3102,6 +3113,7 @@ function nbRows(){
  if(Array.isArray(st.lineas)&&st.lineas.length)out.ajustes.set('lineas',nbJ({clave:'lineas',valor:st.lineas.join('|')}));
  if(Array.isArray(st.frases)&&st.frases.length)out.ajustes.set('frases',nbJ({clave:'frases',valor:st.frases.join('|')}));
  if(st.msgsem&&Object.keys(st.msgsem).length)out.ajustes.set('msgsem',nbJ({clave:'msgsem',valor:JSON.stringify(st.msgsem)}));
+ if(st.ajh!==undefined)out.ajustes.set('ajh',nbJ({clave:'ajh',valor:JSON.stringify(st.ajh)}));
  out.turnos=mk();out.turno_dias=mk();
  S.turnos.forEach(t=>{
   out.turnos.set(t._id,nbJ({id:t._id,nombre:t.nombre,activo:t.activo!==0,modificado_por:(t.mod&&t.mod.por)||null,modificado_en:(t.mod&&t.mod.ts)||null}));
@@ -3162,7 +3174,7 @@ async function nbLoad(){
   rg=await nbSel('registros_hh','select=*&order=registrado_en.asc,id.asc'+(since?'&fecha=gte.'+since:''));
   if(NB.perfil&&(NB.perfil.rol==='Gerencia'||NB.perfil.rol==='Auditoría')){[his,per,pnh]=await Promise.all([safe(nbSel('historial','select=*&order=id.desc'),[]).then(x=>x.slice(0,400)),safe(nbSel('perfiles'),[]),safe(nbSel('perfil_nombres','select=*&order=desde.asc'),[])]);NB.perfs=per;NB.pnh=pnh}}
  const st={...NB_DEF,webapp:'',url:'',empresa:'LATAMKS S.A.S.'};
- aj.forEach(a=>{if(a.clave==='meta_semanal')st.meta=+a.valor;else if(['rec','ali','recSab'].includes(a.clave))st[a.clave]=+a.valor;else if(['empresa','url'].includes(a.clave))st[a.clave]=a.valor;else if(a.clave==='ultimo_respaldo')st.respaldo=a.valor;else if(a.clave==='capacidades')st.caps=String(a.valor).split(',').map(Number).filter(n=>n>0);else if(a.clave==='frases')st.frases=String(a.valor).split('|').filter(Boolean);else if(a.clave==='msgsem'){try{st.msgsem=JSON.parse(a.valor)||{}}catch(_){st.msgsem={}}}else if(a.clave==='meta_productividad')st.metaProd=+a.valor;else if(a.clave==='umbral_alcance')st.umbAlc=+a.valor;else if(a.clave==='lineas')st.lineas=String(a.valor).split('|').filter(Boolean)});
+ aj.forEach(a=>{if(a.clave==='meta_semanal')st.meta=+a.valor;else if(['rec','ali','recSab'].includes(a.clave))st[a.clave]=+a.valor;else if(['empresa','url'].includes(a.clave))st[a.clave]=a.valor;else if(a.clave==='ultimo_respaldo')st.respaldo=a.valor;else if(a.clave==='capacidades')st.caps=String(a.valor).split(',').map(Number).filter(n=>n>0);else if(a.clave==='frases')st.frases=String(a.valor).split('|').filter(Boolean);else if(a.clave==='ajh'){try{st.ajh=JSON.parse(a.valor)||{}}catch(_){st.ajh={}}}else if(a.clave==='msgsem'){try{st.msgsem=JSON.parse(a.valor)||{}}catch(_){st.msgsem={}}}else if(a.clave==='meta_productividad')st.metaProd=+a.valor;else if(a.clave==='umbral_alcance')st.umbAlc=+a.valor;else if(a.clave==='lineas')st.lineas=String(a.valor).split('|').filter(Boolean)});
  const tmap={},turnoByName={};
  const turnos=tu.map((t,i)=>{const id='T'+(i+1);tmap[t.id]=id;turnoByName[t.nombre]=turnoByName[t.nombre]||id;const dias={};for(let k=0;k<7;k++)dias[k]=mkDia(0,'07:30','17:00',0,0);
   td.filter(d=>d.turno_id===t.id).forEach(d=>{dias[d.dia]=mkDia(d.activo?1:0,String(d.hora_inicio||'07:30').slice(0,5),String(d.hora_fin||'17:00').slice(0,5),d.receso_min||0,d.alimentacion_min||0)});
@@ -3187,7 +3199,7 @@ async function nbLoad(){
  if(seeded){if(NB.perfil&&NB.perfil.rol==='Gerencia'){nbSave()}else NB.snap=nbSnapNow()}
  NB.sig=nbSig()}
 function nbSnapNow(){const r=nbRows();const o={};NB_ORDER.forEach(([c])=>{o[c]=r[c]});return o}
-function nbSig(){let h=0;const s=ETAPAS.join()+JSON.stringify(ETINFO)+ACT.map(a=>a[0]+a[1]+a[2]+(a[3]||[]).join()+a[4]).join()+S.registros.map(r=>r.id+r.estado+r.horas+(r.pend?1:0)+(r.hallazgo||'')+(r.causa||'')+(r.origen||'')+(r.persona||'')).join('|')+S.proyectos.map(p=>p.num+p.estado+((p.exp||{}).total||0)).join(',')+S.tecnicos.map(t=>t.codigo+t.activo+t.turno).join(',')+S.hallazgos.map(x=>x.codigo+x.estado+(x.ciclos||0)+(x.esc?1:0)+(x.autEn?1:0)+(x.asigIni||'')).join(',')+(S.hhist||[]).length+'L'+(S.lib||[]).map(x=>x.codigo+x.estado+(x.asigIni||'')).join(',')+'f'+(S.hfotos||[]).length+JSON.stringify(S.rota)+S.turnos.map(t=>t.nombre+nbJ(t.dias)).join('');
+function nbSig(){let h=0;const s=ETAPAS.join()+JSON.stringify(ETINFO)+ACT.map(a=>a[0]+a[1]+a[2]+(a[3]||[]).join()+a[4]).join()+S.registros.map(r=>r.id+r.estado+r.horas+(r.pend?1:0)+(r.hallazgo||'')+(r.causa||'')+(r.origen||'')+(r.persona||'')).join('|')+S.proyectos.map(p=>p.num+p.estado+((p.exp||{}).total||0)).join(',')+S.tecnicos.map(t=>t.codigo+t.activo+t.turno).join(',')+S.hallazgos.map(x=>x.codigo+x.estado+(x.ciclos||0)+(x.esc?1:0)+(x.autEn?1:0)+(x.asigIni||'')).join(',')+(S.hhist||[]).length+'L'+(S.lib||[]).map(x=>x.codigo+x.estado+(x.asigIni||'')).join(',')+'f'+(S.hfotos||[]).length+JSON.stringify(S.rota)+JSON.stringify(S.settings.ajh||{})+S.turnos.map(t=>t.nombre+nbJ(t.dias)).join('');
  for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return s.length+':'+h}
 
 /* ---------- Guardado en la nube (solo cambios) ---------- */
