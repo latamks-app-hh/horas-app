@@ -405,6 +405,9 @@ a.btn{text-decoration:none}
 .vv-al.wa{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.4)}.vv-al.er{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.4)}.vv-al.ok{background:rgba(34,197,94,.10);border-color:rgba(34,197,94,.4)}
 
 .vv-top[hidden]{display:none}
+#printSheet.cons h1,#printSheet.cons h2,#printSheet.cons h3,#printSheet.cons td,#printSheet.cons th,#printSheet.cons p{color:#000!important}#printSheet.cons .cn{color:#555!important}
+@media print{body::before,body::after,html::before,html::after{display:none!important}}
+
 .vv-tabs{display:flex;gap:6px;margin:0 0 14px}.vv-tabs button,.vv-gsw button{border:1px solid var(--bd);background:var(--card2);color:var(--tx2);padding:7px 16px;border-radius:30px;font:inherit;font-weight:600;font-size:13px;cursor:pointer;transition:.2s}.vv-tabs button.on,.vv-gsw button.on{background:var(--pri);border-color:var(--pri);color:#fff;box-shadow:0 6px 18px -8px var(--pri)}
 .vv-gtop{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}.vv-gsw{display:flex;gap:6px}
 .vv-gw{overflow-x:auto;padding-bottom:6px}.vv-gx{position:relative;min-width:760px;padding-top:26px}
@@ -1346,7 +1349,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='5.2.2';
+const APP_VER='5.2.3';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -5961,7 +5964,9 @@ function chkPrint(e,codes){
  ps.innerHTML=`<img src="${LOGO}" alt="" style="height:60px;width:auto"><h1>Hoja de trabajo · ${esc(e)}</h1><p><b>Proyecto ${esc(p.num)}</b> · Tanque ${nf(p.cap,0)} gal · ${esc(p.cliente||'')}</p><p>Fecha: ${vvD(today())} · Emitida por ${esc(U.name||U.role||'')}</p>
  <table class="ct"><tr><th style="width:24px">✓</th><th style="width:44px">Cód.</th><th>Actividad</th><th style="width:110px">Técnico</th><th style="width:150px">Observaciones</th></tr>${L.map(a=>`<tr><td style="height:30px"></td><td>${esc(String(a[0]))}</td><td>${esc(a[1])}</td><td></td><td></td></tr>`).join('')}</table>
  <p style="margin-top:34px!important">Supervisor: ________________________ &nbsp; Firma: ________________ &nbsp; Hora de cierre: ________</p><p class="cn">Al terminar, el supervisor cierra estas actividades en Latamks HH → Proyecto en vivo → Detalle por etapa.</p>`;
- setTimeout(()=>{try{window.print()}catch(x){toast('La impresión no está disponible aquí.','wa')}setTimeout(()=>{ps.className=''},1500)},300)}
+ const th=document.documentElement.getAttribute('data-theme');document.documentElement.setAttribute('data-theme','light');
+ const limp=()=>{window.removeEventListener('afterprint',limp);setTimeout(()=>{ps.className='';ps.innerHTML='';if(th)document.documentElement.setAttribute('data-theme',th);else document.documentElement.removeAttribute('data-theme')},300)};window.addEventListener('afterprint',limp);
+ setTimeout(()=>{try{window.print()}catch(x){toast('La impresión no está disponible aquí.','wa');limp()}},300)}
 function pVivo(){
  const P=S.proyectos.slice().sort((a,b)=>a.num<b.num?1:-1);const act=P.filter(p=>p.estado==='Activo'),fin=P.filter(p=>p.estado!=='Activo');
  if(!P.length)return card('Proyecto en vivo','Avance real de cada tanque',empty('Aún no hay proyectos. Crea el primero en Proyectos.'));
