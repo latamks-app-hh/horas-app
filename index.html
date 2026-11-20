@@ -1349,7 +1349,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='5.2.3';
+const APP_VER='5.2.4';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -5830,13 +5830,13 @@ const VV_ET=['Corte láser','Soldador automático','Plegado','Rolado','Armado','
 const VV_SH={'Soldador automático':'Sold. automático','Limpieza mecánica':'Limp. mecánica','Lavado jabonoso y químico':'Lavado'};
 const vvSh=e=>VV_SH[e]||e;
 function vvLibEt(p,e){const L=(S.lib||[]).filter(l=>l.proy===p.num&&l.etapa===e&&l.estado!=='Anulada');if(!L.length)return null;L.sort((a,b)=>(a.creado||'')<(b.creado||'')?1:-1);return L.find(l=>l.estado==='Liberada')||L[0]}
-function vvCalc(p){
+var VV_CHK=[];function vvCalc(p){
  const rn=live().filter(r=>r.proy===p.num);const ex=p.exp||{total:0,et:{},cerradas:[]};const t0=today();
  const rows=VV_ET.map((e,i)=>{
   const exp=+(ex.et&&ex.et[e])||0;const rr=rn.filter(r=>r.macro===e&&isProd(r));const real=sum(rr);
   const lib=vvLibEt(p,e);const cerr=(ex.cerradas||[]).includes(e);const ok=lib&&lib.estado==='Liberada';
   const AC=(typeof ACT!=='undefined'?ACT:[]).filter(a=>a[2]===e&&a[4]!==false);const codes=AC.map(a=>String(a[0]));
-  const ck=(S.chk||[]).filter(c=>c.proy===p.num&&c.etapa===e&&codes.includes(String(c.act)));const nap=ck.filter(c=>c.estado==='No aplica').length;const dn=ck.filter(c=>c.estado==='Cerrada').length;const tot=Math.max(0,AC.length-nap);
+  const ck=(VV_CHK||[]).filter(c=>c.proy===p.num&&c.etapa===e&&codes.includes(String(c.act)));const nap=ck.filter(c=>c.estado==='No aplica').length;const dn=ck.filter(c=>c.estado==='Cerrada').length;const tot=Math.max(0,AC.length-nap);
   const chk={tot,done:dn,na:nap,use:ck.length>0&&tot>0};
   const ph=chk.use?Math.min(1,dn/tot):(exp?Math.min(1,real/exp):(real>0?.5:0));
   const pct=(ok||cerr)?1:Math.min(.95,ph);
@@ -5943,21 +5943,23 @@ function vvGantt(p,c){
 
 const vvCan=()=>can(['Gerencia','Supervisor']);
 function vvActs(p,r,hs,con,n){
- const ck=r.chk,cn=vvCan();const st=c=>(S.chk||[]).find(x=>x.proy===p.num&&String(x.act)===String(c));
+ const ck=r.chk,cn=vvCan();const st=c=>(VV_CHK||[]).find(x=>x.proy===p.num&&String(x.act)===String(c));
  return `<div class="vv-dt">Actividades · ${ck.done} cerradas de ${ck.tot}${ck.na?' ('+ck.na+' no aplican)':''} · ${con} con horas</div><div class="vv-acs">${hs.map(x=>{const s=st(x.a[0]);const cl=s?(s.estado==='Cerrada'?'ch':'na'):'';return `<span class="vv-ac ${cl} ${x.h>0?'on':''}" ${cn?`data-act="chkTog" data-a="${esc(String(x.a[0]))}" data-e="${esc(r.e)}" role="button" tabindex="0"`:''} title="${esc(x.a[0]+' · '+x.a[1]+(s?' · '+s.estado+' por '+s.por:''))}"><em>${s&&s.estado==='Cerrada'?'✓':esc(String(x.a[0]))}</em>${esc(x.a[1])}${x.h>0?`<i>${nf(x.h,1)} h</i>`:''}</span>`}).join('')}</div>
  ${cn?`<div class="vv-cb" data-e="${esc(r.e)}"><span class="cnt">0 seleccionadas</span><button data-act="chkSelP">Seleccionar pendientes</button><button data-act="chkPrint">🖨 Imprimir hoja</button><button class="ok" data-act="chkDo" data-m="Cerrada">✓ Marcar cerradas</button><button data-act="chkDo" data-m="No aplica">No aplica</button><button data-act="chkDo" data-m="Pendiente">Reabrir</button></div>`:`<div class="mut3" style="font-size:12px;margin-top:6px">Solo Supervisor y Gerencia pueden cerrar actividades.</div>`}`}
 const chkSel=t=>[...t.closest('.vv-db').querySelectorAll('.vv-ac.sel')].map(x=>x.dataset.a);
 const chkCnt=t=>{const db=t.closest('.vv-db');const n=db.querySelectorAll('.vv-ac.sel').length;db.querySelector('.vv-cb .cnt').textContent=n+' seleccionada'+(n===1?'':'s')};
-async function nbReloadChk(){try{const r=await nbSel('actividad_checks','select=actividad_codigo,etapa,estado,por,rol,en,proyectos(numero)&order=en.asc');S.chk=r.map(x=>({proy:(x.proyectos||{}).numero||'',act:String(x.actividad_codigo),etapa:x.etapa,estado:x.estado,por:x.por||'',rol:x.rol||'',en:x.en||''}))}catch(e){S.chk=S.chk||[]}}
+let VV_CHKT=0;
+async function nbReloadChk(quiet){try{const r=await nbSel('actividad_checks','select=actividad_codigo,etapa,estado,por,rol,en,proyectos(numero)&order=en.asc');VV_CHK=r.map(x=>({proy:(x.proyectos||{}).numero||'',act:String(x.actividad_codigo),etapa:x.etapa,estado:x.estado,por:x.por||'',rol:x.rol||'',en:x.en||''}));VV_CHKT=Date.now();return true}catch(e){if(!quiet)toast('No pude leer las actividades cerradas: '+((e&&e.message)||e),'er');return false}}
+function chkLocal(p,e,codes,m){codes.forEach(c=>{const i=VV_CHK.findIndex(x=>x.proy===p&&String(x.act)===String(c));if(m==='Pendiente'){if(i>=0)VV_CHK.splice(i,1)}else{const o={proy:p,act:String(c),etapa:e,estado:m,por:U.name||U.role||'',rol:U.role||'',en:new Date().toISOString()};if(i>=0)VV_CHK[i]=o;else VV_CHK.push(o)}})}
 async function chkApply(e,codes,m){
  const p=U.vivoP;const k=VV_ET.indexOf(e);const msg={Cerrada:'Actividades cerradas',['No aplica']:'Marcadas como no aplica',Pendiente:'Actividades reabiertas'}[m];
- if(S.demo){S.chk=S.chk||[];codes.forEach(c=>{const i=S.chk.findIndex(x=>x.proy===p&&String(x.act)===String(c));if(m==='Pendiente'){if(i>=0)S.chk.splice(i,1)}else{const o={proy:p,act:String(c),etapa:e,estado:m,por:U.name||U.role||'',rol:U.role||'',en:new Date().toISOString()};if(i>=0)S.chk[i]=o;else S.chk.push(o)}});U.vivoK=k;renderPage(true);toast(msg+' ('+codes.length+')','ok');return}
+ if(S.demo){chkLocal(p,e,codes,m);U.vivoK=k;renderPage(true);toast(msg+' ('+codes.length+')','ok');return}
  if(NB.cbusy)return;NB.cbusy=true;
- try{await nbRpc('actividad_marcar',{p_proyecto:p,p_etapa:e,p_actividades:codes.map(String),p_estado:m});await nbReloadChk();U.vivoK=k;renderPage(true);toast(msg+' ('+codes.length+')','ok')}
+ try{await nbRpc('actividad_marcar',{p_proyecto:p,p_etapa:e,p_actividades:codes.map(String),p_estado:m});chkLocal(p,e,codes,m);await nbReloadChk();U.vivoK=k;renderPage(true);toast(msg+' ('+codes.length+')','ok')}
  catch(x){toast(nbMsg(x),'er')}finally{NB.cbusy=false}}
 function chkPrint(e,codes){
  const p=S.proyectos.find(x=>x.num===U.vivoP);if(!p)return;const AC=(typeof ACT!=='undefined'?ACT:[]).filter(a=>a[2]===e&&a[4]!==false);
- const st=c=>(S.chk||[]).find(x=>x.proy===p.num&&String(x.act)===String(c));
+ const st=c=>(VV_CHK||[]).find(x=>x.proy===p.num&&String(x.act)===String(c));
  const L=codes.length?AC.filter(a=>codes.includes(String(a[0]))):AC.filter(a=>!st(a[0]));
  if(!L.length){toast('No hay actividades pendientes para imprimir.','wa');return}
  const ps=document.getElementById('printSheet');ps.className='cons';
@@ -5997,7 +5999,7 @@ function pVivo(){
  <p class="mut3" style="font-size:12.5px;margin-top:10px">El tamaño de cada tramo del círculo es proporcional a las horas esperadas de esa etapa. Avance de la etapa = actividades cerradas ÷ aplicables (si el supervisor usa el checklist) o, si no, horas reales ÷ esperadas; máximo 95% hasta que Calidad la libera, y al liberarla pasa a 100%.</p></div>`}
 const VV_SK='';
 function vvMount(){
- if(!S.demo&&!NB.chkL){NB.chkL=true;nbReloadChk().then(()=>{if(U.page==='vivo')renderPage(true)})}
+ if(!S.demo&&Date.now()-VV_CHKT>20000){VV_CHKT=Date.now();nbReloadChk(true).then(ok=>{if(ok&&U.page==='vivo')renderPage(true)})}
  const root=document.querySelector('.vv');if(!root)return;const c=VV_C,p=S.proyectos.find(x=>x.num===U.vivoP);if(!p||!c)return;
  // grafico radial: animacion, hover y click
  const big=document.getElementById('vvbig');if(big){const v=+big.dataset.v;let t0=null;const f=ts=>{if(!big.isConnected)return;if(t0==null)t0=ts;const k=Math.min(1,(ts-t0)/1100),e=1-Math.pow(1-k,3);big.textContent=Math.round(v*e)+'%';if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
