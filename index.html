@@ -371,6 +371,21 @@ a.btn{text-decoration:none}
 .rvt td{vertical-align:top;font-size:13px}.rvt .wrapd{max-width:340px;white-space:normal;line-height:1.4}.rvt .sub{white-space:normal}
 .rvh{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.rvh .nmx{min-width:210px}
 .mbox.xw{max-width:760px;width:94vw}.mbox .rtxt{min-height:70px}
+.vv-list{display:grid;gap:10px}.vv-pi{display:grid;grid-template-columns:170px 1fr 130px;gap:14px;align-items:center;padding:12px 14px;border:1px solid var(--bd);border-radius:14px;cursor:pointer;background:var(--card2)}.vv-pi:hover{border-color:var(--bd2)}.vv-pi.on{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri) inset}
+@media(max-width:700px){.vv-pi{grid-template-columns:1fr 1fr}.vv-pi>div:nth-child(2){grid-column:1/3;order:3}}
+.vv-3d{position:relative;margin:6px 0 10px;border-radius:14px;overflow:hidden;border:1px solid var(--bd);background:#0c1015}#vvcv{display:block;width:100%;height:440px;touch-action:none;cursor:grab}
+@media(max-width:700px){#vvcv{height:300px}}
+.vv-b{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap}.vv-b button{background:#101a26cc;color:#e8eef6;border:1px solid #2a3a50;border-radius:9px;padding:6px 11px;font-size:12.5px;cursor:pointer}.vv-b button.on{border-color:#38bdf8;color:#38bdf8}
+.vv-lg{position:absolute;bottom:10px;left:12px;display:flex;gap:14px;font-size:11.5px;color:#8fa3b8;flex-wrap:wrap}.vv-lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.vv-ref{position:absolute;top:12px;right:12px;font-size:11.5px;color:#fbbf24;border:1px solid #fbbf2455;border-radius:99px;padding:2px 10px;background:#fbbf2414}
+.vv-tl{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:8px}.vv-st{text-align:center;font-size:11px;color:var(--tx3)}.vv-st .dot{width:30px;height:30px;border-radius:50%;margin:0 auto 6px;display:grid;place-items:center;font-size:12px;font-weight:700;border:2px solid var(--bd2);background:var(--card2)}.vv-st span{display:block;color:var(--tx);font-weight:600;font-size:12px}
+.vv-st.done .dot{background:#22c55e;border-color:#22c55e;color:#04231a}.vv-st.cur .dot{border-color:var(--pri);color:var(--pri);box-shadow:0 0 12px var(--pri)}.vv-st.cur{color:var(--tx)}
+@media(max-width:700px){.vv-tl{grid-template-columns:repeat(5,1fr);row-gap:12px}}
+.vv-k{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}@media(max-width:900px){.vv-k{grid-template-columns:1fr 1fr}}
+.vv-2{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;margin-top:14px}@media(max-width:900px){.vv-2{grid-template-columns:1fr}}
+.vv-cur td{font-weight:700}.vv-fin{margin-top:12px}.vv-fin summary{cursor:pointer;color:var(--tx2);font-size:13px;font-weight:600}
+.vv-al{padding:10px 12px;border-radius:12px;margin-bottom:8px;border:1px solid}.vv-al b{display:block;font-size:13.5px}.vv-al span{font-size:12.5px;color:var(--tx2)}
+.vv-al.wa{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.4)}.vv-al.er{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.4)}.vv-al.ok{background:rgba(34,197,94,.10);border-color:rgba(34,197,94,.4)}
 </style></head>
 <body>
 <div class="app" id="app"></div>
@@ -1283,7 +1298,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='5.1.3';
+const APP_VER='5.2.0';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1387,7 +1402,7 @@ const AU='Auditoría',G_=['Gerencia'],GS=['Gerencia','Supervisor',AU],GSC=['Gere
 const NAV=[
 {g:'Operación',items:[['captura','Captura rápida','clock',['Gerencia','Supervisor','Técnico',AU]],['faltantes','Horas faltantes','warn',['Gerencia','Supervisor','Técnico',AU]],['supervisor','Panel de supervisor','users',GS],['revision','Revisión de registros','check',['Gerencia','Supervisor']],['registros','Registros','db',GSC],['alertas','Alertas','bell',GS]]},
 {g:'Análisis',items:[['dashboard','Panel de Gerencia','dash',GS],['etapas','Comparar etapas','layers',GS],['retrabajo','Retrabajo','redo',GSC],['desempeno','Desempeño','trend',GSC],['auditoria','Auditoría','search',['Gerencia',AU]],['hist','Histórico anterior','cal',GA]]},
-{g:'Gestión',items:[['proyectos','Proyectos','folder',GSC],['expectativas','Expectativas','sliders',GS],['tecnicos','Técnicos','user',GA],['turnos','Turnos','cal',GS],['hallazgos','Hallazgos','flag',GSC],['liberaciones','Liberaciones','check',GSC],['calidad','Gestión de Calidad','trend',GSC]]},
+{g:'Gestión',items:[['proyectos','Proyectos','folder',GSC],['expectativas','Expectativas','sliders',GS],['tecnicos','Técnicos','user',GA],['turnos','Turnos','cal',GS],['hallazgos','Hallazgos','flag',GSC],['liberaciones','Liberaciones','check',GSC],['vivo','Proyecto en vivo','dash',GSC],['calidad','Gestión de Calidad','trend',GSC]]},
 {g:'Sistema',items:[['respaldo','Copia de seguridad','down',['Gerencia','Supervisor','Calidad']],['catalogo','Etapas y actividades','layers',GA],['listas','Otro tiempo y líneas','sliders',GA],['ajustes','Ajustes y QR','qr',G_]]}];
 const ALLN=NAV.flatMap(g=>g.items.map(i=>({id:i[0],t:i[1],ic:i[2],r:i[3],g:g.g})));
 const PAGES={auditoria:pAuditoria,faltantes:pFaltantes,expectativas:pExpectativas,captura:pCaptura,supervisor:pSupervisor,revision:pRevision,registros:pRegistros,alertas:pAlertas,respaldo:pRespaldo,dashboard:pDashboard,etapas:pEtapas,retrabajo:pRetrabajo,proyectos:pProyectos,tecnicos:pTecnicos,turnos:pTurnos,hallazgos:pHallazgos,ajustes:pAjustes,catalogo:pCatalogo,listas:pListas,hist:pHist};
@@ -1424,6 +1439,7 @@ function renderPage(keep){
  _g=0;let h;try{h=PAGES[U.page]()}catch(e){console.error(e);h=`<div class="card">${empty('Ocurrió un error al dibujar esta vista: '+esc(e.message))}</div>`}
  const p=$('#page');p.innerHTML=h;p.classList.remove('fade');if(!keep){void p.offsetWidth;p.classList.add('fade')}
  if(U.page==='ajustes')drawQR('#qrhost',200);
+ if(U.page==='vivo')vvMount();
  if(U.page==='desempeno'&&typeof DSV!=='undefined')DSV.post();
  scrollTo(0,keep?y:0);
 }
@@ -5482,6 +5498,271 @@ async function tlSave(args){
 Object.assign(A,{tlNew:()=>tlNew(),tlSave:()=>tlSave(),
  tlRe:t=>{const x=NB.libMis.find(z=>z.codigo===t.dataset.c);if(!x)return;
   confirmM('Solicitar de nuevo','¿Ya corregiste lo que Calidad indicó? Se enviará una nueva solicitud de '+esc(x.etapa)+' del proyecto '+esc(x.proyecto)+'.','Solicitar',()=>tlSave({p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_proyecto:x.proyecto,p_etapa:x.etapa,p_descripcion:x.descripcion,p_prioridad:x.prioridad||'Normal',p_reintento_de:x.codigo}))}});
+
+/* Tank3D: motor WebGL2 propio. Geometría del tanque 10.000 gal (sección 3050x1632, largo 11.276 m, 3 cuerpos) */
+const Tank3D=(()=>{
+const VS=`#version 300 es
+in vec3 p;in vec3 n;uniform mat4 VP;uniform vec3 off;out vec3 vW;out vec3 vN;out vec3 vL;
+void main(){vL=p;vec3 w=p+off;vW=w;vN=n;gl_Position=VP*vec4(w,1.);}`;
+const FS=`#version 300 es
+precision highp float;in vec3 vW;in vec3 vN;in vec3 vL;out vec4 o;
+uniform vec3 eye;uniform vec3 alb;uniform float met;uniform int mode;uniform float fr,z0,z1,pass_,glow,polish,tm;uniform vec3 axO;uniform vec3 axD;
+float h(vec2 q){return fract(sin(dot(q,vec2(127.1,311.7)))*43758.5453);}
+float vn(vec2 q){vec2 i=floor(q),f=fract(q);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
+vec3 env(vec3 r){
+ float y=r.y;vec3 c=mix(vec3(.015,.02,.028),vec3(.22,.27,.34),smoothstep(-.1,1.,y));
+ c+=vec3(.9,.95,1.)*4.2*smoothstep(.55,.95,y);
+ c+=vec3(1.,.97,.92)*6.*exp(-pow((r.x-.62)/.13,2.))*smoothstep(.1,.35,y)*smoothstep(.95,.6,y);
+ c+=vec3(.85,.92,1.)*4.*exp(-pow((r.x+.7)/.1,2.))*smoothstep(.1,.35,y)*smoothstep(.95,.6,y);
+ c+=vec3(.7,.8,.9)*.9*exp(-pow((y-.08)/.05,2.));
+ c+=vec3(1.,.95,.9)*1.6*exp(-pow((r.z-.8)/.2,2.))*exp(-pow((y-.3)/.25,2.));
+ if(y<0.)c=mix(c,vec3(.05,.06,.07),smoothstep(0.,-.4,y));
+ return c;}
+vec3 aces(vec3 x){return pow(clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.),vec3(1./2.2));}
+void main(){
+ vec3 N=normalize(vN);vec3 V=normalize(eye-vW);if(dot(N,V)<0.)N=-N;
+ float s=dot(vL-axO,axD)/max(z1-z0,.001);
+ bool built=s<=fr;
+ if(mode<=1||mode==3){ if(pass_<.5&&!built)discard; if(pass_>.5&&built)discard; }
+ float F=pow(1.-max(dot(N,V),0.),4.);
+ if(pass_>.5){ // pendiente: holograma azul
+  float g=.5+.5*sin(vL.z*30.+tm);float e=.10+.45*F;
+  o=vec4(vec3(.22,.55,.95)*(.7+.5*F)+.05*g,e);return;}
+ vec3 col;float a=1.;
+ if(mode==4){ // piso
+  vec2 q=vW.xz;float d=length(q*vec2(.12,.075));
+  vec3 base=mix(vec3(.13,.15,.18),vec3(.04,.05,.065),smoothstep(.25,1.5,d));
+  vec2 b=max(abs(q)-vec2(1.9,5.9),0.);float sh=exp(-dot(b,b)*.9);
+  base*=1.-.72*sh*smoothstep(1.4,0.,0.);
+  float gr=smoothstep(.02,0.,abs(fract(q.x*.5)-.5)-.48)+smoothstep(.02,0.,abs(fract(q.y*.5)-.5)-.48);
+  base+=.012*gr*exp(-d*2.);
+  col=base;o=vec4(pow(col,vec3(.95)),1.);return;}
+ if(mode==2){ // agua
+  vec3 Nw=normalize(vec3(sin(vW.x*5.+tm)*.03+sin(vW.z*3.+tm*.7)*.03,1.,cos(vW.z*4.-tm)*.03+cos(vW.x*3.)*.02));
+  if(abs(vN.y)>.9)N=Nw;V=normalize(eye-vW);
+  float f=pow(1.-max(dot(N,V),0.),3.);
+  vec3 deep=vec3(.02,.30,.42),sh=vec3(.10,.62,.72);
+  col=mix(deep,sh,.5+.5*N.y)*.9+env(reflect(-V,N))*(.10+.5*f);
+  a=.55+.3*f;o=vec4(aces(col*1.15),a);return;}
+ if(mode==1){ // vidrio / cristal
+  vec3 r=reflect(-V,N);col=env(r)*(.05+.9*F)+vec3(.02,.05,.07);
+  o=vec4(aces(col),.10+.55*F);return;}
+ if(mode==3){ // rejilla pasarela
+  vec2 q=vW.xz*12.;float gx=smoothstep(.16,.04,abs(fract(q.x)-.5)-.28)*smoothstep(.16,.04,abs(fract(q.y)-.5)-.28);
+  col=alb*(.25+.9*gx)+env(reflect(-V,N))*.08;
+  if(abs(N.y)>.7&&gx<.2)discard;
+  o=vec4(aces(col),1.);return;}
+ // acero
+ vec3 L=normalize(vec3(.5,.85,.35));
+ float br=vn(vec2(vW.x*220.,vW.z*3.))*.5+vn(vec2(vW.y*260.,vW.z*4.))*.5;
+ vec3 Nb=normalize(N+(br-.5)*vec3(.014,.014,0.)*(1.+polish*2.));
+ float rough=mix(.012,.07,polish);
+ vec3 R=reflect(-V,Nb);
+ vec3 e=vec3(0.);
+ for(int i=0;i<5;i++){float k=float(i)-2.;e+=env(normalize(R+vec3(k*rough*.4,k*rough*.2,k*rough*2.2)));}
+ e/=5.;
+ float Fr=mix(met*.55,1.,F);
+ vec3 spec=e*mix(alb,vec3(1.),F);
+ float dif=max(dot(Nb,L),0.);
+ vec3 diff=alb*(.25+.55*dif)*(1.-met*.75)+alb*.04;
+ col=diff+spec*Fr*(met*1.0+.12)*mix(1.,.55,polish);
+ col*=mix(1.,.9,polish*vn(vW.xz*6.));
+ float bd=0.;if(mode==0){bd=smoothstep(.014,0.,abs(vL.z+1.638))+smoothstep(.014,0.,abs(vL.z-2.362));col=mix(col,col*.55+vec3(.05),bd*step(vL.y,3.));}
+ // costuras soldadas (cordón) cada seam
+ if(mode==0&&glow>=0.){}
+ if(!built){}
+ if(fr<1.&&pass_<.5){float d=abs(s-fr);float gl=exp(-d*d*(z1-z0)*(z1-z0)*90.);col+=vec3(1.,.62,.12)*gl*1.6;}
+ o=vec4(aces(col*1.05),1.);
+}`;
+function M(){return{mul(a,b){const r=new Float32Array(16);for(let i=0;i<4;i++)for(let j=0;j<4;j++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+j]*b[i*4+k];r[i*4+j]=s}return r},
+persp(f,a,n,fa){const t=1/Math.tan(f/2),r=new Float32Array(16);r[0]=t/a;r[5]=t;r[10]=(fa+n)/(n-fa);r[11]=-1;r[14]=2*fa*n/(n-fa);return r},
+look(e,c,u){let z=[e[0]-c[0],e[1]-c[1],e[2]-c[2]];let l=Math.hypot(...z);z=z.map(v=>v/l);let x=[u[1]*z[2]-u[2]*z[1],u[2]*z[0]-u[0]*z[2],u[0]*z[1]-u[1]*z[0]];l=Math.hypot(...x);x=x.map(v=>v/l);const y=[z[1]*x[2]-z[2]*x[1],z[2]*x[0]-z[0]*x[2],z[0]*x[1]-z[1]*x[0]];
+return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-(x[0]*e[0]+x[1]*e[1]+x[2]*e[2]),-(y[0]*e[0]+y[1]*e[1]+y[2]*e[2]),-(z[0]*e[0]+z[1]*e[1]+z[2]*e[2]),1])}}}
+const m4=M();
+/* ---------- geometría ---------- */
+const A=1.525,B=.816,NS=2.7,YC=1.06,L0=-5.638,L1=5.638,SEAM=[-1.638,2.362];
+function se(t,sc){sc=sc||1;const c=Math.cos(t),s=Math.sin(t);return[A*sc*Math.sign(c)*Math.pow(Math.abs(c),2/NS),B*sc*Math.sign(s)*Math.pow(Math.abs(s),2/NS)]}
+const prof=(n,sc)=>{const r=[];for(let i=0;i<n;i++)r.push(se(i/n*Math.PI*2,sc));return r};
+function yTop(x){return B*Math.pow(Math.max(0,1-Math.pow(Math.abs(x)/A,NS)),1/NS)}
+function G(){return{P:[],N:[]}}
+function pushTri(g,a,b,c,na,nb,nc){g.P.push(...a,...b,...c);g.N.push(...na,...nb,...nc)}
+function grid(g,R,opts){opts=opts||{};const K=R.length,Mn=R[0].length,loop=opts.loop!==false;const nrm=R.map(r=>r.map(()=>[0,0,0]));const cen=R.map(r=>{let c=[0,0,0];r.forEach(p=>{c[0]+=p[0];c[1]+=p[1];c[2]+=p[2]});return c.map(v=>v/Mn)});
+const tris=[];for(let i=0;i<K-1;i++)for(let j=0;j<(loop?Mn:Mn-1);j++){const j2=(j+1)%Mn;tris.push([[i,j],[i,j2],[i+1,j]],[[i,j2],[i+1,j2],[i+1,j]])}
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],cr=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+for(const t of tris){const [a,b,c]=t.map(([i,j])=>R[i][j]);const n=cr(sub(b,a),sub(c,a));t.forEach(([i,j])=>{nrm[i][j][0]+=n[0];nrm[i][j][1]+=n[1];nrm[i][j][2]+=n[2]})}
+for(let i=0;i<K;i++)for(let j=0;j<Mn;j++){let n=nrm[i][j];const l=Math.hypot(...n)||1;n=n.map(v=>v/l);if(opts.out){const d=sub(R[i][j],cen[i]);if(d[0]*n[0]+d[1]*n[1]+d[2]*n[2]<0)n=n.map(v=>-v)}else if(opts.flip)n=n.map(v=>-v);nrm[i][j]=n}
+for(const t of tris){const q=t.map(([i,j])=>[R[i][j],nrm[i][j]]);pushTri(g,q[0][0],q[1][0],q[2][0],q[0][1],q[1][1],q[2][1])}}
+function cap(g,pts,z,nz,sc){const c=[0,YC,z];const n=[0,0,nz];for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];const A_=[a[0]*sc,YC+a[1]*sc,z],B_=[b[0]*sc,YC+b[1]*sc,z];if(nz>0)pushTri(g,c,A_,B_,n,n,n);else pushTri(g,c,B_,A_,n,n,n)}}
+function box(g,cx,cy,cz,sx,sy,sz){const x=sx/2,y=sy/2,z=sz/2;const f=(n,v)=>{pushTri(g,v[0],v[1],v[2],n,n,n);pushTri(g,v[0],v[2],v[3],n,n,n)};
+const P=(a,b,c)=>[cx+a*x,cy+b*y,cz+c*z];
+f([1,0,0],[P(1,-1,-1),P(1,1,-1),P(1,1,1),P(1,-1,1)]);f([-1,0,0],[P(-1,-1,1),P(-1,1,1),P(-1,1,-1),P(-1,-1,-1)]);
+f([0,1,0],[P(-1,1,-1),P(-1,1,1),P(1,1,1),P(1,1,-1)]);f([0,-1,0],[P(-1,-1,1),P(-1,-1,-1),P(1,-1,-1),P(1,-1,1)]);
+f([0,0,1],[P(-1,-1,1),P(1,-1,1),P(1,1,1),P(-1,1,1)]);f([0,0,-1],[P(1,-1,-1),P(-1,-1,-1),P(-1,1,-1),P(1,1,-1)])}
+function cyl(g,p0,p1,r,seg,caps){seg=seg||20;const d=[p1[0]-p0[0],p1[1]-p0[1],p1[2]-p0[2]];const l=Math.hypot(...d);const a=d.map(v=>v/l);let u=Math.abs(a[1])<.9?[0,1,0]:[1,0,0];let v1=[a[1]*u[2]-a[2]*u[1],a[2]*u[0]-a[0]*u[2],a[0]*u[1]-a[1]*u[0]];let ll=Math.hypot(...v1);v1=v1.map(v=>v/ll);const v2=[a[1]*v1[2]-a[2]*v1[1],a[2]*v1[0]-a[0]*v1[2],a[0]*v1[1]-a[1]*v1[0]];
+const ring=(p,rr)=>{const q=[];for(let i=0;i<seg;i++){const t=i/seg*Math.PI*2,c=Math.cos(t),s=Math.sin(t);q.push([p[0]+rr*(c*v1[0]+s*v2[0]),p[1]+rr*(c*v1[1]+s*v2[1]),p[2]+rr*(c*v1[2]+s*v2[2])])}return q};
+grid(g,[ring(p0,r),ring(p1,r)],{out:true});
+if(caps!==false){[[p0,-1],[p1,1]].forEach(([p,sg])=>{const rg=ring(p,r),n=a.map(v=>v*sg);for(let i=0;i<seg;i++){const x=rg[i],y=rg[(i+1)%seg];if(sg>0)pushTri(g,p,x,y,n,n,n);else pushTri(g,p,y,x,n,n,n)}})}}
+function build(){
+ const parts={};
+ const ring=(z,sc)=>{const pr=prof(120,sc);return pr.map(([x,y])=>[x,YC+y,z])};
+ const headR=(z0,dir)=>{const R=[];for(let k=0;k<=10;k++){const u=1-k/10;const s=Math.max(.015,Math.sqrt(Math.max(0,1-u*u)));const z=z0+dir*.34*u;R.push(ring(z,s))}return R};
+ // cuerpos
+ const zs=[L0,...SEAM,L1];const bodies=[];
+ for(let b=0;b<3;b++){const g=G();let R=[];if(b===0)R=R.concat(headR(zs[0],-1));const n=Math.round((zs[b+1]-zs[b])/.35);for(let i=0;i<=n;i++)R.push(ring(zs[b]+(zs[b+1]-zs[b])*i/n,1));
+  if(b===2)R=R.concat(headR(zs[3],1).reverse());
+  // orientar: de z creciente
+  R.sort((p,q)=>p[0][2]-q[0][2]);grid(g,R,{out:true});bodies.push({g,z0:zs[b]-(b===0?.34:0),z1:zs[b+1]+(b===2?.34:0)})}
+ parts.body=bodies;
+ // rompeolas
+ const rg=[G(),G(),G()];for(let k=0;k<9;k++){const z=L0+.9+k*1.1;const b=z<SEAM[0]?0:z<SEAM[1]?1:2;const g=rg[b];cap(g,prof(120,1),z,1,.985);cap(g,prof(120,1),z+.012,-1,.985)}
+ parts.rom=rg.map((g,b)=>({g,z0:zs[b],z1:zs[b+1]}));
+ // chasis
+ const ch=G();const yb=.02,yh=.2;
+ [-.95,.95].forEach(x=>{box(ch,x,yb+yh/2,-.1,.14,yh,10.7);box(ch,x,yb+yh-.015,-.1,.3,.03,10.7);box(ch,x,yb+.015,-.1,.3,.03,10.7)});
+ for(let z=-5.0;z<=4.9;z+=.95){box(ch,0,yb+.1,z,2.9,.09,.12)}
+ parts.chasis={g:ch,z0:-5.5,z1:5.5};
+ // pasarela: rejilla (malla) siguiendo el techo, 1.4 m de ancho, y linea de vida (guaya) a +-485 mm
+ const pa=G();{const W=[];const nx=14;for(let k=0;k<=56;k++){const z=-5.2+10.4*k/56;const r=[];for(let i=0;i<=nx;i++){const x=-.7+1.4*i/nx;r.push([x,YC+yTop(x)+.03,z])}W.push(r)}
+ grid(pa,W,{loop:false,flip:true});
+ [-.485,.485].forEach(x=>{const y=YC+yTop(x)+.1;cyl(pa,[x,y,-5.3],[x,y,5.3],.007,8);[-5.3,5.3].forEach(z=>cyl(pa,[x,YC+yTop(x),z],[x,y,z],.014,8))})}
+ parts.pasarela={g:pa,z0:-5.4,z1:5.4};
+ // accesorios segun planos: 3 manholes en linea, 2 tubos de recuperacion de vapor, orejas de izaje, escalera trasera
+ const ac=G();
+ [-3.95,-.11,2.42].forEach(z=>{const x=0;const y=YC+yTop(x)+.03;cyl(ac,[x,y,z],[x,y+.12,z],.38,40);cyl(ac,[x,y+.12,z],[x,y+.17,z],.33,40);for(let i=0;i<8;i++){const t=i/8*6.283;cyl(ac,[.31*Math.cos(t),y+.17,z+.31*Math.sin(t)],[.31*Math.cos(t),y+.22,z+.31*Math.sin(t)],.016,8)}});
+ [-1.48,5.2].forEach(z=>cyl(ac,[0,YC+yTop(0)+.03,z],[0,YC+yTop(0)+.2,z],.055,16));
+ [-3.44,2.18].forEach(z=>[-1,1].forEach(sg=>{const x=sg*1.0,y=YC+yTop(x);box(ac,x,y+.07,z,.012,.14,.12);box(ac,x,y+.07,z+.0,.012,.14,.12)}));
+ {const zt=L1+.02,zb=L1+.38,yT=YC+yTop(0)-.05,yB=.42;[-.2225,.2225].forEach(x=>cyl(ac,[x,yT,zt],[x,yB,zb],.016,10));for(let i=0;i<6;i++){const f=(i+.7)/6.4;cyl(ac,[-.2225,yT+(yB-yT)*f,zt+(zb-zt)*f],[.2225,yT+(yB-yT)*f,zt+(zb-zt)*f],.013,8)};[-.19,.19].forEach(x=>box(ac,x,yT+.02,zt-.03,.04,.08,.06))}
+ parts.acc={g:ac,z0:-5.6,z1:6.0};
+ // agua
+ const lv=.62*2*B-B;const pts=[];for(let i=0;i<1440;i++){const t=Math.PI/2+i/1440*Math.PI*2;const [x,y]=se(t,.985);if(y<=lv)pts.push([x,y])}
+ const wsd=G(),wtp=G();const zr=[L0+.05,L1-.05];const W=[];const nz=60;for(let i=0;i<=nz;i++){const z=zr[0]+(zr[1]-zr[0])*i/nz;W.push(pts.filter((_,k)=>k%6===0).map(([x,y])=>[x,YC+y,z]))}
+ grid(wsd,W,{loop:false,out:true});
+ const xl=pts[0][0],xr=pts[pts.length-1][0],yl=YC+lv;const wz=[zr[0],zr[1]];
+ const nn=[0,1,0];const a=[xl,yl,wz[0]],b=[xr,yl,wz[0]],c=[xr,yl,wz[1]],d=[xl,yl,wz[1]];pushTri(wtp,a,d,c,nn,nn,nn);pushTri(wtp,a,c,b,nn,nn,nn);
+ parts.water={side:wsd,top:wtp};
+ return parts}
+/* ---------- motor ---------- */
+function init(cv,opt){
+ const gl=cv.getContext('webgl2',{antialias:true,alpha:false,premultipliedAlpha:false,preserveDrawingBuffer:true});if(!gl)return null;
+ const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(o));return o};
+ const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pr);gl.useProgram(pr);
+ const U=n=>gl.getUniformLocation(pr,n);const loc={VP:U('VP'),off:U('off'),eye:U('eye'),alb:U('alb'),met:U('met'),mode:U('mode'),fr:U('fr'),z0:U('z0'),z1:U('z1'),pass_:U('pass_'),glow:U('glow'),polish:U('polish'),tm:U('tm'),axO:U('axO'),axD:U('axD')};
+ const aP=gl.getAttribLocation(pr,'p'),aN=gl.getAttribLocation(pr,'n');
+ const up=g=>{const vao=gl.createVertexArray();gl.bindVertexArray(vao);const b1=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b1);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(g.P),gl.STATIC_DRAW);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);const b2=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b2);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(g.N),gl.STATIC_DRAW);gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,0,0);return{vao,c:g.P.length/3}};
+ const P=build();
+ const O={body:P.body.map(b=>({...up(b.g),z0:b.z0,z1:b.z1})),rom:P.rom.map(b=>({...up(b.g),z0:b.z0,z1:b.z1})),chasis:{...up(P.chasis.g),z0:P.chasis.z0,z1:P.chasis.z1},pasarela:{...up(P.pasarela.g),z0:P.pasarela.z0,z1:P.pasarela.z1},acc:{...up(P.acc.g),z0:P.acc.z0,z1:P.acc.z1},ws:up(P.water.side),wt:up(P.water.top)};
+ const gnd=up({P:[-60,0,-60,60,0,-60,60,0,60,-60,0,-60,60,0,60,-60,0,60],N:[0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0]});
+ const st={az:-.62,el:.34,dist:17,prog:[1,1,1,1,.62,.18,0,0,0,0],glass:false,expl:0,explT:0,auto:true,tm:0,w:1,h:1};
+ const api={st};
+ function draw(o,off,a){gl.bindVertexArray(o.vao);gl.uniform3fv(loc.off,off);gl.drawArrays(gl.TRIANGLES,0,o.c)}
+ function setM(alb,met,mode,fr,z0,z1,pass_,polish,ax){gl.uniform3fv(loc.alb,alb);gl.uniform1f(loc.met,met);gl.uniform1i(loc.mode,mode);gl.uniform1f(loc.fr,fr);gl.uniform1f(loc.z0,z0);gl.uniform1f(loc.z1,z1);gl.uniform1f(loc.pass_,pass_);gl.uniform1f(loc.polish,polish);gl.uniform3fv(loc.axO,[0,0,z0]);gl.uniform3fv(loc.axD,ax||[0,0,1])}
+ api.render=()=>{
+  const dpr=Math.min(window.devicePixelRatio||1,2);const w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  gl.viewport(0,0,cv.width,cv.height);gl.clearColor(.047,.063,.082,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.disable(gl.CULL_FACE);
+  const s=st,tg=[0,1.1,0];const e=[tg[0]+s.dist*Math.cos(s.el)*Math.sin(s.az),tg[1]+s.dist*Math.sin(s.el),tg[2]+s.dist*Math.cos(s.el)*Math.cos(s.az)];
+  const VP=m4.mul(m4.persp(.55,cv.width/cv.height,.5,200),m4.look(e,tg,[0,1,0]));gl.uniformMatrix4fv(loc.VP,false,VP);gl.uniform3fv(loc.eye,e);gl.uniform1f(loc.tm,s.tm);gl.uniform1f(loc.glow,0);
+  const x=s.expl,z0=[0,0,0];
+  const pg=s.prog,rol=pg[3],ple=pg[2],arm=pg[4],sol=pg[5],pol=1-Math.min(1,(pg[7]+pg[8])/2);
+  const ST=[.80,.82,.85];
+  const offB=[[0,0,-1.9*x],[0,.0,0],[0,0,1.9*x]],offC=[0,-1.5*x,0],offP=[0,1.9*x,0],offA=[0,1.3*x,0];
+  const bodyFr=i=>Math.max(0,Math.min(1,rol*3-(i)));
+  // piso
+  setM([1,1,1],0,4,1,0,1,0,0);draw(gnd,[0,-1.75*x-.0,0]);
+  const passes=[0,1];
+  const drawSolid=(pass_)=>{
+   // chasis
+   const cf=Math.min(1,arm*1.5),pf=Math.max(0,Math.min(1,arm*1.5-.5));
+   setM([.22,.24,.27],.35,0,cf,O.chasis.z0,O.chasis.z1,pass_,0);draw(O.chasis,offC);
+   setM([.30,.32,.35],.5,3,pf,O.pasarela.z0,O.pasarela.z1,pass_,0);draw(O.pasarela,offP);
+   setM(ST,1,0,Math.min(1,sol*2.2),O.acc.z0,O.acc.z1,pass_,pol);draw(O.acc,offA);
+   O.rom.forEach((r,i)=>{const f=Math.max(0,Math.min(1,ple*3-i));setM([.7,.72,.76],.9,0,f,r.z0,r.z1,pass_,pol*.6);if(s.glass||x>.05||pass_)draw(r,offB[i])});
+   if(!s.glass||pass_)O.body.forEach((b,i)=>{setM(ST,1,0,bodyFr(i),b.z0,b.z1,pass_,pol);draw(b,offB[i])});
+  };
+  drawSolid(0);
+  gl.depthMask(false);
+  drawSolid(1);
+  if(s.glass){
+   const wo=[0,0,0];setM([1,1,1],0,2,1,0,1,0,0);draw(O.ws,wo);draw(O.wt,wo);
+   O.body.forEach((b,i)=>{setM(ST,1,1,bodyFr(i),b.z0,b.z1,0,0);draw(b,offB[i])});
+  }
+  gl.depthMask(true);
+ };
+ let last=0;function loop(t){if(!cv.isConnected)return;const dt=Math.min(.05,(t-last)/1000);last=t;st.tm+=dt;st.expl+=(st.explT-st.expl)*Math.min(1,dt*4);if(st.auto)st.az+=dt*.12;api.render();requestAnimationFrame(loop)}
+ api.start=()=>requestAnimationFrame(loop);
+ let drag=null;cv.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];st.auto=false;cv.setPointerCapture(e.pointerId)});
+ cv.addEventListener('pointermove',e=>{if(!drag)return;st.az-=(e.clientX-drag[0])*.006;st.el=Math.max(.02,Math.min(1.2,st.el+(e.clientY-drag[1])*.005));drag=[e.clientX,e.clientY]});
+ cv.addEventListener('pointerup',()=>drag=null);cv.addEventListener('wheel',e=>{e.preventDefault();st.dist=Math.max(8,Math.min(30,st.dist*(1+e.deltaY*.001)))},{passive:false});
+ return api}
+return{init}})();
+
+const vvD=s=>{try{return pd(s).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'})}catch(e){return s}};
+/* ============ v5.2.0 · Proyecto en vivo (avance = horas + liberaciones, con tanque 3D) ============ */
+const VV_ET=['Corte láser','Soldador automático','Plegado','Rolado','Armado','Soldadura','Pruebas','Limpieza mecánica','Lavado jabonoso y químico'];
+const VV_SH={'Soldador automático':'Sold. automático','Limpieza mecánica':'Limp. mecánica','Lavado jabonoso y químico':'Lavado'};
+const vvSh=e=>VV_SH[e]||e;
+function vvLibEt(p,e){const L=(S.lib||[]).filter(l=>l.proy===p.num&&l.etapa===e&&l.estado!=='Anulada');if(!L.length)return null;L.sort((a,b)=>(a.creado||'')<(b.creado||'')?1:-1);return L.find(l=>l.estado==='Liberada')||L[0]}
+function vvCalc(p){
+ const rn=live().filter(r=>r.proy===p.num);const ex=p.exp||{total:0,et:{},cerradas:[]};const t0=today();
+ const rows=VV_ET.map((e,i)=>{
+  const exp=+(ex.et&&ex.et[e])||0;const rr=rn.filter(r=>r.macro===e&&isProd(r));const real=sum(rr);
+  const lib=vvLibEt(p,e);const cerr=(ex.cerradas||[]).includes(e);const ok=lib&&lib.estado==='Liberada';
+  const ph=exp?Math.min(1,real/exp):(real>0?.5:0);
+  const pct=(ok||cerr)?1:Math.min(.95,ph);
+  const last=rr.reduce((m,r)=>r.fecha>m?r.fecha:m,'');
+  return{e,i,exp,real,lib,ok,cerr,pct,last,ph,rr}});
+ const wsum=rows.reduce((a,r)=>a+r.exp,0);
+ const ent=p.estado&&p.estado!=='Activo'?1:0;
+ const av=wsum?rows.reduce((a,r)=>a+r.pct*r.exp,0)/wsum:rows.reduce((a,r)=>a+r.pct,0)/rows.length;
+ const total=ent?1:av*.97;
+ // alertas de congruencia (solo avisan)
+ const al=[];
+ rows.forEach((r,i)=>{
+  const pendLib=r.lib&&(r.lib.estado==='Solicitada'||r.lib.estado==='Asignada');
+  if(r.real>0&&!r.lib&&!r.cerr&&r.exp&&r.real>=r.exp*.8)al.push({n:'wa',t:`${r.e}: ${nf(r.real,0)} h de ${nf(r.exp,0)} esperadas y sin liberación`,s:'Las horas ya alcanzan lo esperado y nadie ha solicitado la liberación.'});
+  if(r.ok&&r.lib.decEn){const d=String(r.lib.decEn).slice(0,10);const post=r.rr.filter(x=>x.fecha>d);const h=sum(post);if(h>=2)al.push({n:'er',t:`${r.e}: ${nf(h,0)} h registradas después de liberada`,s:'Se cargaron horas a una etapa ya liberada (¿retrabajo o error de registro?).'})}
+  if(r.ok&&r.exp&&r.real<r.exp*.4)al.push({n:'wa',t:`${r.e}: liberada con solo ${nf(r.real,0)} h de ${nf(r.exp,0)} esperadas`,s:'Revisa si se registraron todas las horas de esta etapa.'});
+  if(r.lib&&r.lib.estado==='Rechazada')al.push({n:'er',t:`${r.e}: liberación no aprobada por Calidad`,s:'La etapa no se certifica hasta corregir o autorizar Gerencia una excepción.'});
+  if(i>0){const q=rows[i-1];if(r.exp&&r.real>=r.exp*.1&&q.exp&&!q.ok&&!q.cerr&&q.pct<.9&&r.real>0)al.push({n:'wa',t:`${r.e}: horas sin cerrar ${q.e}`,s:`${nf(r.real,0)} h en ${vvSh(r.e)} mientras ${vvSh(q.e)} está al ${nf(q.pct*100,0)}%.`})}
+ });
+ const hall=(S.hallazgos||[]).filter(h=>h.proy===p.num&&h.estado!=='Cerrado'&&h.estado!=='Cerrada').length;
+ const fin=(p.inicio&&p.dias)?addDays(p.inicio,+p.dias):'';const left=fin?daysBetween(t0,fin):null;
+ const el=(p.inicio&&p.dias)?Math.max(0,Math.min(1,daysBetween(p.inicio,t0)/(+p.dias))):null;
+ const real=sum(rn.filter(isProd));
+ return{rows,total,al,hall,fin,left,el,real,expT:+ex.total||wsum,cur:(rows.find(r=>r.pct<1&&(r.real>0||r.i===0))||rows.find(r=>r.pct<1)||{e:'Entrega'}).e,ent}}
+function pVivo(){
+ const P=S.proyectos.slice().sort((a,b)=>a.num<b.num?1:-1).filter(p=>p.estado==='Activo').concat(S.proyectos.filter(p=>p.estado!=='Activo').sort((a,b)=>a.num<b.num?1:-1));
+ if(!P.length)return card('Proyecto en vivo','Avance real de cada tanque',empty('Aún no hay proyectos. Crea el primero en Proyectos.'));
+ if(!P.find(p=>p.num===U.vivoP))U.vivoP=P[0].num;
+ const itm=p=>{const c=vvCalc(p),a=Math.round(c.total*100);return `<div class="vv-pi ${p.num===U.vivoP?'on':''}" data-act="vivoSel" data-p="${p.num}"><div><b>${esc(p.num)}</b><div class="mut3" style="font-size:12px">${nf(p.cap,0)} gal · ${esc(p.cliente||'')}</div></div><div><div class="prog ${a>=100?'ok':''}"><i style="width:${a}%"></i></div><div class="mut3" style="font-size:12px;margin-top:4px">${p.estado==='Activo'?'Etapa actual: '+esc(vvSh(c.cur)):esc(p.estado)}${c.al.length?' · '+c.al.length+' alerta'+(c.al.length>1?'s':''):''}</div></div><div style="text-align:right"><b style="font-size:22px">${a}%</b><div class="mut3" style="font-size:12px">${c.left==null?'':c.left>=0?'entrega en '+c.left+' d':'vencido hace '+(-c.left)+' d'}</div></div></div>`};
+ const list=P.filter(x=>x.estado==='Activo').map(itm).join('')||'<div class="mut3" style="padding:8px">No hay proyectos activos.</div>',listF=P.filter(x=>x.estado!=='Activo').map(itm).join('');
+ const p=P.find(x=>x.num===U.vivoP),c=vvCalc(p),a=Math.round(c.total*100);
+ const tl=c.rows.map(r=>`<div class="vv-st ${r.pct>=1?'done':r.e===c.cur&&!c.ent?'cur':''}"><div class="dot">${r.pct>=1?'✓':r.i+1}</div>${esc(vvSh(r.e))}<span>${Math.round(r.pct*100)}%</span></div>`).join('')+`<div class="vv-st ${c.ent?'done':''}"><div class="dot">${c.ent?'✓':10}</div>Entrega<span>${c.ent?100:0}%</span></div>`;
+ const ritmo=c.el==null?'':(c.total>=c.el*.9?'va a tiempo':'va atrasado');
+ const tabla=c.rows.map(r=>{const lb=r.cerr&&!r.lib?badge('Cerrada por Gerencia','ok'):r.lib?badge(L_NOM[r.lib.estado]||r.lib.estado,L_BADGE[r.lib.estado]||'n'):badge('Sin solicitar','n');return `<tr class="${r.e===c.cur&&!c.ent?'vv-cur':''}"><td>${esc(vvSh(r.e))}</td><td class="num">${nf(r.real,0)}</td><td class="num">${r.exp?nf(r.exp,0):'—'}</td><td>${lb}</td><td class="num">${Math.round(r.pct*100)}%</td></tr>`}).join('');
+ const als=c.al.length?c.al.map(x=>`<div class="vv-al ${x.n}"><b>${esc(x.t)}</b><span>${esc(x.s)}</span></div>`).join(''):`<div class="vv-al ok"><b>Todo coincide</b><span>Las horas y las liberaciones van de acuerdo.</span></div>`;
+ const ref=Math.abs((+p.cap||0)-10000)>1500;
+ const kp=(v,l,cl='')=>`<div class="card kpi"><div class="k-v ${cl}" style="font-size:26px">${v}</div><div class="k-l">${l}</div></div>`;
+ return `<div class="vv"><section class="card"><div class="ch"><div><h3>Proyecto en vivo</h3><p>Avance real de cada tanque · horas registradas + liberaciones de calidad</p></div></div><div class="vv-list">${list}</div>${listF?`<details class="vv-fin" ${P.find(x=>x.num===U.vivoP&&x.estado!=='Activo')?'open':''}><summary>Finalizados y en pausa (${P.filter(x=>x.estado!=='Activo').length})</summary><div class="vv-list" style="margin-top:10px">${listF}</div></details>`:''}</section>
+ <section class="card" style="margin-top:14px"><div class="ch"><div><h3>Proyecto ${esc(p.num)} ${p.estado!=='Activo'?badge(esc(p.estado),'n'):''}</h3><p>Tanque ${nf(p.cap,0)} gal · ${esc(p.cliente||'')}${c.fin?' · Entrega '+vvD(c.fin):''}</p></div>${c.al.length?`<div class="acts">${badge(c.al.length+' alerta'+(c.al.length>1?'s':'')+' de congruencia','wa')}</div>`:''}</div>
+ <div class="vv-3d"><canvas id="vvcv"></canvas><div class="vv-b"><button data-m="exp">Explosionado</button><button data-m="gl">Vista cristal</button><button data-m="rot" class="on">Girar</button></div><div class="vv-lg"><span><i style="background:#cfd6de"></i>Terminado</span><span><i style="background:#f59e0b"></i>En construcción</span><span><i style="background:#3b82f6"></i>Pendiente</span></div>${ref?'<div class="vv-ref">Modelo 3D de referencia: tanque 10.000 gal</div>':''}</div>
+ <div class="vv-tl">${tl}</div></section>
+ <div class="vv-k">${kp(a+'%','Avance total (horas + liberaciones)')}${kp(nf(c.real,0)+(c.expT?' / '+nf(c.expT,0):'')+' h','Horas reales vs expectativa')}${kp(c.hall,'Hallazgos abiertos',c.hall?'wa':'')}${kp(c.left==null?'—':c.left>=0?c.left+' días':'vencido','Para la entrega'+(ritmo?' · '+ritmo:''))}</div>
+ <div class="vv-2"><section class="card"><div class="ch"><div><h3>Detalle por etapa</h3></div></div><div class="tw"><table class="t"><thead><tr><th>Etapa</th><th class="r">Horas</th><th class="r">Exp.</th><th>Liberación</th><th class="r">Avance</th></tr></thead><tbody>${tabla}</tbody></table></div></section>
+ <section class="card"><div class="ch"><div><h3>Alertas de congruencia</h3><p>Solo avisan: nunca bloquean el registro de horas</p></div></div>${als}</section></div>
+ <p class="mut3" style="font-size:12.5px;margin-top:10px">Avance de cada etapa = horas reales ÷ horas esperadas (máximo 95%) hasta que Calidad libere la etapa; al liberarla pasa a 100%. El total pesa cada etapa por sus horas esperadas.</p></div>`}
+let VV3=null;
+function vvMount(){
+ const cv=document.getElementById('vvcv');if(!cv||typeof Tank3D==='undefined')return;
+ const p=S.proyectos.find(x=>x.num===U.vivoP);if(!p)return;const c=vvCalc(p);
+ let T=null;try{T=Tank3D.init(cv)}catch(e){console.error(e)}
+ if(!T){cv.parentNode.innerHTML='<div class="mut3" style="padding:30px">Este navegador no soporta la vista 3D (WebGL2).</div>';return}
+ T.st.prog=c.rows.map(r=>r.pct).concat([c.ent?1:0]);T.st.dist=14.5;T.st.az=-.7;T.st.el=.3;T.start();VV3=T;
+ cv.parentNode.querySelectorAll('.vv-b button').forEach(b=>b.onclick=()=>{const m=b.dataset.m;
+  if(m==='exp'){T.st.explT=T.st.explT?0:1;T.st.dist=T.st.explT?21:14.5;b.classList.toggle('on',!!T.st.explT)}
+  if(m==='gl'){T.st.glass=!T.st.glass;b.classList.toggle('on',T.st.glass)}
+  if(m==='rot'){T.st.auto=!T.st.auto;b.classList.toggle('on',T.st.auto)}})}
+Object.assign(A,{vivoSel:t=>{U.vivoP=t.dataset.p;renderPage(true)}});
+PAGES.vivo=pVivo;
 
 nubeBoot();
 
