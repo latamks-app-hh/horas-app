@@ -426,6 +426,14 @@ a.btn{text-decoration:none}
 .vv-db{padding:2px 14px 14px}.vv-dt{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin:10px 0 6px;font-weight:700}
 .vv-acs{display:flex;flex-wrap:wrap;gap:6px}.vv-ac{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:4px 10px;border:1px dashed var(--bd2);border-radius:20px;font-size:12px;color:var(--tx3);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.vv-ac em{font-style:normal;font-weight:700}.vv-ac.on{border-style:solid;border-color:#22c55e66;background:#22c55e14;color:var(--tx)}.vv-ac i{font-style:normal;font-weight:700;color:#22c55e}
 .vv-lbs{display:flex;flex-wrap:wrap;gap:10px}.vv-lbs a{display:inline-flex;gap:6px;align-items:center;text-decoration:none;color:var(--tx3);font-size:12px}
+
+.vv-ac[data-act]{cursor:pointer;user-select:none}.vv-ac[data-act]:hover{border-color:var(--pri)}
+.vv-ac.sel{box-shadow:0 0 0 2px var(--pri);background:color-mix(in srgb,var(--pri) 14%,transparent);color:var(--tx)}
+.vv-ac.ch{border-style:solid;border-color:#22c55e;background:#22c55e22;color:var(--tx)}.vv-ac.ch em{color:#22c55e;font-size:13px}
+.vv-ac.na{opacity:.5;text-decoration:line-through;border-style:dotted}
+.vv-cb{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding:10px;border:1px dashed var(--bd2);border-radius:12px}.vv-cb .cnt{font-size:12.5px;color:var(--tx2);font-weight:600;margin-right:auto}
+.vv-cb button{border:1px solid var(--bd2);background:var(--card);color:var(--tx);padding:6px 12px;border-radius:20px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}.vv-cb button:hover{border-color:var(--pri)}.vv-cb button.ok{background:#22c55e;border-color:#22c55e;color:#04210f}
+.vv-gb .rb.ck{background:color-mix(in srgb,var(--c) 22%,transparent);border:1px solid var(--c);box-shadow:none;overflow:hidden}.vv-gb .rb.ck .fl{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--c),color-mix(in srgb,var(--c) 60%,#fff));border-radius:8px 0 0 8px}
 </style></head>
 <body>
 <div class="app" id="app"></div>
@@ -1338,7 +1346,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='5.2.1';
+const APP_VER='5.2.2';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -3763,7 +3771,7 @@ function nbGuestBar(){
  b.innerHTML=`<b>Modo invitado · solo lectura</b> · Válido hasta ${esc(fmtDT(NB.guest.vence))}`}
 function nbGuestGuard(){
  if(NB.guardOn)return;NB.guardOn=true;
- const BLK=/^(edit|new|save|val|falt|tec|reg|expSave|fSave|hall|hf|nt|rt|tDay|tDel|tSave|tActive|ren|proj(New|Edit)|cap|lin|unasg|xUse|delDemo|loadDemo|impJSON|backup|inv|addH|libre|tarjPrint)/;
+ const BLK=/^(edit|new|save|val|falt|tec|reg|expSave|fSave|hall|hf|nt|rt|tDay|tDel|tSave|tActive|ren|proj(New|Edit)|cap|lin|unasg|xUse|delDemo|loadDemo|impJSON|backup|inv|addH|libre|tarjPrint|chkDo)/;
  const OKM=/^(mClose|palGo|pal|go|none|help|copy|share|sem|prog|tarjUna|tarjTodas)/;
  window.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-act]');if(!t)return;const a=t.dataset.act;
   const inModal=!!t.closest('#modal');
@@ -5824,10 +5832,13 @@ function vvCalc(p){
  const rows=VV_ET.map((e,i)=>{
   const exp=+(ex.et&&ex.et[e])||0;const rr=rn.filter(r=>r.macro===e&&isProd(r));const real=sum(rr);
   const lib=vvLibEt(p,e);const cerr=(ex.cerradas||[]).includes(e);const ok=lib&&lib.estado==='Liberada';
-  const ph=exp?Math.min(1,real/exp):(real>0?.5:0);
+  const AC=(typeof ACT!=='undefined'?ACT:[]).filter(a=>a[2]===e&&a[4]!==false);const codes=AC.map(a=>String(a[0]));
+  const ck=(S.chk||[]).filter(c=>c.proy===p.num&&c.etapa===e&&codes.includes(String(c.act)));const nap=ck.filter(c=>c.estado==='No aplica').length;const dn=ck.filter(c=>c.estado==='Cerrada').length;const tot=Math.max(0,AC.length-nap);
+  const chk={tot,done:dn,na:nap,use:ck.length>0&&tot>0};
+  const ph=chk.use?Math.min(1,dn/tot):(exp?Math.min(1,real/exp):(real>0?.5:0));
   const pct=(ok||cerr)?1:Math.min(.95,ph);
   const last=rr.reduce((m,r)=>r.fecha>m?r.fecha:m,'');
-  return{e,i,exp,real,lib,ok,cerr,pct,last,ph,rr}});
+  return{e,i,exp,real,lib,ok,cerr,pct,last,ph,rr,chk}});
  /* v5.2.1: etapa dada por terminada por avance posterior (Armado en adelante ya tiene horas) */
  rows.forEach((r,i)=>{if(!r.ok&&!r.cerr&&r.pct<1){const j=rows.findIndex((q,k)=>k>i&&k>=4&&q.exp&&q.real>=q.exp*.1);if(j>=0){r.inf=true;r.infBy=rows[j].e;r.pct=1}}});
  const wsum=rows.reduce((a,r)=>a+r.exp,0);
@@ -5838,6 +5849,8 @@ function vvCalc(p){
  const al=[];
  rows.forEach((r,i)=>{
   if(r.inf&&!r.lib)al.push({n:'wa',t:`${r.e}: dada por terminada por avance posterior`,s:`${vvSh(r.infBy)} ya tiene horas, pero ${vvSh(r.e)} no tiene liberación. Solicítala o revisa las horas.`});
+  if(r.chk.use&&r.chk.done>0&&r.real===0)al.push({n:'wa',t:`${r.e}: ${r.chk.done} actividad(es) cerradas sin horas registradas`,s:'Revisa si faltan horas por registrar en esta etapa.'});
+  if(r.chk.use&&r.chk.done>=r.chk.tot&&!r.lib&&!r.cerr)al.push({n:'wa',t:`${r.e}: todas las actividades están cerradas`,s:'Solicita la liberación a Calidad para certificar la etapa.'});
   const pendLib=r.lib&&(r.lib.estado==='Solicitada'||r.lib.estado==='Asignada');
   if(r.real>0&&!r.lib&&!r.cerr&&r.exp&&r.real>=r.exp*.8)al.push({n:'wa',t:`${r.e}: ${nf(r.real,0)} h de ${nf(r.exp,0)} esperadas y sin liberación`,s:'Las horas ya alcanzan lo esperado y nadie ha solicitado la liberación.'});
   if(r.ok&&r.lib.decEn){const d=String(r.lib.decEn).slice(0,10);const post=r.rr.filter(x=>x.fecha>d);const h=sum(post);if(h>=2)al.push({n:'er',t:`${r.e}: ${nf(h,0)} h registradas después de liberada`,s:'Se cargaron horas a una etapa ya liberada (¿retrabajo o error de registro?).'})}
@@ -5877,7 +5890,7 @@ function vvRadial(c,sel){
 function vvStageInfo(c,k){const r=k===9?{e:'Entrega al cliente',exp:0,real:0,pct:c.ent?1:0,lib:null}:c.rows[k];if(!r)return '';
  const lb=k===9?badge(c.ent?'Entregado':'Pendiente',c.ent?'ok':'n'):r.cerr&&!r.lib?badge('Cerrada por Gerencia','ok'):r.inf&&!r.lib?badge('Por avance posterior','wa'):r.lib?badge(L_NOM[r.lib.estado]||r.lib.estado,L_BADGE[r.lib.estado]||'n'):badge('Sin solicitar','n');
  const al=c.al.filter(x=>k<9&&x.t.indexOf(r.e+':')===0);
- return `<div class="vv-inf"><div><b>${k+1}. ${esc(k===9?r.e:vvSh(r.e))}</b> ${lb}</div><div class="vv-infg"><div><span>Avance</span><b>${Math.round(r.pct*100)}%</b></div><div><span>Horas reales</span><b>${nf(r.real,0)}</b></div><div><span>Horas esperadas</span><b>${r.exp?nf(r.exp,0):'—'}</b></div><div><span>Consumo</span><b class="${r.exp&&r.real>r.exp?'dn':''}">${r.exp?Math.round(r.real/r.exp*100)+'%':'—'}</b></div></div>${al.map(x=>`<div class="vv-al ${x.n}"><b>${esc(x.t)}</b><span>${esc(x.s)}</span></div>`).join('')}</div>`}
+ return `<div class="vv-inf"><div><b>${k+1}. ${esc(k===9?r.e:vvSh(r.e))}</b> ${lb}</div><div class="vv-infg"><div><span>Avance</span><b>${Math.round(r.pct*100)}%</b></div><div><span>Horas reales</span><b>${nf(r.real,0)}</b></div><div><span>Horas esperadas</span><b>${r.exp?nf(r.exp,0):'—'}</b></div>${r.chk&&r.chk.use?`<div><span>Actividades</span><b>${r.chk.done}/${r.chk.tot}</b></div>`:''}<div><span>Consumo</span><b class="${r.exp&&r.real>r.exp?'dn':''}">${r.exp?Math.round(r.real/r.exp*100)+'%':'—'}</b></div></div>${al.map(x=>`<div class="vv-al ${x.n}"><b>${esc(x.t)}</b><span>${esc(x.s)}</span></div>`).join('')}</div>`}
 
 const VV_COL=['#38bdf8','#818cf8','#a78bfa','#f472b6','#fb923c','#facc15','#4ade80','#2dd4bf','#94a3b8'];
 function vvDetail(c,p){
@@ -5889,7 +5902,7 @@ function vvDetail(c,p){
   const cl=r.pct>=1?'ok':(r.e===c.cur&&!c.ent?'cur':'');const pc=Math.round(r.pct*100);
   const act=(!r.lib||r.lib.estado==='Rechazada'||r.lib.estado==='Anulada')&&!r.cerr&&lSup()?btn('Solicitar liberación de '+vvSh(r.e),'lNewFor',`data-p="${esc(p.num)}" data-e="${esc(r.e)}"`,'sm'):'';
   return `<details class="vv-d ${cl}" ${U.vivoK===k?'open':''}><summary><svg viewBox="0 0 28 28" width="30" height="30"><circle cx="14" cy="14" r="11" class="t"/><circle cx="14" cy="14" r="11" class="f" style="stroke:${VV_COL[k]};stroke-dasharray:${(C*r.pct).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 14 14)"/><text x="14" y="17" text-anchor="middle">${pc}</text></svg><b>${k+1}. ${esc(vvSh(r.e))}</b><span class="vv-dh">${nf(r.real,0)}${r.exp?' / '+nf(r.exp,0):''} h</span>${lb}</summary>
-  <div class="vv-db">${acts.length?`<div class="vv-dt">Actividades · ${con} de ${acts.length} con horas</div><div class="vv-acs">${hs.map(x=>`<span class="vv-ac ${x.h>0?'on':''}" title="${esc(x.a[0]+' · '+x.a[1])}"><em>${esc(String(x.a[0]))}</em>${esc(x.a[1])}${x.h>0?`<i>${nf(x.h,1)} h</i>`:''}</span>`).join('')}</div>`:''}
+  <div class="vv-db">${acts.length?vvActs(p,r,hs,con,acts.length):''}
   <div class="vv-dt">Liberaciones de la etapa</div>${libs.length?`<div class="vv-lbs">${libs.map(l=>`<a href="#" data-act="ldet" data-c="${esc(l.codigo)}">${badge(esc(l.codigo),'v')} ${badge(esc(L_NOM[l.estado]||l.estado),L_BADGE[l.estado]||'n')}<span>${l.creado?vvD(String(l.creado).slice(0,10)):''}</span></a>`).join('')}</div>`:'<div class="mut3" style="font-size:12.5px">Aún no se ha solicitado ninguna.</div>'}
   ${r.inf&&!r.lib?`<div class="vv-al wa" style="margin-top:8px"><b>Dada por terminada por avance posterior</b><span>${esc(vvSh(r.infBy))} ya tiene horas. Falta la liberación de esta etapa.</span></div>`:''}${act?`<div style="margin-top:10px">${act}</div>`:''}</div></details>`}).join('')+`</div>`}
 function vvGantt(p,c){
@@ -5910,10 +5923,10 @@ function vvGantt(p,c){
   body=c.rows.map((r,k)=>{const f=r.rr.map(x=>x.fecha).filter(Boolean).sort();const a=f[0];const ld=r.lib&&r.lib.estado==='Liberada'&&r.lib.decEn?String(r.lib.decEn).slice(0,10):'';
    let b=a||'';let z=ld||(r.pct<1?(a?T0:''):f[f.length-1]);if(a&&z<a)z=a;
    const pl=sc?`<span class="pl" style="left:${dayPos(ps[k][0])}%;width:${Math.max(.8,dayPos(ps[k][1]-ps[k][0]))}%" title="Plan estimado"></span>`:'';
-   const cls=r.ok||r.cerr?'ok':r.inf?'inf':(a?'cur':'');
-   const rb=a?`<span class="rb ${cls}" style="left:${pos(a)}%;width:${Math.max(.9,pos(addDays(z,1))-pos(a))}%;--c:${VV_COL[k]}" title="${esc(vvSh(r.e))}: ${nf(r.real,0)} h"></span>`:'';
+   const cls=(r.ok||r.cerr?'ok':r.inf?'inf':(a?'cur':''))+(r.chk.use&&!(r.ok||r.cerr)?' ck':'');
+   const rb=a?`<span class="rb ${cls}" style="left:${pos(a)}%;width:${Math.max(.9,pos(addDays(z,1))-pos(a))}%;--c:${VV_COL[k]}" title="${esc(vvSh(r.e))}: ${nf(r.real,0)} h${r.chk.use?' · '+r.chk.done+'/'+r.chk.tot+' actividades':''}">${r.chk.use?`<b class="fl" style="width:${Math.round(r.chk.done/r.chk.tot*100)}%"></b>`:''}</span>`:'';
    const dm=(S.lib||[]).filter(l=>l.proy===p.num&&l.etapa===r.e&&l.estado!=='Anulada').map(l=>{const d=String(l.decEn||l.creado||'').slice(0,10);if(!d)return'';const cc=l.estado==='Liberada'?'ok':l.estado==='Rechazada'?'er':'wa';return `<span class="dm ${cc}" style="left:${pos(d)}%" title="${esc(l.codigo+' · '+(L_NOM[l.estado]||l.estado))}"></span>`}).join('');
-   return `<div class="vv-gr" data-act="vivoK" data-k="${k}"><div class="vv-gl"><i style="background:${VV_COL[k]}"></i>${esc(vvSh(r.e))}</div><div class="vv-gb">${pl}${rb}${dm}</div></div>`}).join('');
+   return `<div class="vv-gr" data-act="vivoK" data-k="${k}"><div class="vv-gl"><i style="background:${VV_COL[k]}"></i>${esc(vvSh(r.e))}${r.chk.use?`<small>${r.chk.done}/${r.chk.tot} actividades</small>`:''}</div><div class="vv-gb">${pl}${rb}${dm}</div></div>`}).join('');
   note=`<span><i class="pl"></i>Plan estimado (según horas esperadas y el plazo)</span><span><i class="rb"></i>Real: del primer registro de horas a la liberación u hoy</span><span><i class="dm"></i>Liberación</span><span class="mut3">Las 3 primeras etapas pueden solaparse; el resto sigue en orden.</span>`;
  }else{
   const by={};rn.forEach(r=>{if(!r.fecha||!isProd(r))return;const n=r.nombre||'—';(by[n]=by[n]||{n,h:0,d:{}});by[n].h+=+r.horas||0;const x=by[n].d[r.fecha]=by[n].d[r.fecha]||{h:0,e:{}};x.h+=+r.horas||0;x.e[r.macro]=(x.e[r.macro]||0)+(+r.horas||0)});
@@ -5924,6 +5937,31 @@ function vvGantt(p,c){
   note=VV_ET.map((e,k)=>`<span><i style="background:${VV_COL[k]}"></i>${esc(vvSh(e))}</span>`).join('')+`<span class="mut3">Cada cuadro es un día; el color es la etapa en que más trabajó y la intensidad, sus horas.</span>`;
  }
  return `<div class="vv-gantt"><div class="vv-gtop">${sw}<span class="mut3" style="font-size:12.5px">${vvD(st)} → ${c.fin?vvD(c.fin):'sin fecha de entrega'}</span></div><div class="vv-gw"><div class="vv-gx">${grid}${lines}${body}</div></div><div class="vv-gleg">${note}</div></div>`}
+
+const vvCan=()=>can(['Gerencia','Supervisor']);
+function vvActs(p,r,hs,con,n){
+ const ck=r.chk,cn=vvCan();const st=c=>(S.chk||[]).find(x=>x.proy===p.num&&String(x.act)===String(c));
+ return `<div class="vv-dt">Actividades · ${ck.done} cerradas de ${ck.tot}${ck.na?' ('+ck.na+' no aplican)':''} · ${con} con horas</div><div class="vv-acs">${hs.map(x=>{const s=st(x.a[0]);const cl=s?(s.estado==='Cerrada'?'ch':'na'):'';return `<span class="vv-ac ${cl} ${x.h>0?'on':''}" ${cn?`data-act="chkTog" data-a="${esc(String(x.a[0]))}" data-e="${esc(r.e)}" role="button" tabindex="0"`:''} title="${esc(x.a[0]+' · '+x.a[1]+(s?' · '+s.estado+' por '+s.por:''))}"><em>${s&&s.estado==='Cerrada'?'✓':esc(String(x.a[0]))}</em>${esc(x.a[1])}${x.h>0?`<i>${nf(x.h,1)} h</i>`:''}</span>`}).join('')}</div>
+ ${cn?`<div class="vv-cb" data-e="${esc(r.e)}"><span class="cnt">0 seleccionadas</span><button data-act="chkSelP">Seleccionar pendientes</button><button data-act="chkPrint">🖨 Imprimir hoja</button><button class="ok" data-act="chkDo" data-m="Cerrada">✓ Marcar cerradas</button><button data-act="chkDo" data-m="No aplica">No aplica</button><button data-act="chkDo" data-m="Pendiente">Reabrir</button></div>`:`<div class="mut3" style="font-size:12px;margin-top:6px">Solo Supervisor y Gerencia pueden cerrar actividades.</div>`}`}
+const chkSel=t=>[...t.closest('.vv-db').querySelectorAll('.vv-ac.sel')].map(x=>x.dataset.a);
+const chkCnt=t=>{const db=t.closest('.vv-db');const n=db.querySelectorAll('.vv-ac.sel').length;db.querySelector('.vv-cb .cnt').textContent=n+' seleccionada'+(n===1?'':'s')};
+async function nbReloadChk(){try{const r=await nbSel('actividad_checks','select=actividad_codigo,etapa,estado,por,rol,en,proyectos(numero)&order=en.asc');S.chk=r.map(x=>({proy:(x.proyectos||{}).numero||'',act:String(x.actividad_codigo),etapa:x.etapa,estado:x.estado,por:x.por||'',rol:x.rol||'',en:x.en||''}))}catch(e){S.chk=S.chk||[]}}
+async function chkApply(e,codes,m){
+ const p=U.vivoP;const k=VV_ET.indexOf(e);const msg={Cerrada:'Actividades cerradas',['No aplica']:'Marcadas como no aplica',Pendiente:'Actividades reabiertas'}[m];
+ if(S.demo){S.chk=S.chk||[];codes.forEach(c=>{const i=S.chk.findIndex(x=>x.proy===p&&String(x.act)===String(c));if(m==='Pendiente'){if(i>=0)S.chk.splice(i,1)}else{const o={proy:p,act:String(c),etapa:e,estado:m,por:U.name||U.role||'',rol:U.role||'',en:new Date().toISOString()};if(i>=0)S.chk[i]=o;else S.chk.push(o)}});U.vivoK=k;renderPage(true);toast(msg+' ('+codes.length+')','ok');return}
+ if(NB.cbusy)return;NB.cbusy=true;
+ try{await nbRpc('actividad_marcar',{p_proyecto:p,p_etapa:e,p_actividades:codes.map(String),p_estado:m});await nbReloadChk();U.vivoK=k;renderPage(true);toast(msg+' ('+codes.length+')','ok')}
+ catch(x){toast(nbMsg(x),'er')}finally{NB.cbusy=false}}
+function chkPrint(e,codes){
+ const p=S.proyectos.find(x=>x.num===U.vivoP);if(!p)return;const AC=(typeof ACT!=='undefined'?ACT:[]).filter(a=>a[2]===e&&a[4]!==false);
+ const st=c=>(S.chk||[]).find(x=>x.proy===p.num&&String(x.act)===String(c));
+ const L=codes.length?AC.filter(a=>codes.includes(String(a[0]))):AC.filter(a=>!st(a[0]));
+ if(!L.length){toast('No hay actividades pendientes para imprimir.','wa');return}
+ const ps=document.getElementById('printSheet');ps.className='cons';
+ ps.innerHTML=`<img src="${LOGO}" alt="" style="height:60px;width:auto"><h1>Hoja de trabajo · ${esc(e)}</h1><p><b>Proyecto ${esc(p.num)}</b> · Tanque ${nf(p.cap,0)} gal · ${esc(p.cliente||'')}</p><p>Fecha: ${vvD(today())} · Emitida por ${esc(U.name||U.role||'')}</p>
+ <table class="ct"><tr><th style="width:24px">✓</th><th style="width:44px">Cód.</th><th>Actividad</th><th style="width:110px">Técnico</th><th style="width:150px">Observaciones</th></tr>${L.map(a=>`<tr><td style="height:30px"></td><td>${esc(String(a[0]))}</td><td>${esc(a[1])}</td><td></td><td></td></tr>`).join('')}</table>
+ <p style="margin-top:34px!important">Supervisor: ________________________ &nbsp; Firma: ________________ &nbsp; Hora de cierre: ________</p><p class="cn">Al terminar, el supervisor cierra estas actividades en Latamks HH → Proyecto en vivo → Detalle por etapa.</p>`;
+ setTimeout(()=>{try{window.print()}catch(x){toast('La impresión no está disponible aquí.','wa')}setTimeout(()=>{ps.className=''},1500)},300)}
 function pVivo(){
  const P=S.proyectos.slice().sort((a,b)=>a.num<b.num?1:-1);const act=P.filter(p=>p.estado==='Activo'),fin=P.filter(p=>p.estado!=='Activo');
  if(!P.length)return card('Proyecto en vivo','Avance real de cada tanque',empty('Aún no hay proyectos. Crea el primero en Proyectos.'));
@@ -5951,9 +5989,10 @@ function pVivo(){
  <div class="vv-pt" style="margin-top:12px">Secciones <span class="mut3">(toca para resaltar)</span></div><div class="vv-secs" id="vvsecs"></div></div></div></section>
  <div class="vv-2"><section class="card"><div class="ch"><div><h3>Detalle por etapa</h3><p>Toca una etapa: actividades con horas, liberaciones y solicitud</p></div></div>${vvDetail(c,p)}</section>
  <section class="card"><div class="ch"><div><h3>Alertas de congruencia</h3><p>Solo avisan: nunca bloquean el registro de horas</p></div></div>${als}</section></div>
- <p class="mut3" style="font-size:12.5px;margin-top:10px">El tamaño de cada tramo del círculo es proporcional a las horas esperadas de esa etapa. Avance de la etapa = horas reales ÷ esperadas (máximo 95%) hasta que Calidad la libera; al liberarla pasa a 100%.</p></div>`}
+ <p class="mut3" style="font-size:12.5px;margin-top:10px">El tamaño de cada tramo del círculo es proporcional a las horas esperadas de esa etapa. Avance de la etapa = actividades cerradas ÷ aplicables (si el supervisor usa el checklist) o, si no, horas reales ÷ esperadas; máximo 95% hasta que Calidad la libera, y al liberarla pasa a 100%.</p></div>`}
 const VV_SK='';
 function vvMount(){
+ if(!S.demo&&!NB.chkL){NB.chkL=true;nbReloadChk().then(()=>{if(U.page==='vivo')renderPage(true)})}
  const root=document.querySelector('.vv');if(!root)return;const c=VV_C,p=S.proyectos.find(x=>x.num===U.vivoP);if(!p||!c)return;
  // grafico radial: animacion, hover y click
  const big=document.getElementById('vvbig');if(big){const v=+big.dataset.v;let t0=null;const f=ts=>{if(!big.isConnected)return;if(t0==null)t0=ts;const k=Math.min(1,(ts-t0)/1100),e=1-Math.pow(1-k,3);big.textContent=Math.round(v*e)+'%';if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
@@ -5983,7 +6022,9 @@ function vvMount(){
  $('vvod').onchange=e=>T.st.onlyDone=e.target.checked;
  $('vvau').onchange=e=>T.st.auto=e.target.checked;T.onUser=()=>{$('vvau').checked=false};
  if(U.vivoK!=null){const m=VV_MAP[U.vivoK]||[-1,-1];const nB=T.sections.filter(s=>s.id<10).length;T.st.sel=m[0]===0?[0,nB-1]:m;syncSecs()}}
- Object.assign(A,{vivoT:t=>{U.vivoT=t.dataset.v;renderPage(true)},vivoG:t=>{U.vivoG=t.dataset.v;renderPage(true)},vivoK:t=>{U.vivoK=+t.dataset.k;U.vivoT='av';renderPage(true)},vivoSel:t=>{U.vivoP=t.dataset.p;U.vivoK=null;renderPage(true)}});
+  Object.assign(A,{chkTog:t=>{t.classList.toggle('sel');chkCnt(t)},chkSelP:t=>{t.closest('.vv-db').querySelectorAll('.vv-ac:not(.ch):not(.na)').forEach(x=>x.classList.add('sel'));chkCnt(t)},
+  chkPrint:t=>chkPrint(t.closest('.vv-cb').dataset.e,chkSel(t)),chkDo:t=>{const c=chkSel(t);if(!c.length){toast('Selecciona al menos una actividad.','wa');return}chkApply(t.closest('.vv-cb').dataset.e,c,t.dataset.m)}});
+Object.assign(A,{vivoT:t=>{U.vivoT=t.dataset.v;renderPage(true)},vivoG:t=>{U.vivoG=t.dataset.v;renderPage(true)},vivoK:t=>{U.vivoK=+t.dataset.k;U.vivoT='av';renderPage(true)},vivoSel:t=>{U.vivoP=t.dataset.p;U.vivoK=null;renderPage(true)}});
 PAGES.vivo=pVivo;
 
 nubeBoot();
