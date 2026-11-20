@@ -371,20 +371,37 @@ a.btn{text-decoration:none}
 .rvt td{vertical-align:top;font-size:13px}.rvt .wrapd{max-width:340px;white-space:normal;line-height:1.4}.rvt .sub{white-space:normal}
 .rvh{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.rvh .nmx{min-width:210px}
 .mbox.xw{max-width:760px;width:94vw}.mbox .rtxt{min-height:70px}
-.vv-list{display:grid;gap:10px}.vv-pi{display:grid;grid-template-columns:170px 1fr 130px;gap:14px;align-items:center;padding:12px 14px;border:1px solid var(--bd);border-radius:14px;cursor:pointer;background:var(--card2)}.vv-pi:hover{border-color:var(--bd2)}.vv-pi.on{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri) inset}
-@media(max-width:700px){.vv-pi{grid-template-columns:1fr 1fr}.vv-pi>div:nth-child(2){grid-column:1/3;order:3}}
-.vv-3d{position:relative;margin:6px 0 10px;border-radius:14px;overflow:hidden;border:1px solid var(--bd);background:#0c1015}#vvcv{display:block;width:100%;height:440px;touch-action:none;cursor:grab}
-@media(max-width:700px){#vvcv{height:300px}}
-.vv-b{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap}.vv-b button{background:#101a26cc;color:#e8eef6;border:1px solid #2a3a50;border-radius:9px;padding:6px 11px;font-size:12.5px;cursor:pointer}.vv-b button.on{border-color:#38bdf8;color:#38bdf8}
-.vv-lg{position:absolute;bottom:10px;left:12px;display:flex;gap:14px;font-size:11.5px;color:#8fa3b8;flex-wrap:wrap}.vv-lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.vv-ref{position:absolute;top:12px;right:12px;font-size:11.5px;color:#fbbf24;border:1px solid #fbbf2455;border-radius:99px;padding:2px 10px;background:#fbbf2414}
-.vv-tl{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:8px}.vv-st{text-align:center;font-size:11px;color:var(--tx3)}.vv-st .dot{width:30px;height:30px;border-radius:50%;margin:0 auto 6px;display:grid;place-items:center;font-size:12px;font-weight:700;border:2px solid var(--bd2);background:var(--card2)}.vv-st span{display:block;color:var(--tx);font-weight:600;font-size:12px}
-.vv-st.done .dot{background:#22c55e;border-color:#22c55e;color:#04231a}.vv-st.cur .dot{border-color:var(--pri);color:var(--pri);box-shadow:0 0 12px var(--pri)}.vv-st.cur{color:var(--tx)}
-@media(max-width:700px){.vv-tl{grid-template-columns:repeat(5,1fr);row-gap:12px}}
-.vv-k{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}@media(max-width:900px){.vv-k{grid-template-columns:1fr 1fr}}
+.vv-chips{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.vv-chip{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border:1px solid var(--bd);border-radius:40px;background:var(--card2);cursor:pointer;color:var(--tx);font:inherit;transition:.2s}.vv-chip:hover{border-color:var(--bd2);transform:translateY(-1px)}
+.vv-chip.on{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri) inset,0 6px 20px -8px var(--pri);background:var(--hov)}
+.vv-chip svg .t{fill:none;stroke:var(--bd2);stroke-width:4}.vv-chip svg .f{fill:none;stroke:url(#vvg1);stroke:#22d3ee;stroke-width:4;stroke-linecap:round}.vv-chip svg .f.ok{stroke:#22c55e}.vv-chip svg text{fill:var(--tx);font-size:11px;font-weight:700}
+.vv-chip span{display:flex;flex-direction:column;text-align:left;line-height:1.2}.vv-chip b{font-size:14px}.vv-chip i{font-style:normal;font-size:11.5px;color:var(--tx3)}
+.vv-fin{width:100%;margin-top:6px}.vv-fin summary{cursor:pointer;color:var(--tx2);font-size:13px;font-weight:600;margin-bottom:8px}
+.vv-top{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:center}@media(max-width:1000px){.vv-top{grid-template-columns:1fr}}
+.vv-radw{position:relative;max-width:560px;margin:0 auto;width:100%}.vv-rad{width:100%;height:auto;display:block;overflow:visible}
+.vv-core{fill:var(--card2);stroke:var(--bd);stroke-width:1}.vv-ringbg{fill:none;stroke:var(--bd);stroke-width:1;stroke-dasharray:2 5}
+.vv-seg .trk{fill:none;stroke:var(--bd2);stroke-width:30;opacity:.55}.vv-seg .fil{fill:none;stroke-width:30;transition:stroke-dasharray 1.3s cubic-bezier(.2,.8,.2,1)}
+.vv-seg.done .fil{stroke:url(#vvg2)}.vv-seg.cur .fil,.vv-seg.part .fil{stroke:url(#vvg1)}.vv-seg.cur .fil{filter:url(#vvglow);animation:vvp 2.2s ease-in-out infinite}
+.vv-seg .hit{fill:none;stroke:transparent;stroke-width:44;cursor:pointer}.vv-seg:hover .trk{opacity:.9}.vv-seg.sel .trk{stroke:var(--pri);opacity:.9}
+@keyframes vvp{50%{opacity:.72}}
+.trk2{fill:none;stroke:var(--bd2);stroke-width:8;opacity:.5}.fil2{fill:none;stroke-width:8;stroke-linecap:butt;transition:stroke-dasharray 1.5s cubic-bezier(.2,.8,.2,1)}
+.vv-lb circle{fill:var(--card);stroke:var(--bd2);stroke-width:1.5}.vv-lb text{fill:var(--tx2);font-size:11.5px;font-weight:700}.vv-lb.done circle{fill:#22c55e;stroke:#22c55e}.vv-lb.done text{fill:#04231a}.vv-lb.cur circle{stroke:var(--pri);stroke-width:2.2}.vv-lb.cur text{fill:var(--pri)}
+.vv-big{fill:var(--tx);font-size:62px;font-weight:800;letter-spacing:-.04em}.vv-cap{fill:var(--tx3);font-size:12px;letter-spacing:.18em;font-weight:700}.vv-sub2{fill:var(--tx2);font-size:13.5px;font-weight:600}
+.vv-mk{fill:#fbbf24}.vv-pace{fill:none;stroke-width:3;stroke-dasharray:3 6;stroke-linecap:round}.vv-pace.bad{stroke:#f87171}.vv-pace.ok{stroke:#22c55e}
+.vv-tip{position:absolute;pointer-events:none;background:#0b1220ee;color:#eaf0fb;border:1px solid #2a3a50;padding:6px 10px;border-radius:9px;font-size:12.5px;opacity:0;transition:opacity .12s;white-space:nowrap;z-index:5}.vv-tip.on{opacity:1}
+.vv-leg{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:11.5px;color:var(--tx3);margin-top:4px}.vv-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}.vv-leg .g{background:#22c55e}.vv-leg .c{background:#22d3ee}.vv-leg .p{background:var(--bd2)}.vv-leg .h{background:#38bdf8;height:4px;vertical-align:2px}.vv-leg .m{display:none}
+.vv-kps{display:grid;grid-template-columns:1fr 1fr;gap:10px}.vv-kp{border:1px solid var(--bd);border-radius:14px;padding:12px 14px;background:var(--card2)}.vv-kp b{display:block;font-size:26px;font-weight:800;letter-spacing:-.02em}.vv-kp b small{font-size:13px;font-weight:600;color:var(--tx3)}.vv-kp span{font-size:12.5px;color:var(--tx2)}.vv-kp .wa{color:#f59e0b}.vv-kp .dn{color:#f87171}
+.vv-inf{margin-top:12px;border:1px solid var(--bd);border-radius:14px;padding:12px 14px}.vv-infg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 4px}.vv-infg span{display:block;font-size:11.5px;color:var(--tx3)}.vv-infg b{font-size:18px}.vv-infg .dn{color:#f87171}
+.vv-viewer{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:14px}@media(max-width:900px){.vv-viewer{grid-template-columns:1fr}}
+.vv-3d{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--bd);background:#0c1015}#vvcv{display:block;width:100%;height:500px;touch-action:none;cursor:grab}@media(max-width:700px){#vvcv{height:320px}}
+.vv-lg2{position:absolute;bottom:10px;left:12px;display:flex;gap:14px;font-size:11.5px;color:#8fa3b8;flex-wrap:wrap}.vv-lg2 i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.vv-panel{border:1px solid var(--bd);border-radius:14px;padding:14px;background:var(--card2);display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto}
+.vv-panel label{display:flex;gap:9px;align-items:center;font-size:13.5px;cursor:pointer}.vv-panel input[type=range]{width:100%;accent-color:var(--pri)}.vv-pt{font-size:13px;font-weight:700;color:var(--tx)}
+.vv-btns{display:flex;gap:8px}.vv-btns button{flex:1;border:1px solid var(--bd2);background:var(--card);color:var(--tx);border-radius:10px;padding:8px 10px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}.vv-btns button:hover{border-color:var(--pri)}
+.vv-secs{display:flex;flex-direction:column;gap:7px}.vv-sec{border:1px solid var(--bd);border-radius:10px;padding:7px 10px;cursor:pointer;background:var(--card)}.vv-sec.on{border-color:var(--pri);box-shadow:0 0 0 1px var(--pri) inset}.vv-sec>div:first-child{display:flex;justify-content:space-between;font-size:12px;gap:8px}.vv-sec b{font-size:12px}.vv-sec .b{height:6px;border-radius:4px;background:var(--bd);margin-top:5px;overflow:hidden}.vv-sec .b i{display:block;height:100%;background:linear-gradient(90deg,#22d3ee,#8b5cf6)}.vv-sec .b i.ok{background:#22c55e}
 .vv-2{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;margin-top:14px}@media(max-width:900px){.vv-2{grid-template-columns:1fr}}
-.vv-cur td{font-weight:700}.vv-fin{margin-top:12px}.vv-fin summary{cursor:pointer;color:var(--tx2);font-size:13px;font-weight:600}
-.vv-al{padding:10px 12px;border-radius:12px;margin-bottom:8px;border:1px solid}.vv-al b{display:block;font-size:13.5px}.vv-al span{font-size:12.5px;color:var(--tx2)}
+.vv-cur td{font-weight:700}
+.vv-al{padding:10px 12px;border-radius:12px;margin:8px 0;border:1px solid}.vv-al b{display:block;font-size:13.5px}.vv-al span{font-size:12.5px;color:var(--tx2)}
 .vv-al.wa{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.4)}.vv-al.er{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.4)}.vv-al.ok{background:rgba(34,197,94,.10);border-color:rgba(34,197,94,.4)}
 </style></head>
 <body>
@@ -5499,14 +5516,15 @@ Object.assign(A,{tlNew:()=>tlNew(),tlSave:()=>tlSave(),
  tlRe:t=>{const x=NB.libMis.find(z=>z.codigo===t.dataset.c);if(!x)return;
   confirmM('Solicitar de nuevo','¿Ya corregiste lo que Calidad indicó? Se enviará una nueva solicitud de '+esc(x.etapa)+' del proyecto '+esc(x.proyecto)+'.','Solicitar',()=>tlSave({p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_proyecto:x.proyecto,p_etapa:x.etapa,p_descripcion:x.descripcion,p_prioridad:x.prioridad||'Normal',p_reintento_de:x.codigo}))}});
 
-/* Tank3D: motor WebGL2 propio. Geometría del tanque 10.000 gal (sección 3050x1632, largo 11.276 m, 3 cuerpos) */
+/* Tank3D v2: motor WebGL2 propio, tanque parametrico por capacidad (planos Latamks 800 / 2.200 / 5.442 / 10.000 gal) */
 const Tank3D=(()=>{
 const VS=`#version 300 es
 in vec3 p;in vec3 n;uniform mat4 VP;uniform vec3 off;out vec3 vW;out vec3 vN;out vec3 vL;
 void main(){vL=p;vec3 w=p+off;vW=w;vN=n;gl_Position=VP*vec4(w,1.);}`;
 const FS=`#version 300 es
 precision highp float;in vec3 vW;in vec3 vN;in vec3 vL;out vec4 o;
-uniform vec3 eye;uniform vec3 alb;uniform float met;uniform int mode;uniform float fr,z0,z1,pass_,glow,polish,tm;uniform vec3 axO;uniform vec3 axD;
+uniform vec3 eye;uniform vec3 alb;uniform float met;uniform int mode;uniform float fr,z0,z1,pass_,polish,tm,pid;uniform vec2 sel;uniform vec3 off;
+uniform float wl,tx,tz,zc,wamp;uniform vec4 notch;uniform float notchOn,gshow;
 float h(vec2 q){return fract(sin(dot(q,vec2(127.1,311.7)))*43758.5453);}
 float vn(vec2 q){vec2 i=floor(q),f=fract(q);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
 vec3 env(vec3 r){
@@ -5519,46 +5537,68 @@ vec3 env(vec3 r){
  if(y<0.)c=mix(c,vec3(.05,.06,.07),smoothstep(0.,-.4,y));
  return c;}
 vec3 aces(vec3 x){return pow(clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.),vec3(1./2.2));}
+float wave(vec2 q,float t){return .010*sin(q.x*4.+t*1.4)+.008*sin(q.y*3.-t*1.1+q.x*1.5)+.003*sin((q.x+q.y)*9.+t*2.2);}
+float surfH(vec3 P){return wl+tx*P.x+tz*(P.z-zc)+wamp*wave(P.xz,tm);}
+vec3 surfN(vec3 P){float e=.02;float a=surfH(P+vec3(e,0,0))-surfH(P-vec3(e,0,0));float b=surfH(P+vec3(0,0,e))-surfH(P-vec3(0,0,e));return normalize(vec3(-a/(2.*e),1.,-b/(2.*e)));}
 void main(){
- vec3 N=normalize(vN);vec3 V=normalize(eye-vW);if(dot(N,V)<0.)N=-N;
- float s=dot(vL-axO,axD)/max(z1-z0,.001);
+ vec3 N=normalize(vN);vec3 V=normalize(eye-vW);
+ if(mode==2){ // liquido: se recorta por el plano (con inclinacion) y se simula la superficie con la cara de atras
+  vec3 P=vL,E=eye-off;
+  float hp=surfH(P);
+  if(P.y>hp)discard;
+  vec3 Vn=normalize(E-P);
+  if(!gl_FrontFacing){ // cara de atras: o se ve la superficie, o el fondo
+   vec3 d=normalize(P-E);float den=d.y-tx*d.x-tz*d.z;
+   float t=(wl+tx*E.x+tz*(E.z-zc)-tz*0.-E.y)/ (d.y-tx*d.x-tz*d.z+1e-5);
+   vec3 S=E+d*t;
+   if(t>0.&&t<length(P-E)){
+    vec3 Ns=surfN(S);vec3 Vs=normalize(E-S);float f=pow(1.-max(dot(Ns,Vs),0.),3.);
+    vec3 refl=env(reflect(-Vs,Ns));
+    vec3 col=mix(vec3(.03,.34,.46),vec3(.12,.66,.76),.5+.5*Ns.y)*.95+refl*(.12+.6*f);
+    float spark=pow(max(dot(reflect(-Vs,Ns),normalize(vec3(.4,.8,.3))),0.),60.)*1.5;col+=spark;
+    float caus=pow(vn(S.xz*4.+tm*.4)*vn(S.xz*3.-tm*.3),2.)*.25;col+=vec3(.2,.6,.7)*caus*.25;
+    o=vec4(aces(col*1.1),.86);return;}
+   vec3 col=vec3(.01,.16,.24)+.05*vn(P.xz*6.+tm*.3);o=vec4(aces(col),.62);return;
+  }
+  float f=pow(1.-max(dot(N,Vn),0.),3.);
+  vec3 col=mix(vec3(.02,.26,.36),vec3(.08,.55,.66),smoothstep(-.9,.9,P.y-wl+.5))+env(reflect(-Vn,N))*(.05+.35*f);
+  float foam=smoothstep(.035,0.,hp-P.y);col=mix(col,vec3(.85,.97,1.),foam*.8);
+  o=vec4(aces(col),.42+.3*f+foam*.4);return;}
+ if(dot(N,V)<0.)N=-N;
+ float s=dot(vL,vec3(0,0,1))-z0;s=s/max(z1-z0,.001);
  bool built=s<=fr;
- if(mode<=1||mode==3){ if(pass_<.5&&!built)discard; if(pass_>.5&&built)discard; }
+ if(mode<=1||mode==3){ if(pass_<.5&&!built)discard; if(pass_>.5&&built)discard; if(gshow<.5&&pass_>.5)discard;}
+ if(notchOn>.5&&mode<=1&&vL.z>notch.x&&vL.z<notch.y&&abs(vL.x)<notch.z&&vL.y<notch.w)discard;
  float F=pow(1.-max(dot(N,V),0.),4.);
- if(pass_>.5){ // pendiente: holograma azul
+ float selOn=sel.x>-.5?((pid>sel.x-.5&&pid<sel.y+.5)?1.:0.):-1.;
+ if(pass_>.5){
   float g=.5+.5*sin(vL.z*30.+tm);float e=.10+.45*F;
-  o=vec4(vec3(.22,.55,.95)*(.7+.5*F)+.05*g,e);return;}
+  vec3 c=vec3(.22,.55,.95)*(.7+.5*F)+.05*g;
+  if(selOn>.5){c=vec3(.3,.9,1.);e=.35+.5*F;} else if(selOn<-.1+0.0&&selOn<0.){}
+  if(selOn==0.)e*=.35;
+  o=vec4(c,e);return;}
  vec3 col;float a=1.;
- if(mode==4){ // piso
-  vec2 q=vW.xz;float d=length(q*vec2(.12,.075));
+ if(mode==4){
+  vec2 q=vW.xz;float d=length(q*vec2(.07,.045));
   vec3 base=mix(vec3(.13,.15,.18),vec3(.04,.05,.065),smoothstep(.25,1.5,d));
-  vec2 b=max(abs(q)-vec2(1.9,5.9),0.);float sh=exp(-dot(b,b)*.9);
-  base*=1.-.72*sh*smoothstep(1.4,0.,0.);
+  vec2 b=max(abs(q)-vec2(1.9,notch.x),0.);float sh=exp(-dot(b,b)*.9);base*=1.-.72*sh;
   float gr=smoothstep(.02,0.,abs(fract(q.x*.5)-.5)-.48)+smoothstep(.02,0.,abs(fract(q.y*.5)-.5)-.48);
-  base+=.012*gr*exp(-d*2.);
-  col=base;o=vec4(pow(col,vec3(.95)),1.);return;}
- if(mode==2){ // agua
-  vec3 Nw=normalize(vec3(sin(vW.x*5.+tm)*.03+sin(vW.z*3.+tm*.7)*.03,1.,cos(vW.z*4.-tm)*.03+cos(vW.x*3.)*.02));
-  if(abs(vN.y)>.9)N=Nw;V=normalize(eye-vW);
-  float f=pow(1.-max(dot(N,V),0.),3.);
-  vec3 deep=vec3(.02,.30,.42),sh=vec3(.10,.62,.72);
-  col=mix(deep,sh,.5+.5*N.y)*.9+env(reflect(-V,N))*(.10+.5*f);
-  a=.55+.3*f;o=vec4(aces(col*1.15),a);return;}
- if(mode==1){ // vidrio / cristal
-  vec3 r=reflect(-V,N);col=env(r)*(.05+.9*F)+vec3(.02,.05,.07);
-  o=vec4(aces(col),.10+.55*F);return;}
- if(mode==3){ // rejilla pasarela
+  base+=.012*gr*exp(-d*2.);o=vec4(base,1.);return;}
+ if(mode==1){
+  vec3 r=reflect(-V,N);col=env(r)*(.04+.8*F)+vec3(.01,.03,.05);
+  o=vec4(aces(col),(.035+.5*F)*(selOn==0.?.4:1.));return;}
+ if(mode==3){
   vec2 q=vW.xz*12.;float gx=smoothstep(.16,.04,abs(fract(q.x)-.5)-.28)*smoothstep(.16,.04,abs(fract(q.y)-.5)-.28);
   col=alb*(.25+.9*gx)+env(reflect(-V,N))*.08;
   if(abs(N.y)>.7&&gx<.2)discard;
-  o=vec4(aces(col),1.);return;}
- // acero
+  col=aces(col);
+  if(selOn>.5)col=mix(col,vec3(.4,.9,1.),.35);else if(selOn==0.)col*=.35;
+  o=vec4(col,1.);return;}
  vec3 L=normalize(vec3(.5,.85,.35));
  float br=vn(vec2(vW.x*220.,vW.z*3.))*.5+vn(vec2(vW.y*260.,vW.z*4.))*.5;
  vec3 Nb=normalize(N+(br-.5)*vec3(.014,.014,0.)*(1.+polish*2.));
  float rough=mix(.012,.07,polish);
- vec3 R=reflect(-V,Nb);
- vec3 e=vec3(0.);
+ vec3 R=reflect(-V,Nb);vec3 e=vec3(0.);
  for(int i=0;i<5;i++){float k=float(i)-2.;e+=env(normalize(R+vec3(k*rough*.4,k*rough*.2,k*rough*2.2)));}
  e/=5.;
  float Fr=mix(met*.55,1.,F);
@@ -5567,133 +5607,188 @@ void main(){
  vec3 diff=alb*(.25+.55*dif)*(1.-met*.75)+alb*.04;
  col=diff+spec*Fr*(met*1.0+.12)*mix(1.,.55,polish);
  col*=mix(1.,.9,polish*vn(vW.xz*6.));
- float bd=0.;if(mode==0){bd=smoothstep(.014,0.,abs(vL.z+1.638))+smoothstep(.014,0.,abs(vL.z-2.362));col=mix(col,col*.55+vec3(.05),bd*step(vL.y,3.));}
- // costuras soldadas (cordón) cada seam
- if(mode==0&&glow>=0.){}
- if(!built){}
+ float bd=smoothstep(.014,0.,abs(vL.z-notch.x*0.-zc*0.))*0.;
  if(fr<1.&&pass_<.5){float d=abs(s-fr);float gl=exp(-d*d*(z1-z0)*(z1-z0)*90.);col+=vec3(1.,.62,.12)*gl*1.6;}
- o=vec4(aces(col*1.05),1.);
+ col=aces(col*1.05);
+ if(selOn>.5){col=mix(col,vec3(.35,.9,1.),.28)+vec3(0,.08,.12)*F*3.;}else if(selOn==0.)col*=.32;
+ o=vec4(col,1.);
 }`;
 function M(){return{mul(a,b){const r=new Float32Array(16);for(let i=0;i<4;i++)for(let j=0;j<4;j++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+j]*b[i*4+k];r[i*4+j]=s}return r},
 persp(f,a,n,fa){const t=1/Math.tan(f/2),r=new Float32Array(16);r[0]=t/a;r[5]=t;r[10]=(fa+n)/(n-fa);r[11]=-1;r[14]=2*fa*n/(n-fa);return r},
 look(e,c,u){let z=[e[0]-c[0],e[1]-c[1],e[2]-c[2]];let l=Math.hypot(...z);z=z.map(v=>v/l);let x=[u[1]*z[2]-u[2]*z[1],u[2]*z[0]-u[0]*z[2],u[0]*z[1]-u[1]*z[0]];l=Math.hypot(...x);x=x.map(v=>v/l);const y=[z[1]*x[2]-z[2]*x[1],z[2]*x[0]-z[0]*x[2],z[0]*x[1]-z[1]*x[0]];
 return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-(x[0]*e[0]+x[1]*e[1]+x[2]*e[2]),-(y[0]*e[0]+y[1]*e[1]+y[2]*e[2]),-(z[0]*e[0]+z[1]*e[1]+z[2]*e[2]),1])}}}
 const m4=M();
-/* ---------- geometría ---------- */
-const A=1.525,B=.816,NS=2.7,YC=1.06,L0=-5.638,L1=5.638,SEAM=[-1.638,2.362];
-function se(t,sc){sc=sc||1;const c=Math.cos(t),s=Math.sin(t);return[A*sc*Math.sign(c)*Math.pow(Math.abs(c),2/NS),B*sc*Math.sign(s)*Math.pow(Math.abs(s),2/NS)]}
-const prof=(n,sc)=>{const r=[];for(let i=0;i<n;i++)r.push(se(i/n*Math.PI*2,sc));return r};
-function yTop(x){return B*Math.pow(Math.max(0,1-Math.pow(Math.abs(x)/A,NS)),1/NS)}
+/* ---------- modelos de referencia (planos) ---------- */
+const MODELS=[
+ {g:800,n:'800 gal',W:1.75,H:1.05,Rt:3.44,Rb:1.72,Rs:.75,rc:.29,L:2.25,body:[2.25],hd:.1,romp:[.95],man:[1.1],pasL:1.9,hb:.15,est:true},
+ {g:2200,n:'2.200 gal',W:2.49,H:1.524,Rt:3.382,Rb:2.157,Rs:1.5,rc:.4,L:2.856,body:[2.856],hd:.158,romp:[1.058,1.798],man:[.75,2.1],pasL:2.5,hb:.215},
+ {g:5442,n:'5.442 gal (20.000 L)',W:2.8,H:1.751,Rt:3.5,Rb:3.5,Rs:1.6,rc:.44,L:5.07,body:[2.0,2.73],hd:.17,romp:[1.0,1.95,3.0,4.0],man:[1.2,3.6],pasL:4.7,hb:.205},
+ {g:10000,n:'10.000 gal',W:3.05,H:1.652,Rt:6,Rb:3,Rs:1.3,rc:.5,L:11.277,body:[4,4,2.877],hd:.2,romp:[.653,1.824,2.934,4.044,4.853,6.024,7.134,8.244,9.4],man:[1.69,5.53,8.06],pasL:10.837,hb:.181,notch:true}];
+function pickModel(cap){cap=+cap||10000;let b=MODELS[0],d=1e9;for(const m of MODELS){const k=Math.abs(Math.log(cap/m.g));if(k<d){d=k;b=m}}
+ const f=Math.max(.5,Math.min(2.4,cap/b.g));return{m:b,f,cap}}
+function modelParams(cap){const{m,f}=pickModel(cap);const z=a=>a.map(v=>v*f);
+ return{...m,f,L:m.L*f,body:z(m.body),romp:z(m.romp),man:z(m.man),pasL:m.pasL*f,hd:m.hd,base:m.g}}
+/* ---------- seccion transversal real ---------- */
+function circInt(c1,r1,c2,r2){const dx=c2[0]-c1[0],dy=c2[1]-c1[1],d=Math.hypot(dx,dy);const a=(r1*r1-r2*r2+d*d)/(2*d),hh=Math.sqrt(Math.max(0,r1*r1-a*a));const mx=c1[0]+a*dx/d,my=c1[1]+a*dy/d;return[[mx+hh*dy/d,my-hh*dx/d],[mx-hh*dy/d,my+hh*dx/d]]}
+function sectionPts(P,N){const hw=P.W/2,hh=P.H/2,rc=P.rc;
+ const C={T:{c:[0,hh-P.Rt],R:P.Rt},B:{c:[0,-hh+P.Rb],R:P.Rb},Rr:{c:[hw-P.Rs,0],R:P.Rs},Ll:{c:[-(hw-P.Rs),0],R:P.Rs}};
+ const sh=k=>({c:C[k].c,R:C[k].R-rc});
+ const pick=(a,b,sx,sy)=>{const q=circInt(sh(a).c,sh(a).R,sh(b).c,sh(b).R);return q.find(p=>Math.sign(p[0])===sx&&Math.sign(p[1])===sy)||q[0]};
+ const V={TR:pick('T','Rr',1,1),TL:pick('T','Ll',-1,1),BL:pick('B','Ll',-1,-1),BR:pick('B','Rr',1,-1)};
+ const onC=(k,v)=>{const c=C[k].c,R=C[k].R,dx=v[0]-c[0],dy=v[1]-c[1],l=Math.hypot(dx,dy);return[c[0]+R*dx/l,c[1]+R*dy/l]};
+ const ang=(c,p)=>Math.atan2(p[1]-c[1],p[0]-c[0]);
+ const arc=(c,R,a0,a1,n)=>{let d=a1-a0;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;const o=[];for(let i=0;i<=n;i++){const a=a0+d*i/n;o.push([c[0]+R*Math.cos(a),c[1]+R*Math.sin(a)])}return o};
+ // orden CCW: lado der (BR->TR), esquina TR, techo (TR->TL), esquina TL, lado izq, esquina BL, panza (BL->BR), esquina BR
+ const seq=[['Rr','BR','TR'],['T','TR','TL'],['Ll','TL','BL'],['B','BL','BR']];const corner={TR:['Rr','T'],TL:['T','Ll'],BL:['Ll','B'],BR:['B','Rr']};
+ let out=[];
+ seq.forEach(([k,a,b],i)=>{const pa=onC(k,V[a]),pb=onC(k,V[b]);const n=k==='T'||k==='B'?22:12;const seg=arc(C[k].c,C[k].R,ang(C[k].c,pa),ang(C[k].c,pb),n);out=out.concat(seg.slice(0,-1));
+  const cn=corner[b];const p1=onC(cn[0],V[b]),p2=onC(cn[1],V[b]);const cs=arc(V[b],rc,ang(V[b],p1),ang(V[b],p2),6);out=out.concat(cs.slice(0,-1))});
+ return out}
+/* ---------- utilidades de malla ---------- */
 function G(){return{P:[],N:[]}}
 function pushTri(g,a,b,c,na,nb,nc){g.P.push(...a,...b,...c);g.N.push(...na,...nb,...nc)}
-function grid(g,R,opts){opts=opts||{};const K=R.length,Mn=R[0].length,loop=opts.loop!==false;const nrm=R.map(r=>r.map(()=>[0,0,0]));const cen=R.map(r=>{let c=[0,0,0];r.forEach(p=>{c[0]+=p[0];c[1]+=p[1];c[2]+=p[2]});return c.map(v=>v/Mn)});
-const tris=[];for(let i=0;i<K-1;i++)for(let j=0;j<(loop?Mn:Mn-1);j++){const j2=(j+1)%Mn;tris.push([[i,j],[i,j2],[i+1,j]],[[i,j2],[i+1,j2],[i+1,j]])}
 const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],cr=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
-for(const t of tris){const [a,b,c]=t.map(([i,j])=>R[i][j]);const n=cr(sub(b,a),sub(c,a));t.forEach(([i,j])=>{nrm[i][j][0]+=n[0];nrm[i][j][1]+=n[1];nrm[i][j][2]+=n[2]})}
-for(let i=0;i<K;i++)for(let j=0;j<Mn;j++){let n=nrm[i][j];const l=Math.hypot(...n)||1;n=n.map(v=>v/l);if(opts.out){const d=sub(R[i][j],cen[i]);if(d[0]*n[0]+d[1]*n[1]+d[2]*n[2]<0)n=n.map(v=>-v)}else if(opts.flip)n=n.map(v=>-v);nrm[i][j]=n}
-for(const t of tris){const q=t.map(([i,j])=>[R[i][j],nrm[i][j]]);pushTri(g,q[0][0],q[1][0],q[2][0],q[0][1],q[1][1],q[2][1])}}
-function cap(g,pts,z,nz,sc){const c=[0,YC,z];const n=[0,0,nz];for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];const A_=[a[0]*sc,YC+a[1]*sc,z],B_=[b[0]*sc,YC+b[1]*sc,z];if(nz>0)pushTri(g,c,A_,B_,n,n,n);else pushTri(g,c,B_,A_,n,n,n)}}
+function grid(g,R,opts){opts=opts||{};const K=R.length,Mn=R[0].length,loop=opts.loop!==false;const nrm=R.map(r=>r.map(()=>[0,0,0]));const cen=R.map(r=>{let c=[0,0,0];r.forEach(p=>{c[0]+=p[0];c[1]+=p[1];c[2]+=p[2]});return c.map(v=>v/Mn)});
+ const tris=[];for(let i=0;i<K-1;i++)for(let j=0;j<(loop?Mn:Mn-1);j++){const j2=(j+1)%Mn;tris.push([[i,j],[i,j2],[i+1,j]],[[i,j2],[i+1,j2],[i+1,j]])}
+ for(const t of tris){const [a,b,c]=t.map(([i,j])=>R[i][j]);const n=cr(sub(b,a),sub(c,a));t.forEach(([i,j])=>{nrm[i][j][0]+=n[0];nrm[i][j][1]+=n[1];nrm[i][j][2]+=n[2]})}
+ for(let i=0;i<K;i++)for(let j=0;j<Mn;j++){let n=nrm[i][j];const l=Math.hypot(...n)||1;n=n.map(v=>v/l);if(opts.out){const d=sub(R[i][j],cen[i]);if(d[0]*n[0]+d[1]*n[1]+d[2]*n[2]<0)n=n.map(v=>-v)}else if(opts.flip)n=n.map(v=>-v);nrm[i][j]=n}
+ for(const t of tris){const q=t.map(([i,j])=>[R[i][j],nrm[i][j]]);pushTri(g,q[0][0],q[1][0],q[2][0],q[0][1],q[1][1],q[2][1])}}
+function cap(g,pts,yc,z,nz,sc){const c=[0,yc,z];const n=[0,0,nz];for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];const A_=[a[0]*sc,yc+a[1]*sc,z],B_=[b[0]*sc,yc+b[1]*sc,z];if(nz>0)pushTri(g,c,A_,B_,n,n,n);else pushTri(g,c,B_,A_,n,n,n)}}
 function box(g,cx,cy,cz,sx,sy,sz){const x=sx/2,y=sy/2,z=sz/2;const f=(n,v)=>{pushTri(g,v[0],v[1],v[2],n,n,n);pushTri(g,v[0],v[2],v[3],n,n,n)};
-const P=(a,b,c)=>[cx+a*x,cy+b*y,cz+c*z];
-f([1,0,0],[P(1,-1,-1),P(1,1,-1),P(1,1,1),P(1,-1,1)]);f([-1,0,0],[P(-1,-1,1),P(-1,1,1),P(-1,1,-1),P(-1,-1,-1)]);
-f([0,1,0],[P(-1,1,-1),P(-1,1,1),P(1,1,1),P(1,1,-1)]);f([0,-1,0],[P(-1,-1,1),P(-1,-1,-1),P(1,-1,-1),P(1,-1,1)]);
-f([0,0,1],[P(-1,-1,1),P(1,-1,1),P(1,1,1),P(-1,1,1)]);f([0,0,-1],[P(1,-1,-1),P(-1,-1,-1),P(-1,1,-1),P(1,1,-1)])}
-function cyl(g,p0,p1,r,seg,caps){seg=seg||20;const d=[p1[0]-p0[0],p1[1]-p0[1],p1[2]-p0[2]];const l=Math.hypot(...d);const a=d.map(v=>v/l);let u=Math.abs(a[1])<.9?[0,1,0]:[1,0,0];let v1=[a[1]*u[2]-a[2]*u[1],a[2]*u[0]-a[0]*u[2],a[0]*u[1]-a[1]*u[0]];let ll=Math.hypot(...v1);v1=v1.map(v=>v/ll);const v2=[a[1]*v1[2]-a[2]*v1[1],a[2]*v1[0]-a[0]*v1[2],a[0]*v1[1]-a[1]*v1[0]];
-const ring=(p,rr)=>{const q=[];for(let i=0;i<seg;i++){const t=i/seg*Math.PI*2,c=Math.cos(t),s=Math.sin(t);q.push([p[0]+rr*(c*v1[0]+s*v2[0]),p[1]+rr*(c*v1[1]+s*v2[1]),p[2]+rr*(c*v1[2]+s*v2[2])])}return q};
-grid(g,[ring(p0,r),ring(p1,r)],{out:true});
-if(caps!==false){[[p0,-1],[p1,1]].forEach(([p,sg])=>{const rg=ring(p,r),n=a.map(v=>v*sg);for(let i=0;i<seg;i++){const x=rg[i],y=rg[(i+1)%seg];if(sg>0)pushTri(g,p,x,y,n,n,n);else pushTri(g,p,y,x,n,n,n)}})}}
-function build(){
- const parts={};
- const ring=(z,sc)=>{const pr=prof(120,sc);return pr.map(([x,y])=>[x,YC+y,z])};
- const headR=(z0,dir)=>{const R=[];for(let k=0;k<=10;k++){const u=1-k/10;const s=Math.max(.015,Math.sqrt(Math.max(0,1-u*u)));const z=z0+dir*.34*u;R.push(ring(z,s))}return R};
- // cuerpos
- const zs=[L0,...SEAM,L1];const bodies=[];
- for(let b=0;b<3;b++){const g=G();let R=[];if(b===0)R=R.concat(headR(zs[0],-1));const n=Math.round((zs[b+1]-zs[b])/.35);for(let i=0;i<=n;i++)R.push(ring(zs[b]+(zs[b+1]-zs[b])*i/n,1));
-  if(b===2)R=R.concat(headR(zs[3],1).reverse());
-  // orientar: de z creciente
-  R.sort((p,q)=>p[0][2]-q[0][2]);grid(g,R,{out:true});bodies.push({g,z0:zs[b]-(b===0?.34:0),z1:zs[b+1]+(b===2?.34:0)})}
- parts.body=bodies;
+ const P=(a,b,c)=>[cx+a*x,cy+b*y,cz+c*z];
+ f([1,0,0],[P(1,-1,-1),P(1,1,-1),P(1,1,1),P(1,-1,1)]);f([-1,0,0],[P(-1,-1,1),P(-1,1,1),P(-1,1,-1),P(-1,-1,-1)]);
+ f([0,1,0],[P(-1,1,-1),P(-1,1,1),P(1,1,1),P(1,1,-1)]);f([0,-1,0],[P(-1,-1,1),P(-1,-1,-1),P(1,-1,-1),P(1,-1,1)]);
+ f([0,0,1],[P(-1,-1,1),P(1,-1,1),P(1,1,1),P(-1,1,1)]);f([0,0,-1],[P(1,-1,-1),P(-1,-1,-1),P(-1,1,-1),P(1,1,-1)])}
+function cyl(g,p0,p1,r,seg,caps){seg=seg||20;const d=[p1[0]-p0[0],p1[1]-p0[1],p1[2]-p0[2]];const l=Math.hypot(...d);const a=d.map(v=>v/l);let u=Math.abs(a[1])<.9?[0,1,0]:[1,0,0];let v1=cr(a,u);let ll=Math.hypot(...v1);v1=v1.map(v=>v/ll);const v2=cr(a,v1);
+ const ring=(p,rr)=>{const q=[];for(let i=0;i<seg;i++){const t=i/seg*Math.PI*2,c=Math.cos(t),s=Math.sin(t);q.push([p[0]+rr*(c*v1[0]+s*v2[0]),p[1]+rr*(c*v1[1]+s*v2[1]),p[2]+rr*(c*v1[2]+s*v2[2])])}return q};
+ grid(g,[ring(p0,r),ring(p1,r)],{out:true});
+ if(caps!==false){[[p0,-1],[p1,1]].forEach(([p,sg])=>{const rg=ring(p,r),n=a.map(v=>v*sg);for(let i=0;i<seg;i++){const x=rg[i],y=rg[(i+1)%seg];if(sg>0)pushTri(g,p,x,y,n,n,n);else pushTri(g,p,y,x,n,n,n)}})}}
+function sweep(g,path,zc,w,t){const R=path.map((p,j)=>{const a=path[Math.max(0,j-1)],b=path[Math.min(path.length-1,j+1)];let tx=b[0]-a[0],ty=b[1]-a[1];const l=Math.hypot(tx,ty)||1;tx/=l;ty/=l;const nx=-ty,ny=tx;return[[p[0]+nx*t/2,p[1]+ny*t/2,zc+w/2],[p[0]+nx*t/2,p[1]+ny*t/2,zc-w/2],[p[0]-nx*t/2,p[1]-ny*t/2,zc-w/2],[p[0]-nx*t/2,p[1]-ny*t/2,zc+w/2]]});grid(g,R,{out:true});
+ [0,path.length-1].forEach(k=>{const r=R[k],n=sub(r[0],r[3]);const c=[0,1,2,3].reduce((a,i)=>[a[0]+r[i][0]/4,a[1]+r[i][1]/4,a[2]+r[i][2]/4],[0,0,0]);const nn=k===0?[-1,0,0]:[1,0,0];for(let i=0;i<4;i++){const x=r[i],y=r[(i+1)%4];pushTri(g,c,x,y,nn,nn,nn)}})}
+/* ---------- construccion ---------- */
+function build(P){
+ const s=P.W/3.05,T=P.W/2,hh=P.H/2;const prof=sectionPts(P,0);const topY=x=>(hh-P.Rt)+Math.sqrt(Math.max(0,P.Rt*P.Rt-x*x));const botY=x=>-(hh-P.Rb)-Math.sqrt(Math.max(0,P.Rb*P.Rb-x*x));
+ const railH=.223*Math.max(.6,s),YC=.03+railH+hh+.04;P.YC=YC;
+ const z0=-P.L/2,z1=P.L/2;P.z0=z0;P.z1=z1;
+ const ring=(z,sc)=>prof.map(([x,y])=>[x*sc,YC+y*sc,z]);
+ const headR=(zt,dir)=>{const R=[];for(let k=0;k<=10;k++){const u=1-k/10;const sc=Math.max(.015,Math.sqrt(Math.max(0,1-u*u)));R.push(ring(zt-dir*0+dir*P.hd*(1-u)*(-1)*0+(zt+dir*P.hd*u*0),sc))}return R};
+ const heads=(zEdge,dir)=>{const R=[];for(let k=0;k<=10;k++){const u=1-k/10;const sc=Math.max(.015,Math.sqrt(Math.max(0,1-u*u)));R.push(ring(zEdge+dir*P.hd*u,sc))}return R};
+ const zf=z0+P.hd,zr=z1-P.hd;const bl=P.body.reduce((a,b)=>a+b,0);const k=(zr-zf)/bl;
+ const parts={};parts.bodies=[];let zc=zf;
+ P.body.forEach((len,b)=>{const g=G();let R=[];const l=len*k;if(b===0)R=R.concat(heads(zf,-1));const n=Math.max(2,Math.round(l/.35));for(let i=0;i<=n;i++)R.push(ring(zc+l*i/n,1));
+  if(b===P.body.length-1)R=R.concat(heads(zr,1).reverse());R.sort((p,q)=>p[0][2]-q[0][2]);grid(g,R,{out:true});parts.bodies.push({g,z0:zc-(b===0?P.hd:0),z1:zc+l+(b===P.body.length-1?P.hd:0)});zc+=l});
+ P.seams=[];zc=zf;P.body.forEach((len,b)=>{zc+=len*k;if(b<P.body.length-1)P.seams.push(zc)});
  // rompeolas
- const rg=[G(),G(),G()];for(let k=0;k<9;k++){const z=L0+.9+k*1.1;const b=z<SEAM[0]?0:z<SEAM[1]?1:2;const g=rg[b];cap(g,prof(120,1),z,1,.985);cap(g,prof(120,1),z+.012,-1,.985)}
- parts.rom=rg.map((g,b)=>({g,z0:zs[b],z1:zs[b+1]}));
- // chasis
- const ch=G();const yb=.02,yh=.2;
- [-.95,.95].forEach(x=>{box(ch,x,yb+yh/2,-.1,.14,yh,10.7);box(ch,x,yb+yh-.015,-.1,.3,.03,10.7);box(ch,x,yb+.015,-.1,.3,.03,10.7)});
- for(let z=-5.0;z<=4.9;z+=.95){box(ch,0,yb+.1,z,2.9,.09,.12)}
- parts.chasis={g:ch,z0:-5.5,z1:5.5};
- // pasarela: rejilla (malla) siguiendo el techo, 1.4 m de ancho, y linea de vida (guaya) a +-485 mm
- const pa=G();{const W=[];const nx=14;for(let k=0;k<=56;k++){const z=-5.2+10.4*k/56;const r=[];for(let i=0;i<=nx;i++){const x=-.7+1.4*i/nx;r.push([x,YC+yTop(x)+.03,z])}W.push(r)}
- grid(pa,W,{loop:false,flip:true});
- [-.485,.485].forEach(x=>{const y=YC+yTop(x)+.1;cyl(pa,[x,y,-5.3],[x,y,5.3],.007,8);[-5.3,5.3].forEach(z=>cyl(pa,[x,YC+yTop(x),z],[x,y,z],.014,8))})}
- parts.pasarela={g:pa,z0:-5.4,z1:5.4};
- // accesorios segun planos: 3 manholes en linea, 2 tubos de recuperacion de vapor, orejas de izaje, escalera trasera
- const ac=G();
- [-3.95,-.11,2.42].forEach(z=>{const x=0;const y=YC+yTop(x)+.03;cyl(ac,[x,y,z],[x,y+.12,z],.38,40);cyl(ac,[x,y+.12,z],[x,y+.17,z],.33,40);for(let i=0;i<8;i++){const t=i/8*6.283;cyl(ac,[.31*Math.cos(t),y+.17,z+.31*Math.sin(t)],[.31*Math.cos(t),y+.22,z+.31*Math.sin(t)],.016,8)}});
- [-1.48,5.2].forEach(z=>cyl(ac,[0,YC+yTop(0)+.03,z],[0,YC+yTop(0)+.2,z],.055,16));
- [-3.44,2.18].forEach(z=>[-1,1].forEach(sg=>{const x=sg*1.0,y=YC+yTop(x);box(ac,x,y+.07,z,.012,.14,.12);box(ac,x,y+.07,z+.0,.012,.14,.12)}));
- {const zt=L1+.02,zb=L1+.38,yT=YC+yTop(0)-.05,yB=.42;[-.2225,.2225].forEach(x=>cyl(ac,[x,yT,zt],[x,yB,zb],.016,10));for(let i=0;i<6;i++){const f=(i+.7)/6.4;cyl(ac,[-.2225,yT+(yB-yT)*f,zt+(zb-zt)*f],[.2225,yT+(yB-yT)*f,zt+(zb-zt)*f],.013,8)};[-.19,.19].forEach(x=>box(ac,x,yT+.02,zt-.03,.04,.08,.06))}
- parts.acc={g:ac,z0:-5.6,z1:6.0};
- // agua
- const lv=.62*2*B-B;const pts=[];for(let i=0;i<1440;i++){const t=Math.PI/2+i/1440*Math.PI*2;const [x,y]=se(t,.985);if(y<=lv)pts.push([x,y])}
- const wsd=G(),wtp=G();const zr=[L0+.05,L1-.05];const W=[];const nz=60;for(let i=0;i<=nz;i++){const z=zr[0]+(zr[1]-zr[0])*i/nz;W.push(pts.filter((_,k)=>k%6===0).map(([x,y])=>[x,YC+y,z]))}
- grid(wsd,W,{loop:false,out:true});
- const xl=pts[0][0],xr=pts[pts.length-1][0],yl=YC+lv;const wz=[zr[0],zr[1]];
- const nn=[0,1,0];const a=[xl,yl,wz[0]],b=[xr,yl,wz[0]],c=[xr,yl,wz[1]],d=[xl,yl,wz[1]];pushTri(wtp,a,d,c,nn,nn,nn);pushTri(wtp,a,c,b,nn,nn,nn);
- parts.water={side:wsd,top:wtp};
+ const rg=G();const rz=P.romp.map(v=>z0+P.hd*0+v*(P.L/ P.L)*1);
+ P.romp.forEach(v=>{const z=z0+v;cap(rg,prof,YC,z,1,.985);cap(rg,prof,YC,z+.012,-1,.985)});
+ parts.rom={g:rg,z0:z0,z1:z1};
+ // bastidor
+ const bs=G();const ry=YC+botY(0)+.05;const rx=.6*Math.max(.6,s);const ya=ry-railH,yb=ry;
+ const bz0=z0+.19*s+0,bz1=z0+(P.L*.797);
+ [-rx,rx].forEach(x=>{box(bs,x,(ya+yb)/2,(bz0+bz1)/2,.012,railH,bz1-bz0);box(bs,x,yb-.006,(bz0+bz1)/2,.11*s+.04,.012,bz1-bz0);box(bs,x,ya+.006,(bz0+bz1)/2,.11*s+.04,.012,bz1-bz0)});
+ const nb=Math.max(2,Math.round((bz1-bz0)/(1.13*Math.max(.7,s)))+1);
+ for(let i=0;i<nb;i++){const z=bz0+.15+(bz1-bz0-.3)*i/(nb-1);
+  box(bs,0,yb-.02,z,2*rx,.02,.12);
+  [-1,1].forEach(sg=>{const path=[];for(let j=0;j<=10;j++){const x=rx+.02+ (.78*s)*j/10;path.push([sg*x,YC+botY(x)-.012])}sweep(bs,sg>0?path:path.slice(),z,.12,.028)})}
+ box(bs,0,(ya+yb)/2,bz0,2*rx+.1,railH,.02);
+ parts.bas={g:bs,z0:z0,z1:z1};
+ // pasarela
+ const pa=G();const px0=z0+.2,px1=z0+.2+P.pasL;const hb=P.hb;const bx=.45*Math.max(.9,s*0+Math.min(1,s*1.1));const tw=topY(0);
+ [-1,1].forEach(sg=>{const x=sg*bx,y=YC+topY(bx)-.01;
+  const R=[[ [x-sg*.0-.055,y,px0],[x-.055,y,px1] ]];
+  // viga trapezoidal (perfil: base ancha, tope angosto)
+  const prof2=[[x-.06,y],[x+.06,y],[x+.014,y+hb],[x-.014,y+hb]];const RR=prof2.map(p=>[[p[0],p[1],px0],[p[0],p[1],px1]]);
+  const ring0=prof2.map(p=>[p[0],p[1],px0]),ring1=prof2.map(p=>[p[0],p[1],px1]);grid(pa,[ring0,ring1],{out:true});
+  [[ring0,-1],[ring1,1]].forEach(([r,sgz])=>{const c=[x,y+hb/2,r[0][2]],n=[0,0,sgz];for(let i=0;i<4;i++){const a=r[i],b2=r[(i+1)%4];if(sgz>0)pushTri(pa,c,a,b2,n,n,n);else pushTri(pa,c,b2,a,n,n,n)}})});
+ [px0,px1].forEach(z=>box(pa,0,YC+topY(0)+hb*.55,z,2*bx+.12,hb*1.1,.02));
+ const dy=YC+topY(0)+hb*.72;const W2=[];const nzz=Math.max(8,Math.round(P.pasL*3));for(let kz=0;kz<=nzz;kz++){const z=px0+(px1-px0)*kz/nzz;const r=[];for(let i=0;i<=10;i++){const x=-bx+2*bx*i/10;r.push([x,dy,z])}W2.push(r)}
+ const pm=G();grid(pm,W2,{loop:false,flip:true});
+ parts.pas={g:pa,z0:z0,z1:z1};parts.mesh={g:pm,z0:z0,z1:z1};
+ // manholes + tubos de vapor
+ const mh=G();const mr=P.W>2.6?.33:.28;
+ P.man.forEach(v=>{const z=z0+v,y=YC+topY(0)-.01;cyl(mh,[0,y,z],[0,dy+.015,z],mr,40);cyl(mh,[0,dy+.015,z],[0,dy+.055,z],mr*.9,40);for(let i=0;i<8;i++){const t=i/8*6.283;cyl(mh,[mr*.78*Math.cos(t),dy+.055,z+mr*.78*Math.sin(t)],[mr*.78*Math.cos(t),dy+.1,z+mr*.78*Math.sin(t)],.016,8)}});
+ [.37,.96].forEach(f=>cyl(mh,[0,YC+topY(0)-.01,z0+P.L*f],[0,dy+.1,z0+P.L*f],.055,16));
+ parts.man={g:mh,z0:z0,z1:z1};
+ // orejas de izaje
+ const oj=G();[.195,.69].forEach(f=>[-1,1].forEach(sg=>{const x=sg*(T-.5*s),y=YC+topY(x),z=z0+P.L*f;box(oj,x,y+.07,z,.012,.14,.12);box(oj,x+sg*.05,y+.04,z,.1,.012,.12)}));
+ parts.oj={g:oj,z0:z0,z1:z1};
+ // escalera trasera + plataforma
+ const es=G();{const zt=z1+.02,zb=z1+.38,yT=YC+topY(0)-.05,yB=.5;[-.2225,.2225].forEach(x=>cyl(es,[x,yT,zt],[x,yB,zb],.016,10));for(let i=0;i<6;i++){const f=(i+.7)/6.4;cyl(es,[-.2225,yT+(yB-yT)*f,zt+(zb-zt)*f],[.2225,yT+(yB-yT)*f,zt+(zb-zt)*f],.013,8)}
+  box(es,0,yB-.02,z1+.3,1.4*s+.3,.025,.5);[-1,1].forEach(sg=>box(es,sg*(.7*s+.15),yB-.12,z1+.2,.03,.22,.03))}
+ parts.esc={g:es,z0:z0,z1:z1+.5};
+ // linea de vida
+ const lv=G();[-.485,.485].forEach(x=>{const y=YC+topY(x)+hb+.05;cyl(lv,[x,y,px0],[x,y,px1],.007,8);[px0,px1].forEach(z=>cyl(lv,[x,YC+topY(x),z],[x,y,z],.014,8))});
+ parts.lv={g:lv,z0:z0,z1:z1};
+ // liquido
+ const wr=[];const ringW=(z,sc)=>prof.map(([x,y])=>[x*sc,YC+y*sc,z]);
+ const wsrc=[];wsrc.push(...heads(zf,-1).map(r=>r.map(p=>[p[0]*.985,YC+(p[1]-YC)*.985,p[2]])));const nm=Math.round((zr-zf)/.3);for(let i=1;i<nm;i++)wsrc.push(ringW(zf+(zr-zf)*i/nm,.985));wsrc.push(...heads(zr,1).reverse().map(r=>r.map(p=>[p[0]*.985,YC+(p[1]-YC)*.985,p[2]])));
+ wsrc.sort((p,q)=>p[0][2]-q[0][2]);const wg=G();grid(wg,wsrc,{out:true});parts.water={g:wg};
  return parts}
 /* ---------- motor ---------- */
-function init(cv,opt){
+function init(cv,cap){
  const gl=cv.getContext('webgl2',{antialias:true,alpha:false,premultipliedAlpha:false,preserveDrawingBuffer:true});if(!gl)return null;
  const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(o));return o};
  const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pr);gl.useProgram(pr);
- const U=n=>gl.getUniformLocation(pr,n);const loc={VP:U('VP'),off:U('off'),eye:U('eye'),alb:U('alb'),met:U('met'),mode:U('mode'),fr:U('fr'),z0:U('z0'),z1:U('z1'),pass_:U('pass_'),glow:U('glow'),polish:U('polish'),tm:U('tm'),axO:U('axO'),axD:U('axD')};
+ const U=n=>gl.getUniformLocation(pr,n);const L={};['VP','off','eye','alb','met','mode','fr','z0','z1','pass_','polish','tm','pid','sel','wl','tx','tz','zc','wamp','notch','notchOn','gshow'].forEach(n=>L[n]=U(n));
  const aP=gl.getAttribLocation(pr,'p'),aN=gl.getAttribLocation(pr,'n');
  const up=g=>{const vao=gl.createVertexArray();gl.bindVertexArray(vao);const b1=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b1);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(g.P),gl.STATIC_DRAW);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);const b2=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b2);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(g.N),gl.STATIC_DRAW);gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,0,0);return{vao,c:g.P.length/3}};
- const P=build();
- const O={body:P.body.map(b=>({...up(b.g),z0:b.z0,z1:b.z1})),rom:P.rom.map(b=>({...up(b.g),z0:b.z0,z1:b.z1})),chasis:{...up(P.chasis.g),z0:P.chasis.z0,z1:P.chasis.z1},pasarela:{...up(P.pasarela.g),z0:P.pasarela.z0,z1:P.pasarela.z1},acc:{...up(P.acc.g),z0:P.acc.z0,z1:P.acc.z1},ws:up(P.water.side),wt:up(P.water.top)};
- const gnd=up({P:[-60,0,-60,60,0,-60,60,0,60,-60,0,-60,60,0,60,-60,0,60],N:[0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0]});
- const st={az:-.62,el:.34,dist:17,prog:[1,1,1,1,.62,.18,0,0,0,0],glass:false,expl:0,explT:0,auto:true,tm:0,w:1,h:1};
- const api={st};
- function draw(o,off,a){gl.bindVertexArray(o.vao);gl.uniform3fv(loc.off,off);gl.drawArrays(gl.TRIANGLES,0,o.c)}
- function setM(alb,met,mode,fr,z0,z1,pass_,polish,ax){gl.uniform3fv(loc.alb,alb);gl.uniform1f(loc.met,met);gl.uniform1i(loc.mode,mode);gl.uniform1f(loc.fr,fr);gl.uniform1f(loc.z0,z0);gl.uniform1f(loc.z1,z1);gl.uniform1f(loc.pass_,pass_);gl.uniform1f(loc.polish,polish);gl.uniform3fv(loc.axO,[0,0,z0]);gl.uniform3fv(loc.axD,ax||[0,0,1])}
+ const P=modelParams(cap);const B=build(P);
+ const O={bodies:B.bodies.map(b=>({...up(b.g),z0:b.z0,z1:b.z1})),rom:{...up(B.rom.g),z0:B.rom.z0,z1:B.rom.z1},bas:{...up(B.bas.g),z0:P.z0,z1:P.z1},pas:{...up(B.pas.g),z0:P.z0,z1:P.z1},mesh:{...up(B.mesh.g),z0:P.z0,z1:P.z1},man:{...up(B.man.g),z0:P.z0,z1:P.z1},oj:{...up(B.oj.g),z0:P.z0,z1:P.z1},esc:{...up(B.esc.g),z0:P.z0,z1:P.z1+.5},lv:{...up(B.lv.g),z0:P.z0,z1:P.z1},wat:up(B.water.g)};
+ const gnd=up({P:[-90,0,-90,90,0,-90,90,0,90,-90,0,-90,90,0,90,-90,0,90],N:[0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0]});
+ const SEC=[];B.bodies.forEach((b,i)=>SEC.push({id:i,name:'Cuerpo '+(i+1)+(i===0?' (delantero)':i===B.bodies.length-1&&B.bodies.length>1?' (trasero)':''),st:[2,3]}));
+ SEC.push({id:10,name:'Rompeolas',st:[2]},{id:11,name:'Bastidor (base)',st:[4]},{id:12,name:'Pasarela y hombros',st:[4]},{id:13,name:'Manholes y tubos de vapor',st:[5]},{id:14,name:'Orejas de izaje',st:[5]},{id:15,name:'Escalera y plataforma trasera',st:[5]},{id:16,name:'Línea de vida',st:[5]});
+ const st={az:-.62,el:.3,dist:Math.max(8,P.L*.82+2.4),prog:[1,1,1,1,.62,.18,0,0,0,0],glass:false,liquid:false,level:.55,interior:false,onlyDone:false,expl:0,explT:0,auto:true,tm:0,sel:[-1,-1],slosh:0,sloshT:0,tx:0,tz:0};
+ const api={st,P,sections:SEC,model:pickModel(cap)};
+ api.secPct=()=>{const pg=st.prog,rol=pg[3],ple=pg[2],arm=pg[4],sol=pg[5];const c=v=>Math.max(0,Math.min(1,v));const out={};
+  B.bodies.forEach((b,i)=>out[i]=c(rol*B.bodies.length-i));out[10]=c(ple);out[11]=c(arm*1.5);out[12]=c(arm*1.5-.5);out[13]=c(sol*4);out[14]=c(sol*4-1);out[15]=c(sol*4-2);out[16]=c(sol*4-3);return out};
+ function draw(o,off){gl.bindVertexArray(o.vao);gl.uniform3fv(L.off,off);gl.drawArrays(gl.TRIANGLES,0,o.c)}
+ function setM(alb,met,mode,fr,z0,z1,pass_,polish,pid){gl.uniform3fv(L.alb,alb);gl.uniform1f(L.met,met);gl.uniform1i(L.mode,mode);gl.uniform1f(L.fr,fr);gl.uniform1f(L.z0,z0);gl.uniform1f(L.z1,z1);gl.uniform1f(L.pass_,pass_);gl.uniform1f(L.polish,polish);gl.uniform1f(L.pid,pid===undefined?-9:pid)}
  api.render=()=>{
   const dpr=Math.min(window.devicePixelRatio||1,2);const w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
-  gl.viewport(0,0,cv.width,cv.height);gl.clearColor(.047,.063,.082,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.disable(gl.CULL_FACE);
-  const s=st,tg=[0,1.1,0];const e=[tg[0]+s.dist*Math.cos(s.el)*Math.sin(s.az),tg[1]+s.dist*Math.sin(s.el),tg[2]+s.dist*Math.cos(s.el)*Math.cos(s.az)];
-  const VP=m4.mul(m4.persp(.55,cv.width/cv.height,.5,200),m4.look(e,tg,[0,1,0]));gl.uniformMatrix4fv(loc.VP,false,VP);gl.uniform3fv(loc.eye,e);gl.uniform1f(loc.tm,s.tm);gl.uniform1f(loc.glow,0);
-  const x=s.expl,z0=[0,0,0];
-  const pg=s.prog,rol=pg[3],ple=pg[2],arm=pg[4],sol=pg[5],pol=1-Math.min(1,(pg[7]+pg[8])/2);
-  const ST=[.80,.82,.85];
-  const offB=[[0,0,-1.9*x],[0,.0,0],[0,0,1.9*x]],offC=[0,-1.5*x,0],offP=[0,1.9*x,0],offA=[0,1.3*x,0];
-  const bodyFr=i=>Math.max(0,Math.min(1,rol*3-(i)));
+  gl.viewport(0,0,cv.width,cv.height);gl.clearColor(.047,.063,.082,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.disable(gl.CULL_FACE);gl.depthMask(true);
+  const s=st,tg=[0,P.YC*.8,0];const e=[tg[0]+s.dist*Math.cos(s.el)*Math.sin(s.az),tg[1]+s.dist*Math.sin(s.el),tg[2]+s.dist*Math.cos(s.el)*Math.cos(s.az)];
+  const VP=m4.mul(m4.persp(.55,cv.width/cv.height,.5,300),m4.look(e,tg,[0,1,0]));gl.uniformMatrix4fv(L.VP,false,VP);gl.uniform3fv(L.eye,e);gl.uniform1f(L.tm,s.tm);gl.uniform2f(L.sel,s.sel[0],s.sel[1]);gl.uniform1f(L.gshow,s.onlyDone?0:1);
+  gl.uniform1f(L.wl,0);gl.uniform1f(L.tx,0);gl.uniform1f(L.tz,0);gl.uniform1f(L.zc,0);gl.uniform1f(L.wamp,0);gl.uniform4fv(L.notch,[0,0,0,0]);gl.uniform1f(L.notchOn,0);
+  const x=s.expl,sz=Math.max(.6,P.W/3.05)*1.0;const Lh=P.L/11.277;
+  const pg=s.prog,rol=pg[3],ple=pg[2],arm=pg[4],sol=pg[5],pol=1-Math.min(1,(pg[7]+pg[8])/2);const nB=O.bodies.length;
+  const ST=[.80,.82,.85];const sp=P.L*.17*x;
+  const offB=O.bodies.map((_,i)=>[0,0,(i-(nB-1)/2)*sp*(nB>1?1:0)]);
+  const offBas=[0,-1.5*x*sz,0],offPas=[0,1.9*x*sz,0],offMan=[0,2.5*x*sz,0],offOj=[0,2.2*x*sz,0],offEsc=[0,0,1.8*x*sz+(nB>1?sp*.5:0)],offLv=[0,2.9*x*sz,0];
+  const pc=api.secPct();
   // piso
-  setM([1,1,1],0,4,1,0,1,0,0);draw(gnd,[0,-1.75*x-.0,0]);
-  const passes=[0,1];
-  const drawSolid=(pass_)=>{
-   // chasis
-   const cf=Math.min(1,arm*1.5),pf=Math.max(0,Math.min(1,arm*1.5-.5));
-   setM([.22,.24,.27],.35,0,cf,O.chasis.z0,O.chasis.z1,pass_,0);draw(O.chasis,offC);
-   setM([.30,.32,.35],.5,3,pf,O.pasarela.z0,O.pasarela.z1,pass_,0);draw(O.pasarela,offP);
-   setM(ST,1,0,Math.min(1,sol*2.2),O.acc.z0,O.acc.z1,pass_,pol);draw(O.acc,offA);
-   O.rom.forEach((r,i)=>{const f=Math.max(0,Math.min(1,ple*3-i));setM([.7,.72,.76],.9,0,f,r.z0,r.z1,pass_,pol*.6);if(s.glass||x>.05||pass_)draw(r,offB[i])});
-   if(!s.glass||pass_)O.body.forEach((b,i)=>{setM(ST,1,0,bodyFr(i),b.z0,b.z1,pass_,pol);draw(b,offB[i])});
+  gl.uniform4fv(L.notch,[Math.max(5.9,P.L/2+.3),0,0,0]);setM([1,1,1],0,4,1,0,1,0,0);draw(gnd,[0,-1.75*x*sz,0]);gl.uniform4fv(L.notch,[0,0,0,0]);
+  const notchP=P.notch?[P.z1-.43-1.01*Lh*0-1.01,P.z1-.43-.0,.385,P.YC-P.H/2+.2]:null;
+  const solid=pass_=>{
+   const f=(id,v)=>v;
+   setM([.22,.24,.27],.35,0,pc[11],P.z0,P.z1,pass_,0,11);draw(O.bas,offBas);
+   setM([.50,.52,.56],.7,0,pc[12],P.z0,P.z1,pass_,0,12);draw(O.pas,offPas);
+   setM([.30,.32,.35],.5,3,pc[12],P.z0,P.z1,pass_,0,12);draw(O.mesh,offPas);
+   setM(ST,1,0,pc[13],P.z0,P.z1,pass_,pol,13);draw(O.man,offMan);
+   setM(ST,1,0,pc[14],P.z0,P.z1,pass_,pol,14);draw(O.oj,offOj);
+   setM(ST,1,0,pc[15],P.z0,P.z1+.5,pass_,pol,15);draw(O.esc,offEsc);
+   setM([.8,.82,.85],1,0,pc[16],P.z0,P.z1,pass_,pol,16);draw(O.lv,offLv);
+   if(s.glass||s.interior||x>.05||pass_)setM([.7,.72,.76],.9,0,pc[10],P.z0,P.z1,pass_,pol*.6,10),draw(O.rom,[0,0,0]);
+   if(!(s.glass||s.interior)||pass_)O.bodies.forEach((b,i)=>{if(notchP&&i===nB-1){gl.uniform1f(L.notchOn,1);gl.uniform4fv(L.notch,notchP)}setM(ST,1,0,pc[i],b.z0,b.z1,pass_,pol,i);draw(b,offB[i]);gl.uniform1f(L.notchOn,0)});
   };
-  drawSolid(0);
-  gl.depthMask(false);
-  drawSolid(1);
-  if(s.glass){
-   const wo=[0,0,0];setM([1,1,1],0,2,1,0,1,0,0);draw(O.ws,wo);draw(O.wt,wo);
-   O.body.forEach((b,i)=>{setM(ST,1,1,bodyFr(i),b.z0,b.z1,0,0);draw(b,offB[i])});
-  }
-  gl.depthMask(true);
- };
- let last=0;function loop(t){if(!cv.isConnected)return;const dt=Math.min(.05,(t-last)/1000);last=t;st.tm+=dt;st.expl+=(st.explT-st.expl)*Math.min(1,dt*4);if(st.auto)st.az+=dt*.12;api.render();requestAnimationFrame(loop)}
+  solid(0);gl.depthMask(false);solid(1);
+  if(s.liquid&&x<.15){
+   const lvl=P.YC-P.H/2+P.H*s.level;
+   gl.uniform1f(L.wl,lvl);gl.uniform1f(L.tx,s.tx);gl.uniform1f(L.tz,s.tz);gl.uniform1f(L.zc,0);gl.uniform1f(L.wamp,1);
+   setM([1,1,1],0,2,1,0,1,0,0,-9);gl.uniform3fv(L.off,[0,0,0]);gl.enable(gl.CULL_FACE);
+   gl.cullFace(gl.FRONT);draw(O.wat,[0,0,0]);gl.cullFace(gl.BACK);draw(O.wat,[0,0,0]);gl.disable(gl.CULL_FACE);gl.uniform1f(L.wamp,0)}
+  if(s.glass||s.interior){O.bodies.forEach((b,i)=>{setM(ST,1,1,pc[i],b.z0,b.z1,0,0,i);draw(b,offB[i])})}
+  gl.depthMask(true)};
+ let last=0;function loop(t){if(!cv.isConnected)return;const dt=Math.min(.05,(t-last)/1000);last=t;st.tm+=dt;st.expl+=(st.explT-st.expl)*Math.min(1,dt*5);if(st.auto)st.az+=dt*.12;
+  // oleaje: movimiento suave permanente + chapoteo al frenar/acelerar
+  st.slosh=Math.max(0,st.slosh-dt*.28);const ph=st.tm*2.1;st.tz=(.012+.16*st.slosh*Math.sin(ph*1.0))*(1);st.tx=(.006+.05*st.slosh*Math.sin(ph*1.7+1));
+  api.render();requestAnimationFrame(loop)}
  api.start=()=>requestAnimationFrame(loop);
- let drag=null;cv.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];st.auto=false;cv.setPointerCapture(e.pointerId)});
+ api.shake=()=>{st.slosh=1};
+ let drag=null;cv.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];st.auto=false;cv.setPointerCapture(e.pointerId);api.onUser&&api.onUser()});
  cv.addEventListener('pointermove',e=>{if(!drag)return;st.az-=(e.clientX-drag[0])*.006;st.el=Math.max(.02,Math.min(1.2,st.el+(e.clientY-drag[1])*.005));drag=[e.clientX,e.clientY]});
- cv.addEventListener('pointerup',()=>drag=null);cv.addEventListener('wheel',e=>{e.preventDefault();st.dist=Math.max(8,Math.min(30,st.dist*(1+e.deltaY*.001)))},{passive:false});
+ cv.addEventListener('pointerup',()=>drag=null);cv.addEventListener('wheel',e=>{e.preventDefault();st.dist=Math.max(5,Math.min(40,st.dist*(1+e.deltaY*.001)))},{passive:false});
  return api}
-return{init}})();
+return{init,pickModel,MODELS}})();
 
 const vvD=s=>{try{return pd(s).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'})}catch(e){return s}};
 /* ============ v5.2.0 · Proyecto en vivo (avance = horas + liberaciones, con tanque 3D) ============ */
@@ -5729,39 +5824,93 @@ function vvCalc(p){
  const el=(p.inicio&&p.dias)?Math.max(0,Math.min(1,daysBetween(p.inicio,t0)/(+p.dias))):null;
  const real=sum(rn.filter(isProd));
  return{rows,total,al,hall,fin,left,el,real,expT:+ex.total||wsum,cur:(rows.find(r=>r.pct<1&&(r.real>0||r.i===0))||rows.find(r=>r.pct<1)||{e:'Entrega'}).e,ent}}
+
+const VV_MAP={0:[0,9],1:[0,9],3:[0,9],2:[10,10],4:[11,12],5:[13,16],6:[-1,-1],7:[-1,-1],8:[-1,-1]};
+let VV3=null,VV_C=null;
+function vvArc(cx,cy,r,a0,a1){const p=a=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];const [x0,y0]=p(a0),[x1,y1]=p(a1);const lg=(a1-a0)>Math.PI?1:0;return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${lg} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`}
+function vvRadial(c,sel){
+ const cx=260,cy=260,R=196,R2=158,gap=.022;const rows=c.rows.slice();const sumE=rows.reduce((a,r)=>a+r.exp,0)||rows.length;
+ const items=rows.map(r=>({r,w:Math.max(r.exp,sumE*.05)}));items.push({r:{e:'Entrega',i:9,exp:0,real:0,pct:c.ent?1:0,lib:null,ok:c.ent,cerr:false},w:sumE*.045});
+ const tot=items.reduce((a,x)=>a+x.w,0);let ang=-Math.PI/2;let svg='',lab='',inner='';
+ items.forEach((it,k)=>{const span=it.w/tot*Math.PI*2;const a0=ang+gap/2,a1=ang+span-gap/2;const len=R*(a1-a0);const r=it.r;const fill=len*r.pct;const cur=!c.ent&&r.e===c.cur;const st=r.pct>=1?'done':cur?'cur':r.pct>0?'part':'pend';
+  const d=vvArc(cx,cy,R,a0,a1);
+  svg+=`<g class="vv-seg ${st} ${sel===k?'sel':''}" data-k="${k}"><path class="trk" d="${d}"/><path class="fil" d="${d}" data-len="${len.toFixed(1)}" data-fill="${fill.toFixed(1)}" style="stroke-dasharray:0 ${len.toFixed(1)}"/><path class="hit" d="${d}"/></g>`;
+  if(r.exp&&k<9){const ratio=r.real/r.exp;const col=ratio>1.15?'#f87171':ratio>1?'#fbbf24':'#38bdf8';const d2=vvArc(cx,cy,R2,a0+.01,a1-.01);const l2=R2*(a1-a0-.02);const f2=l2*Math.min(1,ratio);
+   inner+=`<path class="trk2" d="${d2}"/><path class="fil2" d="${d2}" data-len="${l2.toFixed(1)}" data-fill="${f2.toFixed(1)}" style="stroke:${col};stroke-dasharray:0 ${l2.toFixed(1)}"/>`;
+   if(ratio>1){const ae=a1-.012;const [px,py]=[cx+(R2+9)*Math.cos(ae),cy+(R2+9)*Math.sin(ae)];inner+=`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="3.2" fill="${col}"/>`}}
+  const am=(a0+a1)/2,lr=R+30;lab+=`<g class="vv-lb ${st}" transform="translate(${(cx+lr*Math.cos(am)).toFixed(1)} ${(cy+lr*Math.sin(am)).toFixed(1)})"><circle r="12"/><text y="4.3" text-anchor="middle">${r.pct>=1?'✓':k+1}</text></g>`;
+  ang+=span});
+ const el=c.el;let marker='';
+ if(el!=null){const am=-Math.PI/2+el*Math.PI*2,mr=R+46;const x=cx+mr*Math.cos(am),y=cy+mr*Math.sin(am);const fe=-Math.PI/2+Math.min(1,c.total)*Math.PI*2;
+  const behind=c.total<el*.9;marker=`<path d="${vvArc(cx,cy,R+60,Math.min(fe,am),Math.max(fe,am))}" class="vv-pace ${behind?'bad':'ok'}"/><g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(am*180/Math.PI+90).toFixed(1)})"><path d="M0 -9L7 5L-7 5Z" class="vv-mk"/></g>`}
+ const a=Math.round(c.total*100);
+ return `<svg viewBox="0 0 520 520" class="vv-rad" role="img" aria-label="Avance del proyecto"><defs><linearGradient id="vvg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient><linearGradient id="vvg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#16a34a"/></linearGradient><filter id="vvglow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+ <circle cx="260" cy="260" r="118" class="vv-core"/><circle cx="260" cy="260" r="${R2-14}" class="vv-ringbg"/>
+ ${svg}${inner}${marker}${lab}
+ <text x="260" y="248" text-anchor="middle" class="vv-big" id="vvbig" data-v="${a}">0%</text><text x="260" y="276" text-anchor="middle" class="vv-cap">AVANCE TOTAL</text><text x="260" y="302" text-anchor="middle" class="vv-sub2">${c.ent?'Entregado':'Etapa: '+esc(vvSh(c.cur))}</text></svg>`}
+function vvStageInfo(c,k){const r=k===9?{e:'Entrega al cliente',exp:0,real:0,pct:c.ent?1:0,lib:null}:c.rows[k];if(!r)return '';
+ const lb=k===9?badge(c.ent?'Entregado':'Pendiente',c.ent?'ok':'n'):r.cerr&&!r.lib?badge('Cerrada por Gerencia','ok'):r.lib?badge(L_NOM[r.lib.estado]||r.lib.estado,L_BADGE[r.lib.estado]||'n'):badge('Sin solicitar','n');
+ const al=c.al.filter(x=>k<9&&x.t.indexOf(r.e+':')===0);
+ return `<div class="vv-inf"><div><b>${k+1}. ${esc(k===9?r.e:vvSh(r.e))}</b> ${lb}</div><div class="vv-infg"><div><span>Avance</span><b>${Math.round(r.pct*100)}%</b></div><div><span>Horas reales</span><b>${nf(r.real,0)}</b></div><div><span>Horas esperadas</span><b>${r.exp?nf(r.exp,0):'—'}</b></div><div><span>Consumo</span><b class="${r.exp&&r.real>r.exp?'dn':''}">${r.exp?Math.round(r.real/r.exp*100)+'%':'—'}</b></div></div>${al.map(x=>`<div class="vv-al ${x.n}"><b>${esc(x.t)}</b><span>${esc(x.s)}</span></div>`).join('')}</div>`}
 function pVivo(){
- const P=S.proyectos.slice().sort((a,b)=>a.num<b.num?1:-1).filter(p=>p.estado==='Activo').concat(S.proyectos.filter(p=>p.estado!=='Activo').sort((a,b)=>a.num<b.num?1:-1));
+ const P=S.proyectos.slice().sort((a,b)=>a.num<b.num?1:-1);const act=P.filter(p=>p.estado==='Activo'),fin=P.filter(p=>p.estado!=='Activo');
  if(!P.length)return card('Proyecto en vivo','Avance real de cada tanque',empty('Aún no hay proyectos. Crea el primero en Proyectos.'));
- if(!P.find(p=>p.num===U.vivoP))U.vivoP=P[0].num;
- const itm=p=>{const c=vvCalc(p),a=Math.round(c.total*100);return `<div class="vv-pi ${p.num===U.vivoP?'on':''}" data-act="vivoSel" data-p="${p.num}"><div><b>${esc(p.num)}</b><div class="mut3" style="font-size:12px">${nf(p.cap,0)} gal · ${esc(p.cliente||'')}</div></div><div><div class="prog ${a>=100?'ok':''}"><i style="width:${a}%"></i></div><div class="mut3" style="font-size:12px;margin-top:4px">${p.estado==='Activo'?'Etapa actual: '+esc(vvSh(c.cur)):esc(p.estado)}${c.al.length?' · '+c.al.length+' alerta'+(c.al.length>1?'s':''):''}</div></div><div style="text-align:right"><b style="font-size:22px">${a}%</b><div class="mut3" style="font-size:12px">${c.left==null?'':c.left>=0?'entrega en '+c.left+' d':'vencido hace '+(-c.left)+' d'}</div></div></div>`};
- const list=P.filter(x=>x.estado==='Activo').map(itm).join('')||'<div class="mut3" style="padding:8px">No hay proyectos activos.</div>',listF=P.filter(x=>x.estado!=='Activo').map(itm).join('');
- const p=P.find(x=>x.num===U.vivoP),c=vvCalc(p),a=Math.round(c.total*100);
- const tl=c.rows.map(r=>`<div class="vv-st ${r.pct>=1?'done':r.e===c.cur&&!c.ent?'cur':''}"><div class="dot">${r.pct>=1?'✓':r.i+1}</div>${esc(vvSh(r.e))}<span>${Math.round(r.pct*100)}%</span></div>`).join('')+`<div class="vv-st ${c.ent?'done':''}"><div class="dot">${c.ent?'✓':10}</div>Entrega<span>${c.ent?100:0}%</span></div>`;
+ if(!P.find(p=>p.num===U.vivoP))U.vivoP=(act[0]||P[0]).num;
+ const chip=p=>{const c=vvCalc(p),a=Math.round(c.total*100),C=2*Math.PI*15;return `<button class="vv-chip ${p.num===U.vivoP?'on':''}" data-act="vivoSel" data-p="${p.num}"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="15" class="t"/><circle cx="20" cy="20" r="15" class="f ${a>=100?'ok':''}" style="stroke-dasharray:${(C*a/100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 20 20)"/><text x="20" y="23.5" text-anchor="middle">${a}</text></svg><span><b>${esc(p.num)}</b><i>${nf(p.cap,0)} gal${c.al.length?' · ⚠'+c.al.length:''}</i></span></button>`};
+ const p=P.find(x=>x.num===U.vivoP),c=vvCalc(p);VV_C=c;const a=Math.round(c.total*100);
  const ritmo=c.el==null?'':(c.total>=c.el*.9?'va a tiempo':'va atrasado');
+ const pm=Tank3D.pickModel(p.cap);const ref=Math.abs(Math.log((+p.cap||10000)/pm.m.g))>.12;
  const tabla=c.rows.map(r=>{const lb=r.cerr&&!r.lib?badge('Cerrada por Gerencia','ok'):r.lib?badge(L_NOM[r.lib.estado]||r.lib.estado,L_BADGE[r.lib.estado]||'n'):badge('Sin solicitar','n');return `<tr class="${r.e===c.cur&&!c.ent?'vv-cur':''}"><td>${esc(vvSh(r.e))}</td><td class="num">${nf(r.real,0)}</td><td class="num">${r.exp?nf(r.exp,0):'—'}</td><td>${lb}</td><td class="num">${Math.round(r.pct*100)}%</td></tr>`}).join('');
  const als=c.al.length?c.al.map(x=>`<div class="vv-al ${x.n}"><b>${esc(x.t)}</b><span>${esc(x.s)}</span></div>`).join(''):`<div class="vv-al ok"><b>Todo coincide</b><span>Las horas y las liberaciones van de acuerdo.</span></div>`;
- const ref=Math.abs((+p.cap||0)-10000)>1500;
- const kp=(v,l,cl='')=>`<div class="card kpi"><div class="k-v ${cl}" style="font-size:26px">${v}</div><div class="k-l">${l}</div></div>`;
- return `<div class="vv"><section class="card"><div class="ch"><div><h3>Proyecto en vivo</h3><p>Avance real de cada tanque · horas registradas + liberaciones de calidad</p></div></div><div class="vv-list">${list}</div>${listF?`<details class="vv-fin" ${P.find(x=>x.num===U.vivoP&&x.estado!=='Activo')?'open':''}><summary>Finalizados y en pausa (${P.filter(x=>x.estado!=='Activo').length})</summary><div class="vv-list" style="margin-top:10px">${listF}</div></details>`:''}</section>
- <section class="card" style="margin-top:14px"><div class="ch"><div><h3>Proyecto ${esc(p.num)} ${p.estado!=='Activo'?badge(esc(p.estado),'n'):''}</h3><p>Tanque ${nf(p.cap,0)} gal · ${esc(p.cliente||'')}${c.fin?' · Entrega '+vvD(c.fin):''}</p></div>${c.al.length?`<div class="acts">${badge(c.al.length+' alerta'+(c.al.length>1?'s':'')+' de congruencia','wa')}</div>`:''}</div>
- <div class="vv-3d"><canvas id="vvcv"></canvas><div class="vv-b"><button data-m="exp">Explosionado</button><button data-m="gl">Vista cristal</button><button data-m="rot" class="on">Girar</button></div><div class="vv-lg"><span><i style="background:#cfd6de"></i>Terminado</span><span><i style="background:#f59e0b"></i>En construcción</span><span><i style="background:#3b82f6"></i>Pendiente</span></div>${ref?'<div class="vv-ref">Modelo 3D de referencia: tanque 10.000 gal</div>':''}</div>
- <div class="vv-tl">${tl}</div></section>
- <div class="vv-k">${kp(a+'%','Avance total (horas + liberaciones)')}${kp(nf(c.real,0)+(c.expT?' / '+nf(c.expT,0):'')+' h','Horas reales vs expectativa')}${kp(c.hall,'Hallazgos abiertos',c.hall?'wa':'')}${kp(c.left==null?'—':c.left>=0?c.left+' días':'vencido','Para la entrega'+(ritmo?' · '+ritmo:''))}</div>
+ const kp=(v,l,cl='')=>`<div class="vv-kp"><b class="${cl}">${v}</b><span>${l}</span></div>`;
+ const sk=VV_SK;
+ return `<div class="vv"><section class="card"><div class="ch"><div><h3>Proyecto en vivo</h3><p>Elige un proyecto: el gráfico y el tanque 3D se actualizan con sus horas y liberaciones</p></div></div>
+ <div class="vv-chips">${act.map(chip).join('')||'<span class="mut3">No hay proyectos activos.</span>'}${fin.length?`<details class="vv-fin" ${fin.find(x=>x.num===U.vivoP)?'open':''}><summary>Finalizados y en pausa (${fin.length})</summary><div class="vv-chips">${fin.map(chip).join('')}</div></details>`:''}</div></section>
+ <section class="card vv-hero" style="margin-top:14px"><div class="ch"><div><h3>Proyecto ${esc(p.num)} ${p.estado!=='Activo'?badge(esc(p.estado),'n'):''}</h3><p>Tanque ${nf(p.cap,0)} gal · ${esc(p.cliente||'')}${c.fin?' · Entrega '+vvD(c.fin):''}</p></div>${c.al.length?`<div class="acts">${badge(c.al.length+' alerta'+(c.al.length>1?'s':'')+' de congruencia','wa')}</div>`:''}</div>
+ <div class="vv-top"><div class="vv-radw">${vvRadial(c,U.vivoK==null?-1:U.vivoK)}<div class="vv-tip" id="vvtip"></div><div class="vv-leg"><span><i class="g"></i>Terminada</span><span><i class="c"></i>En curso</span><span><i class="p"></i>Pendiente</span><span><i class="h"></i>Anillo interior: horas vs esperadas</span><span><i class="m"></i>▲ Dónde deberías ir hoy según el plazo</span></div></div>
+ <div class="vv-side"><div class="vv-kps">${kp(a+'%','Avance total')}${kp(nf(c.real,0)+(c.expT?'<small> / '+nf(c.expT,0)+' h</small>':' h'),'Horas reales vs expectativa')}${kp(c.hall,'Hallazgos abiertos',c.hall?'wa':'')}${kp(c.left==null?'—':c.left>=0?c.left+' d':'vencido '+(-c.left)+' d','Para la entrega'+(ritmo?' · '+ritmo:''),c.left!=null&&c.left<0?'dn':'')}</div><div id="vvinf">${vvStageInfo(c,U.vivoK==null?(c.rows.findIndex(r=>r.e===c.cur)>=0?c.rows.findIndex(r=>r.e===c.cur):0):U.vivoK)}</div></div></div></section>
+ <section class="card" style="margin-top:14px"><div class="ch"><div><h3>Tanque 3D</h3><p>Modelo base ${esc(pm.m.n)}${ref?' · longitud ajustada a '+nf(p.cap,0)+' gal':''}${pm.m.est?' · medidas estimadas':''}</p></div></div>
+ <div class="vv-viewer"><div class="vv-3d"><canvas id="vvcv"></canvas><div class="vv-lg2"><span><i style="background:#cfd6de"></i>Terminado</span><span><i style="background:#f59e0b"></i>En construcción</span><span><i style="background:#3b82f6"></i>Pendiente</span></div></div>
+ <div class="vv-panel"><div class="vv-pt">Armado <b>↔</b> Explosionado</div><input type="range" id="vvex" min="0" max="100" value="0"><div class="vv-btns"><button id="vvbx">Explosionar</button><button id="vvbc">Centrar</button></div>
+ <label><input type="checkbox" id="vvgl"> Vista cristal</label><label><input type="checkbox" id="vvin"> Ver el interior (rompeolas)</label><label><input type="checkbox" id="vvliq"> Líquido</label>
+ <div class="vv-liq" id="vvliqp" hidden><div class="vv-pt" style="margin-top:6px">Nivel <b id="vvlvv">55%</b></div><input type="range" id="vvlv" min="10" max="95" value="55"><div class="vv-btns"><button id="vvsh">Frenar / acelerar 🌊</button></div></div>
+ <label><input type="checkbox" id="vvod"> Solo lo entregado</label><label><input type="checkbox" id="vvau" checked> Girar solo</label>
+ <div class="vv-pt" style="margin-top:12px">Secciones <span class="mut3">(toca para resaltar)</span></div><div class="vv-secs" id="vvsecs"></div></div></div></section>
  <div class="vv-2"><section class="card"><div class="ch"><div><h3>Detalle por etapa</h3></div></div><div class="tw"><table class="t"><thead><tr><th>Etapa</th><th class="r">Horas</th><th class="r">Exp.</th><th>Liberación</th><th class="r">Avance</th></tr></thead><tbody>${tabla}</tbody></table></div></section>
  <section class="card"><div class="ch"><div><h3>Alertas de congruencia</h3><p>Solo avisan: nunca bloquean el registro de horas</p></div></div>${als}</section></div>
- <p class="mut3" style="font-size:12.5px;margin-top:10px">Avance de cada etapa = horas reales ÷ horas esperadas (máximo 95%) hasta que Calidad libere la etapa; al liberarla pasa a 100%. El total pesa cada etapa por sus horas esperadas.</p></div>`}
-let VV3=null;
+ <p class="mut3" style="font-size:12.5px;margin-top:10px">El tamaño de cada tramo del círculo es proporcional a las horas esperadas de esa etapa. Avance de la etapa = horas reales ÷ esperadas (máximo 95%) hasta que Calidad la libera; al liberarla pasa a 100%.</p></div>`}
+const VV_SK='';
 function vvMount(){
- const cv=document.getElementById('vvcv');if(!cv||typeof Tank3D==='undefined')return;
- const p=S.proyectos.find(x=>x.num===U.vivoP);if(!p)return;const c=vvCalc(p);
- let T=null;try{T=Tank3D.init(cv)}catch(e){console.error(e)}
+ const root=document.querySelector('.vv');if(!root)return;const c=VV_C,p=S.proyectos.find(x=>x.num===U.vivoP);if(!p||!c)return;
+ // grafico radial: animacion, hover y click
+ const big=document.getElementById('vvbig');if(big){const v=+big.dataset.v;let t0=null;const f=ts=>{if(!big.isConnected)return;if(t0==null)t0=ts;const k=Math.min(1,(ts-t0)/1100),e=1-Math.pow(1-k,3);big.textContent=Math.round(v*e)+'%';if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
+ requestAnimationFrame(()=>requestAnimationFrame(()=>root.querySelectorAll('.fil,.fil2').forEach(el=>{el.style.strokeDasharray=el.dataset.fill+' '+el.dataset.len})));
+ const tip=document.getElementById('vvtip'),rw=root.querySelector('.vv-radw');
+ const kName=k=>k===9?'Entrega al cliente':vvSh(c.rows[k].e);
+ root.querySelectorAll('.vv-seg').forEach(g=>{const k=+g.dataset.k;
+  g.addEventListener('mousemove',e=>{const r=c.rows[k]||{pct:c.ent?1:0,real:0,exp:0};const b=rw.getBoundingClientRect();tip.style.left=(e.clientX-b.left+12)+'px';tip.style.top=(e.clientY-b.top+12)+'px';tip.innerHTML=`<b>${k+1}. ${esc(kName(k))}</b><br>${Math.round(r.pct*100)}%${r.exp?' · '+nf(r.real,0)+' / '+nf(r.exp,0)+' h':''}`;tip.classList.add('on')});
+  g.addEventListener('mouseleave',()=>tip.classList.remove('on'));
+  g.addEventListener('click',()=>{U.vivoK=k;root.querySelectorAll('.vv-seg').forEach(x=>x.classList.toggle('sel',+x.dataset.k===k));document.getElementById('vvinf').innerHTML=vvStageInfo(c,k);if(VV3){const m=VV_MAP[k]||[-1,-1];const nB=VV3.sections.filter(s=>s.id<10).length;VV3.st.sel=m[0]===0?[0,nB-1]:m;syncSecs()}})});
+ // 3D
+ const cv=document.getElementById('vvcv');if(!cv)return;let T=null;try{T=Tank3D.init(cv,p.cap)}catch(e){console.error(e)}
  if(!T){cv.parentNode.innerHTML='<div class="mut3" style="padding:30px">Este navegador no soporta la vista 3D (WebGL2).</div>';return}
- T.st.prog=c.rows.map(r=>r.pct).concat([c.ent?1:0]);T.st.dist=14.5;T.st.az=-.7;T.st.el=.3;T.start();VV3=T;
- cv.parentNode.querySelectorAll('.vv-b button').forEach(b=>b.onclick=()=>{const m=b.dataset.m;
-  if(m==='exp'){T.st.explT=T.st.explT?0:1;T.st.dist=T.st.explT?21:14.5;b.classList.toggle('on',!!T.st.explT)}
-  if(m==='gl'){T.st.glass=!T.st.glass;b.classList.toggle('on',T.st.glass)}
-  if(m==='rot'){T.st.auto=!T.st.auto;b.classList.toggle('on',T.st.auto)}})}
-Object.assign(A,{vivoSel:t=>{U.vivoP=t.dataset.p;renderPage(true)}});
+ VV3=T;const idx=VV_ET.map(()=>0);T.st.prog=c.rows.map(r=>r.pct).concat([c.ent?1:0]);T.start();
+ const $=id=>document.getElementById(id);
+ function syncSecs(){const pc=T.secPct();$('vvsecs').innerHTML=T.sections.map(s=>{const v=Math.round((pc[s.id]||0)*100);const on=T.st.sel[0]>=0&&s.id>=T.st.sel[0]&&s.id<=T.st.sel[1];return `<div class="vv-sec ${on?'on':''}" data-id="${s.id}"><div><span>${esc(s.name)}</span><b>${v}%</b></div><div class="b"><i style="width:${v}%" class="${v>=100?'ok':''}"></i></div></div>`}).join('');
+  $('vvsecs').querySelectorAll('.vv-sec').forEach(el=>el.onclick=()=>{const id=+el.dataset.id;const same=T.st.sel[0]===id&&T.st.sel[1]===id;T.st.sel=same?[-1,-1]:[id,id];syncSecs()})}
+ syncSecs();
+ const ex=$('vvex');ex.oninput=()=>{T.st.explT=T.st.expl=+ex.value/100;if(T.st.explT>.02){T.st.dist=Math.max(T.st.dist,T.P.L*1.5)}};
+ $('vvbx').onclick=()=>{const v=T.st.explT>.5?0:1;T.st.explT=v;ex.value=v*100;if(v)T.st.dist=Math.max(T.st.dist,T.P.L*1.6)};
+ $('vvbc').onclick=()=>{T.st.az=-.62;T.st.el=.3;T.st.dist=Math.max(8,T.P.L*.82+2.4);T.st.explT=0;T.st.sel=[-1,-1];ex.value=0;syncSecs()};
+ $('vvgl').onchange=e=>{T.st.glass=e.target.checked;if(!T.st.glass){T.st.liquid=false;$('vvliq').checked=false;$('vvliqp').hidden=true}};
+ $('vvin').onchange=e=>T.st.interior=e.target.checked;
+ $('vvliq').onchange=e=>{T.st.liquid=e.target.checked;$('vvliqp').hidden=!e.target.checked;if(e.target.checked){T.st.glass=true;$('vvgl').checked=true}};
+ $('vvlv').oninput=e=>{T.st.level=e.target.value/100;$('vvlvv').textContent=e.target.value+'%'};
+ $('vvsh').onclick=()=>T.shake();
+ $('vvod').onchange=e=>T.st.onlyDone=e.target.checked;
+ $('vvau').onchange=e=>T.st.auto=e.target.checked;T.onUser=()=>{$('vvau').checked=false};
+ if(U.vivoK!=null){const m=VV_MAP[U.vivoK]||[-1,-1];const nB=T.sections.filter(s=>s.id<10).length;T.st.sel=m[0]===0?[0,nB-1]:m;syncSecs()}}
+Object.assign(A,{vivoSel:t=>{U.vivoP=t.dataset.p;U.vivoK=null;renderPage(true)}});
 PAGES.vivo=pVivo;
 
 nubeBoot();
