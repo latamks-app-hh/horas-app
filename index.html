@@ -442,6 +442,10 @@ a.btn{text-decoration:none}
 .vv-qr{margin-bottom:16px;border-color:#f59e0b66}.vv-qr-r{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--bd);flex-wrap:wrap}.vv-qr-r small{display:block;color:var(--tx3);font-size:12px;margin-top:2px}.vv-nv{font-size:13px;margin-top:4px;color:var(--tx2)}
 .vv-qr-b{display:flex;gap:8px}.vv-qr-b button,.vv-btn{border:1px solid var(--bd2);background:var(--card);color:var(--tx);padding:6px 14px;border-radius:20px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}.vv-qr-b button.ok,.vv-btn.ok{background:#22c55e;border-color:#22c55e;color:#04210f}
 .vv-tl{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow:auto;margin-bottom:6px}.vv-tl label{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--bd);border-radius:10px;cursor:pointer;font-size:14px}.vv-tl input{width:18px;height:18px}
+.vv-col{display:flex;flex-direction:column;gap:14px;min-width:0}.vv-seg{display:inline-flex;border:1px solid var(--bd2);border-radius:20px;overflow:hidden}.vv-seg button{border:0;background:transparent;color:var(--tx3);padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}.vv-seg button.on{background:var(--pri);color:#fff}
+.vv-arl{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto}.vv-ar{border:1px solid var(--bd);border-radius:12px;padding:10px 12px}.vv-ar.nr{border-color:#f59e0b;background:#f59e0b12}.vv-ar.pc{border-color:#f59e0b66}.vv-ar-h{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}.vv-ar-h small{display:block;color:var(--tx3);font-size:12px;margin-top:2px}.vv-ar-t{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.vv-tg{display:inline-flex;align-items:center;gap:6px;padding:3px 4px 3px 4px;border:1px solid var(--bd2);border-radius:20px;font-size:12px}.vv-tg b{background:var(--pri);color:#fff;border-radius:10px;padding:1px 6px;font-size:10.5px}.vv-tg.nr{border-color:#f59e0b}.vv-tg.pc{border-color:#f59e0b88}.vv-tg button,.vv-ar-x button{border:0;background:var(--card2);color:var(--tx2);width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1}.vv-tg button:hover,.vv-ar-x button:hover{background:#ef444433;color:#ef4444}
+.vv-ar-n{margin-top:6px;font-size:12.5px;color:var(--tx2);border-left:3px solid #f59e0b;padding-left:8px}.vv-ar-l{margin-top:6px}.vv-ar-x{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:5px 0;border-top:1px dashed var(--bd);font-size:13px}.vv-ar-x small{color:var(--tx3)}.vv-ar-x.nr{color:#f59e0b}.tq-bs{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .vv-tc{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;background:transparent;color:inherit;font:inherit;font-size:14px;text-align:left;cursor:pointer}.vv-tc.on{border-color:var(--ac,#2dd4a0);background:rgba(45,212,160,.14)}.vv-tcx{width:20px;height:20px;border:2px solid var(--bd);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none}.vv-tc.on .vv-tcx{background:var(--ac,#2dd4a0);border-color:var(--ac,#2dd4a0);color:#06281d}
 
 .tq-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tq-tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:18px 16px 16px;border:1px solid var(--bd);border-radius:18px;background:var(--card);color:var(--tx);font:inherit;cursor:pointer;min-height:132px;transition:.2s}.tq-tile:hover,.tq-tile:active{border-color:var(--pri);transform:translateY(-2px)}
@@ -1361,7 +1365,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='5.3.2';
+const APP_VER='5.4.0';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -5753,10 +5757,10 @@ function build(P){
  // manholes + tubos de vapor
  const mh=G();const mr=P.W>2.6?.33:.28;
  P.man.forEach(v=>{const z=z0+v,y=YC+topY(0)-.01;cyl(mh,[0,y,z],[0,dy+.015,z],mr,40);cyl(mh,[0,dy+.015,z],[0,dy+.055,z],mr*.9,40);for(let i=0;i<8;i++){const t=i/8*6.283;cyl(mh,[mr*.78*Math.cos(t),dy+.055,z+mr*.78*Math.sin(t)],[mr*.78*Math.cos(t),dy+.1,z+mr*.78*Math.sin(t)],.016,8)}});
- [.37,.96].forEach(f=>cyl(mh,[0,YC+topY(0)-.01,z0+P.L*f],[0,dy+.1,z0+P.L*f],.055,16));
+ {const q=P.pasL/10.837;[4.0,10.687].forEach(d=>{const z=px0+d*q,yb=YC+topY(bx)-.01,yt=YC+topY(bx)+hb+.09;cyl(mh,[bx,yb,z],[bx,yt,z],.0508,16)})}
  parts.man={g:mh,z0:z0,z1:z1};
  // orejas de izaje
- const oj=G();[.195,.69].forEach(f=>[-1,1].forEach(sg=>{const x=sg*(T-.5*s),y=YC+topY(x),z=z0+P.L*f;box(oj,x,y+.07,z,.012,.14,.12);box(oj,x+sg*.05,y+.04,z,.1,.012,.12)}));
+ const oj=G();{const q=P.pasL/10.837,kx=bx/.45;[2.196,7.821].forEach(d=>[-1,1].forEach(sg=>{const x=sg*.353*kx,y=YC+topY(x),z=px0+d*q;box(oj,x,y+.004,z,.13,.008,.27);box(oj,x,y+.05,z,.1,.093,.009);box(oj,x,y+.03,z-.045,.1,.06,.009);box(oj,x,y+.03,z+.045,.1,.06,.009)}))}
  parts.oj={g:oj,z0:z0,z1:z1};
  // escalera trasera
  const es=G();{const zt=z1+.02,zb=z1+.38,yT=YC+topY(0)-.05,yB=.5;[-.2225,.2225].forEach(x=>cyl(es,[x,yT,zt],[x,yB,zb],.016,10));for(let i=0;i<6;i++){const f=(i+.7)/6.4;cyl(es,[-.2225,yT+(yB-yT)*f,zt+(zb-zt)*f],[.2225,yT+(yB-yT)*f,zt+(zb-zt)*f],.013,8)}
@@ -5863,6 +5867,7 @@ var VV_CHK=[],VV_ASG=[],VV_NOV=[];function vvCalc(p){
  // alertas de congruencia (solo avisan)
  const al=[];
  VV_NOV.filter(n=>n.proy===p.num&&n.estado==='Abierta').forEach(n=>al.push({n:'wa',t:`Novedad abierta: ${n.tipo}${n.etapa?' · '+vvSh(n.etapa):''}`,s:`${n.tec}: ${n.detalle}`}));
+ {const nzn=new Set(VV_ASG.filter(a=>a.proy===p.num&&a.estado==='No realizada').map(a=>a.act)).size;if(nzn)al.push({n:'wa',t:`${nzn} actividad(es) que el técnico no hizo`,s:'Reasígnalas o quítalas en «Actividades asignadas».'})}
  {const pcn=new Set(VV_ASG.filter(a=>a.proy===p.num&&a.estado==='Por confirmar').map(a=>a.act)).size;if(pcn)al.push({n:'wa',t:`${pcn} actividad(es) por confirmar`,s:'Los técnicos las marcaron como terminadas desde el QR. Confírmalas en «Desde el taller».'})}
  rows.forEach((r,i)=>{
   if(r.inf&&!r.lib)al.push({n:'wa',t:`${r.e}: dada por terminada por avance posterior`,s:`${vvSh(r.infBy)} ya tiene horas, pero ${vvSh(r.e)} no tiene liberación. Solicítala o revisa las horas.`});
@@ -6010,7 +6015,7 @@ function pVivo(){
  <div class="vv-pt" style="margin-top:12px">Secciones <span class="mut3">(toca para resaltar)</span></div><div class="vv-secs" id="vvsecs"></div></div></div></section>
  ${vvQr(p)}
  <div class="vv-2"><section class="card"><div class="ch"><div><h3>Detalle por etapa</h3><p>Toca una etapa: actividades con horas, liberaciones y solicitud</p></div></div>${vvDetail(c,p)}</section>
- <section class="card"><div class="ch"><div><h3>Alertas de congruencia</h3><p>Solo avisan: nunca bloquean el registro de horas</p></div></div>${als}</section></div>
+ <div class="vv-col"><section class="card"><div class="ch"><div><h3>Alertas de congruencia</h3><p>Solo avisan: nunca bloquean el registro de horas</p></div></div>${als}</section>${typeof vvAsgPanel==='function'?vvAsgPanel(p):''}</div></div>
  <p class="mut3" style="font-size:12.5px;margin-top:10px">El tamaño de cada tramo del círculo es proporcional a las horas esperadas de esa etapa. Avance de la etapa = actividades cerradas ÷ aplicables (si el supervisor usa el checklist) o, si no, horas reales ÷ esperadas; máximo 95% hasta que Calidad la libera, y al liberarla pasa a 100%.</p></div>`}
 const VV_SK='';
 function vvMount(){
@@ -6060,25 +6065,28 @@ const vvAsgNames=(p,a)=>VV_ASG.filter(x=>x.proy===p&&String(x.act)===String(a)).
 const NOV_T=['Falta material','Falta herramienta o equipo','Parada de máquina','Duda de plano o proceso'];
 async function nbReloadAsg(){
  try{const a=await nbSel('actividad_asignaciones','select=actividad_codigo,etapa,tecnico_codigo,estado,asignado_por,asignado_en,terminado_en,nota,proyectos(numero)');
-  VV_ASG=a.map(x=>({proy:(x.proyectos||{}).numero||'',act:String(x.actividad_codigo),etapa:x.etapa,tec:x.tecnico_codigo,estado:x.estado,por:x.asignado_por||'',en:x.asignado_en||'',term:x.terminado_en||'',nota:x.nota||''}));
+  VV_ASGERR='';VV_ASG=a.map(x=>({proy:(x.proyectos||{}).numero||'',act:String(x.actividad_codigo),etapa:x.etapa,tec:x.tecnico_codigo,estado:x.estado,por:x.asignado_por||'',en:x.asignado_en||'',term:x.terminado_en||'',nota:x.nota||''}));
   const n=await nbSel('novedades_taller','select=id,etapa,tipo,detalle,tecnico_codigo,tecnico_nombre,creado_en,estado,atendida_por,atendida_en,nota,proyectos(numero)&order=creado_en.desc');
   VV_NOV=n.map(x=>({id:x.id,proy:(x.proyectos||{}).numero||'',etapa:x.etapa||'',tipo:x.tipo,detalle:x.detalle,tec:x.tecnico_nombre||x.tecnico_codigo,en:x.creado_en,estado:x.estado,por:x.atendida_por||'',nota:x.nota||''}))}
- catch(e){}}
+ catch(e){VV_ASGERR=(e&&e.message)||String(e)}}
+var VV_ASGERR='';
 async function asgRpc(fn,args,okMsg,local){
  const k=VV_ET.indexOf((args&&args._e)||'');
  if(S.demo){local();renderPage(true);toast(okMsg,'ok');return}
  if(NB.cbusy)return;NB.cbusy=true;const a={...args};delete a._e;
  try{await nbRpc(fn,a);await nbReloadChk();U.vivoK=k>=0?k:U.vivoK;renderPage(true);toast(okMsg,'ok')}
  catch(x){toast(nbMsg(x),'er')}finally{NB.cbusy=false}}
-function asgLocal(p,e,codes,tecs){codes.forEach(c=>{VV_ASG=VV_ASG.filter(x=>!(x.proy===p&&String(x.act)===String(c)));tecs.forEach(t=>VV_ASG.push({proy:p,act:String(c),etapa:e,tec:t,estado:'Asignada',por:U.name||'',en:new Date().toISOString(),term:'',nota:''}))})}
+function asgLocal(p,e,codes,tecs){codes.forEach(c=>{VV_ASG=VV_ASG.filter(x=>!(x.proy===p&&String(x.act)===String(c)&&!tecs.includes(x.tec)));tecs.forEach(t=>{const o=VV_ASG.find(x=>x.proy===p&&String(x.act)===String(c)&&x.tec===t);if(o){if(o.estado==='No realizada'){o.estado='Asignada';o.nota='';o.term=''}}else VV_ASG.push({proy:p,act:String(c),etapa:e,tec:t,estado:'Asignada',por:U.name||'',en:new Date().toISOString(),term:'',nota:''})})})}
 function vvQr(p){
- const pc=VV_ASG.filter(x=>x.proy===p.num&&x.estado==='Por confirmar');const nv=VV_NOV.filter(n=>n.proy===p.num&&n.estado==='Abierta');
- if(!pc.length&&!nv.length)return '';const cn=vvCan();
+ const pc=VV_ASG.filter(x=>x.proy===p.num&&x.estado==='Por confirmar');const nrz=VV_ASG.filter(x=>x.proy===p.num&&x.estado==='No realizada');const nv=VV_NOV.filter(n=>n.proy===p.num&&n.estado==='Abierta');
+ if(!pc.length&&!nv.length&&!nrz.length)return '';const cn=vvCan();
  const g={};pc.forEach(x=>{const k=x.act;(g[k]=g[k]||{act:k,etapa:x.etapa,t:[],term:x.term}).t.push(vvTecNom(x.tec))});
  const rows=Object.values(g).map(x=>`<div class="vv-qr-r"><div><b>${esc(x.act)}</b> ${esc(vvActNom(x.act))}<small>${esc(vvSh(x.etapa))} · terminó ${esc(x.t.join(', '))} · ${esc(vvAgo(x.term))}</small></div>${cn?`<div class="vv-qr-b"><button class="ok" data-act="qrConf" data-a="${esc(x.act)}" data-e="${esc(x.etapa)}">✓ Confirmar</button><button data-act="qrDev" data-a="${esc(x.act)}" data-e="${esc(x.etapa)}">Devolver</button></div>`:''}</div>`).join('');
+ const gz={};nrz.forEach(x=>{(gz[x.act]=gz[x.act]||{act:x.act,etapa:x.etapa,t:[]}).t.push(x)});
+ const zrows=Object.values(gz).map(o=>`<div class="vv-qr-r"><div>${badge('No la hizo','er')} <b>${esc(o.act)}</b> ${esc(vvActNom(o.act))}<small>${esc(vvSh(o.etapa))} · ${esc(o.t.map(x=>vvTecNom(x.tec)).join(', '))}</small>${o.t.map(x=>x.nota?`<div class="vv-nv">${esc(vvTecIni(x.tec))}: ${esc(x.nota)}</div>`:'').join('')}</div>${cn?`<div class="vv-qr-b"><button data-act="asgEdit" data-a="${esc(String(o.act))}" data-e="${esc(o.etapa)}">Reasignar</button><button data-act="asgDel" data-a="${esc(String(o.act))}" data-e="${esc(o.etapa)}">Quitar</button></div>`:''}</div>`).join('');
  const nrows=nv.map(n=>`<div class="vv-qr-r"><div>${badge(esc(n.tipo),'wa')} <b>${esc(n.tec)}</b><small>${n.etapa?esc(vvSh(n.etapa))+' · ':''}${esc(vvAgo(n.en))}</small><div class="vv-nv">${esc(n.detalle)}</div></div>${cn?`<div class="vv-qr-b"><button data-act="novAt" data-i="${esc(String(n.id))}">Atender</button></div>`:''}</div>`).join('');
  return `<section class="card vv-qr"><div class="ch"><div><h3>Desde el taller (QR)</h3><p>Lo que reportaron los técnicos desde su celular</p></div>${pc.length&&cn?`<div class="acts"><button class="vv-btn ok" data-act="qrConfAll">✓ Confirmar todas (${Object.keys(g).length})</button></div>`:''}</div>
- ${pc.length?`<div class="vv-dt">Actividades por confirmar · ${Object.keys(g).length}</div>${rows}`:''}${nv.length?`<div class="vv-dt">Novedades abiertas · ${nv.length}</div>${nrows}`:''}</section>`}
+ ${nrz.length?`<div class="vv-dt">Actividades que el técnico no hizo · ${Object.keys(gz).length}</div>${zrows}`:''}${pc.length?`<div class="vv-dt">Actividades por confirmar · ${Object.keys(g).length}</div>${rows}`:''}${nv.length?`<div class="vv-dt">Novedades abiertas · ${nv.length}</div>${nrows}`:''}</section>`}
 function qrConfirm(p,items,aprobar,nota){
  const msg=aprobar?'Actividades confirmadas ('+items.length+')':'Actividades devueltas al técnico ('+items.length+')';
  const byE={};items.forEach(i=>(byE[i.e]=byE[i.e]||[]).push(i.a));
@@ -6090,11 +6098,12 @@ Object.assign(A,{
   const n=document.getElementById('asgN');if(n)n.textContent=M.sel.length+' técnico(s) seleccionado(s)'},
  asgTog:t=>{const c=t.dataset.c;M.sel=M.sel.includes(c)?M.sel.filter(x=>x!==c):[...M.sel,c];A.asgPaint()},
  asgAll:()=>{M.sel=M.sel.length===M.T.length?[]:M.T.map(x=>x.codigo);A.asgPaint()},
- chkAsig:t=>{const codes=chkSel(t);if(!codes.length){toast('Selecciona al menos una actividad.','wa');return}
-  const e=t.closest('.vv-cb').dataset.e;const T=(S.tecnicos||[]).filter(x=>x.registra&&x.activo!==false&&!x.demo).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre)));
+ chkAsig:t=>{const codes=chkSel(t);if(!codes.length){toast('Selecciona al menos una actividad.','wa');return}asgOpen(t.closest('.vv-cb').dataset.e,codes)},
+ asgEdit:t=>asgOpen(t.dataset.e,[t.dataset.a]),
+ asgOpen_:(e,codes)=>{const T=(S.tecnicos||[]).filter(x=>x.registra&&x.activo!==false&&!x.demo).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre)));
   const cur=[...new Set(VV_ASG.filter(x=>x.proy===U.vivoP&&codes.map(String).includes(String(x.act))).map(x=>x.tec))].filter(c=>T.some(x=>x.codigo===c));
   M={type:'asig',e,codes,T,sel:cur};
-  openModal(mh('Asignar actividades')+`<p class="mut" style="margin-bottom:8px">${codes.length} actividad(es) de ${esc(vvSh(e))} · proyecto ${esc(U.vivoP)}. Toca <b>todos los técnicos del grupo</b>: pueden ser varios en la misma actividad. Cada uno las verá en su celular al entrar por el QR.</p><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span id="asgN" class="mut" style="font-weight:600"></span><button type="button" class="btn ghost" data-act="asgAll">Todos / ninguno</button></div><div class="vv-tl" id="asgBox"></div>`+mf('Asignar','asgSave',btn('Quitar asignación','asgQuit','','ghost')),'s');A.asgPaint()},
+  openModal(mh(codes.length===1?'Técnicos de la actividad '+esc(codes[0]):'Asignar actividades')+`<p class="mut" style="margin-bottom:8px">${codes.length===1?esc(vvActNom(codes[0]))+' · ':''}${codes.length} actividad(es) de ${esc(vvSh(e))} · proyecto ${esc(U.vivoP)}. Toca <b>todos los técnicos del grupo</b>: pueden ser varios en la misma actividad. Si ya había técnicos aparecen marcados: quita o agrega y guarda.</p><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span id="asgN" class="mut" style="font-weight:600"></span><button type="button" class="btn ghost" data-act="asgAll">Todos / ninguno</button></div><div class="vv-tl" id="asgBox"></div>`+mf('Asignar','asgSave',btn('Quitar asignación','asgQuit','','ghost')),'s');A.asgPaint()},
  asgSave:()=>{const tk=M.sel.slice();if(!tk.length){toast('Elige al menos un técnico.','wa');return}
   const {e,codes}=M;closeModal();asgRpc('actividad_asignar',{p_proyecto:U.vivoP,p_etapa:e,p_actividades:codes.map(String),p_tecnicos:tk,_e:e},'Asignadas a '+tk.length+' técnico(s)',()=>asgLocal(U.vivoP,e,codes,tk))},
  asgQuit:()=>{const {e,codes}=M;closeModal();asgRpc('actividad_asignar',{p_proyecto:U.vivoP,p_etapa:e,p_actividades:codes.map(String),p_tecnicos:[],_e:e},'Asignación quitada',()=>asgLocal(U.vivoP,e,codes,[]))},
@@ -6105,6 +6114,30 @@ Object.assign(A,{
  novAt:t=>{M={type:'novat',i:t.dataset.i};openModal(mh('Atender novedad')+fld('Nota (opcional)',`<textarea class="inp" id="na_n" rows="3" style="height:auto;padding:10px" placeholder="Qué se hizo o se decidió"></textarea>`)+mf('Marcar como atendida','novAtOk'),'s')},
  novAtOk:()=>{const i=M.i,n=(val('na_n')||'').trim();closeModal();asgRpc('novedad_atender',{p_id:+i,p_nota:n||null},'Novedad atendida',()=>{VV_NOV.forEach(x=>{if(String(x.id)===String(i)){x.estado='Atendida';x.nota=n}})})}
 });
+
+const asgOpen=(e,codes)=>A.asgOpen_(e,codes);
+const asgRowsOf=(p,a)=>VV_ASG.filter(x=>x.proy===p&&String(x.act)===String(a));
+function vvAsgPanel(p){
+ const cn=vvCan();const L=VV_ASG.filter(x=>x.proy===p.num);const view=U.asgV||'act';
+ const by={};L.forEach(x=>{(by[x.act]=by[x.act]||{act:x.act,etapa:x.etapa,t:[]}).t.push(x)});
+ const rank=o=>o.t.some(x=>x.estado==='No realizada')?0:o.t.some(x=>x.estado==='Por confirmar')?1:2;
+ const acts=Object.values(by).sort((a,b)=>rank(a)-rank(b)||VV_ET.indexOf(a.etapa)-VV_ET.indexOf(b.etapa)||String(a.act).localeCompare(String(b.act),'es',{numeric:true}));
+ const nNr=acts.filter(o=>rank(o)===0).length,nPc=acts.filter(o=>rank(o)===1).length;const nT=new Set(L.map(x=>x.tec)).size;
+ const stI=x=>x.estado==='No realizada'?'⚠':x.estado==='Por confirmar'?'⏳':'';
+ const tg=(x,a)=>`<span class="vv-tg ${x.estado==='No realizada'?'nr':x.estado==='Por confirmar'?'pc':''}" title="${esc(vvTecNom(x.tec)+' · '+x.estado)}"><b>${esc(vvTecIni(x.tec))}</b> ${esc(vvTecNom(x.tec))} ${stI(x)}${cn?`<button data-act="asgDelT" data-a="${esc(String(a))}" data-c="${esc(x.tec)}" title="Quitar solo a este técnico">×</button>`:''}</span>`;
+ let body='';
+ if(!acts.length)body=`<p class="mut3" style="font-size:13px;padding:6px 2px">Aún no hay actividades asignadas en este proyecto. Selecciona actividades en el detalle de la etapa y toca «👤 Asignar a…».</p>`;
+ else if(view==='act')body=acts.map(o=>{const k=rank(o);const nr=o.t.filter(x=>x.estado==='No realizada');return `<div class="vv-ar ${k===0?'nr':k===1?'pc':''}"><div class="vv-ar-h"><div><b>${esc(o.act)}</b> ${esc(vvActNom(o.act))}<small>${esc(vvSh(o.etapa))}${k===0?' · el técnico avisó que NO la hizo':k===1?' · esperando tu confirmación':''}</small></div>${cn?`<div class="vv-qr-b"><button data-act="asgEdit" data-a="${esc(String(o.act))}" data-e="${esc(o.etapa)}">Cambiar</button><button data-act="asgDel" data-a="${esc(String(o.act))}" data-e="${esc(o.etapa)}">Quitar</button></div>`:''}</div><div class="vv-ar-t">${o.t.map(x=>tg(x,o.act)).join('')}</div>${nr.map(x=>x.nota?`<div class="vv-ar-n"><b>${esc(vvTecIni(x.tec))}:</b> ${esc(x.nota)}${x.term?' · '+esc(vvAgo(x.term)):''}</div>`:'').join('')}</div>`}).join('');
+ else{const bt={};L.forEach(x=>(bt[x.tec]=bt[x.tec]||[]).push(x));
+  body=Object.keys(bt).sort((a,b)=>vvTecNom(a).localeCompare(vvTecNom(b))).map(c=>{const r=bt[c].slice().sort((a,b)=>String(a.act).localeCompare(String(b.act),'es',{numeric:true}));return `<div class="vv-ar"><div class="vv-ar-h"><div><span class="vv-tg"><b>${esc(vvTecIni(c))}</b> ${esc(vvTecNom(c))}</span><small>${r.length} actividad(es)</small></div></div><div class="vv-ar-l">${r.map(x=>`<div class="vv-ar-x ${x.estado==='No realizada'?'nr':x.estado==='Por confirmar'?'pc':''}"><span><b>${esc(x.act)}</b> ${esc(vvActNom(x.act))} <small>${esc(vvSh(x.etapa))}${x.estado!=='Asignada'?' · '+esc(x.estado):''} ${stI(x)}</small></span>${cn?`<button data-act="asgDelT" data-a="${esc(String(x.act))}" data-c="${esc(c)}" title="Quitar esta actividad al técnico">×</button>`:''}</div>${x.estado==='No realizada'&&x.nota?`<div class="vv-ar-n">${esc(x.nota)}</div>`:''}`).join('')}</div></div>`}).join('')}
+ const err=VV_ASGERR?`<div class="vv-al wa"><b>No pude leer las asignaciones</b><span>${esc(VV_ASGERR)}</span></div>`:'';
+ return `<section class="card vv-asg"><div class="ch"><div><h3>Actividades asignadas</h3><p>${acts.length?`${acts.length} actividad(es) · ${nT} técnico(s)${nNr?' · <b style="color:#f59e0b">'+nNr+' sin hacer</b>':''}${nPc?' · '+nPc+' por confirmar':''}`:'Quién tiene qué, y lo que no se alcanzó a hacer'}</p></div><div class="acts"><div class="vv-seg"><button class="${view==='act'?'on':''}" data-act="asgView" data-v="act">Por actividad</button><button class="${view==='tec'?'on':''}" data-act="asgView" data-v="tec">Por técnico</button></div></div></div>${err}<div class="vv-arl">${body}</div></section>`}
+Object.assign(A,{
+ asgView:t=>{U.asgV=t.dataset.v;renderPage(true)},
+ asgDel:t=>{const a=t.dataset.a,e=t.dataset.e;confirmM('Quitar asignación','¿Quitar a todos los técnicos de la actividad '+esc(a)+' ('+esc(vvActNom(a))+')? Queda pendiente y sin asignar.','Sí, quitar',()=>{closeModal();asgRpc('actividad_asignar',{p_proyecto:U.vivoP,p_etapa:e,p_actividades:[String(a)],p_tecnicos:[],_e:e},'Asignación quitada',()=>asgLocal(U.vivoP,e,[a],[]))},true)},
+ asgDelT:t=>{const a=t.dataset.a,c=t.dataset.c;const rs=asgRowsOf(U.vivoP,a);const e=rs[0]?rs[0].etapa:'';const rest=rs.map(x=>x.tec).filter(x=>x!==c);
+  confirmM('Quitar técnico','¿Quitar a '+esc(vvTecNom(c))+' de la actividad '+esc(a)+' ('+esc(vvActNom(a))+')?'+(rest.length?' Siguen asignados los demás.':' Quedará sin técnico.'),'Sí, quitar',()=>{closeModal();asgRpc('actividad_asignar',{p_proyecto:U.vivoP,p_etapa:e,p_actividades:[String(a)],p_tecnicos:rest,_e:e},'Técnico quitado',()=>asgLocal(U.vivoP,e,[a],rest))},true)}
+});
 /* ---------- Técnico por QR: mis actividades y novedades ---------- */
 NB.actMis={actividades:[],novedades:[]};NB.actOk=false;
 async function actMisLoad(){
@@ -6114,7 +6147,7 @@ function actCard(){
  if(!NB.kiosk||!NB.actOk)return '';
  const L=NB.actMis.actividades||[],N=(NB.actMis.novedades||[]).slice(0,4);
  const by={};L.forEach(x=>{const k=x.proyecto+'|'+x.etapa;(by[k]=by[k]||{p:x.proyecto,e:x.etapa,a:[]}).a.push(x)});
- const grp=Object.values(by).map(g=>`<div style="padding:10px 0;border-top:1px solid var(--bd)"><div style="font-weight:700;font-size:13.5px;margin-bottom:6px">${esc(g.p)} · ${esc(g.e)}</div>${g.a.map(x=>`<div class="tq-act ${x.estado==='Por confirmar'?'pc':''}"><div><b>${esc(x.actividad)}</b> ${esc(vvActNom(x.actividad))}${x.nota&&x.estado==='Asignada'?`<small class="dn">Devuelta: ${esc(x.nota)}</small>`:''}</div>${x.estado==='Por confirmar'?badge('Esperando confirmación','wa'):btn('Terminé','tqDone',`data-p="${esc(g.p)}" data-a="${esc(x.actividad)}"`,'sm')}</div>`).join('')}</div>`).join('');
+ const grp=Object.values(by).map(g=>`<div style="padding:10px 0;border-top:1px solid var(--bd)"><div style="font-weight:700;font-size:13.5px;margin-bottom:6px">${esc(g.p)} · ${esc(g.e)}</div>${g.a.map(x=>`<div class="tq-act ${x.estado==='Por confirmar'?'pc':''}"><div><b>${esc(x.actividad)}</b> ${esc(vvActNom(x.actividad))}${x.nota&&x.estado==='Asignada'?`<small class="dn">Devuelta: ${esc(x.nota)}</small>`:''}${x.estado==='No realizada'?`<small class="dn">Avisaste que no la hiciste${x.nota?': '+esc(x.nota):''}. Tu supervisor lo revisará.</small>`:''}</div>${x.estado==='Por confirmar'?badge('Esperando confirmación','wa'):`<div class="tq-bs">${btn('Terminé','tqDone',`data-p="${esc(g.p)}" data-a="${esc(x.actividad)}"`,'sm')}${x.estado==='No realizada'?'':btn('No la hice','tqNo',`data-p="${esc(g.p)}" data-a="${esc(x.actividad)}"`,'sm ghost')}</div>`}</div>`).join('')}</div>`).join('');
  const nr=N.map(n=>`<div style="padding:8px 0;border-top:1px solid var(--bd);display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="font-size:13px">${esc(n.tipo)}</b>${badge(n.estado==='Atendida'?'Atendida':'Abierta',n.estado==='Atendida'?'ok':'wa')}<span class="mut3" style="font-size:12px;margin-left:auto">${esc(n.proyecto||'Taller')} · ${esc(vvAgo(n.creado_en))}</span>${n.nota?`<div class="mut" style="font-size:12.5px;width:100%">${esc(n.nota)}</div>`:''}</div>`).join('');
  return `<div class="card flat" style="margin-top:16px"><div class="ch"><div><h3>Mis actividades</h3><p>Las que tu supervisor te asignó. Al terminar, toca «Terminé».</p></div></div>${grp||'<p class="mut3" style="font-size:13px">No tienes actividades asignadas por ahora.</p>'}</div>`}
 function novCard(){
@@ -6126,6 +6159,11 @@ function actTecCard(){return actCard()+novCard()}
 Object.assign(A,{
  tqDone:t=>{const p=t.dataset.p,a=t.dataset.a;confirmM('Terminé','¿Terminaste la actividad '+esc(a)+' ('+esc(vvActNom(a))+')? Tu supervisor la confirmará.','Sí, terminé',async()=>{closeModal();
   try{const r=await nbRpc('actividad_terminar_tec',{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_proyecto:p,p_actividades:[a]},false);if(r&&r.error)throw new Error(r.error);await actMisLoad();renderPage(true);toast('Enviado: tu supervisor la confirmará','ok')}catch(e){toast(nbMsg(e),'er')}})},
+ tqNo:t=>{M={type:'tqno',p:t.dataset.p,a:t.dataset.a};const MO=['Falta material','Falta herramienta o equipo','Parada de máquina','No me dio el tiempo','Duda de plano o proceso','Otro motivo'];
+  openModal(mh('No la hice')+`<p class="mut" style="margin-bottom:10px"><b>${esc(t.dataset.a)}</b> ${esc(vvActNom(t.dataset.a))}</p>`+fld('¿Por qué no la hiciste? *',selM('no_m',MO,'','Elegir…'))+fld('Detalle (opcional)',`<textarea class="inp" id="no_d" rows="3" style="height:auto;padding:10px" placeholder="Cuéntale a tu supervisor qué pasó"></textarea>`)+mf('Avisar al supervisor','tqNoOk'),'s')},
+ tqNoOk:async()=>{const m=val('no_m'),d=(val('no_d')||'').trim();if(!m){toast('Elige el motivo.','wa');return}if(m==='Otro motivo'&&d.length<3){toast('Cuéntale el motivo en el detalle.','wa');return}
+  if(NB.nbusy)return;NB.nbusy=true;const {p,a}=M;
+  try{const r=await nbRpc('actividad_no_hecha_tec',{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_proyecto:p,p_actividad:a,p_motivo:(m+(d?': '+d:'')).slice(0,300)},false);if(r&&r.error)throw new Error(r.error);await actMisLoad();closeModal();renderPage(true);toast('Listo: tu supervisor ya sabe que no se hizo','ok')}catch(e){toast(nbMsg(e),'er')}finally{NB.nbusy=false}},
  tqNov:()=>{const act=S.proyectos.filter(p=>p.estado==='Activo');M={type:'tqnov'};
   openModal(mh('Reportar novedad')+fld('Proyecto',selM('nv_p',[['','Taller en general'],...act.map(p=>[p.num,p.num+' · '+nf(p.cap,0)+' gal'])],(U.c&&U.c.proy)||''))+fld('Etapa (opcional)',selM('nv_e',etapasOn(),'','Sin etapa'))+fld('Tipo *',selM('nv_t',NOV_T,'','Elegir…'))+fld('¿Qué pasa? *',`<textarea class="inp" id="nv_d" rows="3" style="height:auto;padding:10px" placeholder="Describe el problema en pocas palabras"></textarea>`)+mf('Enviar al supervisor','tqNovOk'),'s')},
  tqNovOk:async()=>{const a={p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_proyecto:val('nv_p')||null,p_etapa:val('nv_e')||null,p_tipo:val('nv_t'),p_detalle:(val('nv_d')||'').trim()};
@@ -6137,7 +6175,7 @@ Object.assign(A,{
 /* ---------- Pantalla de inicio del técnico por QR (menú de opciones) ---------- */
 NB.tqView='menu';
 function tqScreen(tec){
- const v=NB.tqView;const A_=(NB.actMis.actividades||[]);const pend=A_.filter(x=>x.estado==='Asignada').length,pc=A_.filter(x=>x.estado==='Por confirmar').length;
+ const v=NB.tqView;const A_=(NB.actMis.actividades||[]);const pend=A_.filter(x=>x.estado==='Asignada'||x.estado==='No realizada').length,pc=A_.filter(x=>x.estado==='Por confirmar').length;
  const lib=(NB.libMis||[]).filter(x=>['Solicitada','Asignada'].includes(x.estado)).length,nov=(NB.actMis.novedades||[]).filter(n=>n.estado==='Abierta').length;
  const hd=`<div class="card flat"><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div class="av lg" style="width:46px;height:46px;font-size:15px">${esc(tec.ini)}</div><div><b style="font-size:16px">${esc(tec.nombre)}</b><div class="mut" style="font-size:12.5px">${esc(tec.codigo)} · ${esc(tec.area||'')}</div></div><div style="margin-left:auto">${btn('Salir','capLogout','','sm ghost')}</div></div></div>`;
  if(v==='menu'){
