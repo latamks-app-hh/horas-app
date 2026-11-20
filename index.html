@@ -437,6 +437,12 @@ a.btn{text-decoration:none}
 .vv-cb{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding:10px;border:1px dashed var(--bd2);border-radius:12px}.vv-cb .cnt{font-size:12.5px;color:var(--tx2);font-weight:600;margin-right:auto}
 .vv-cb button{border:1px solid var(--bd2);background:var(--card);color:var(--tx);padding:6px 12px;border-radius:20px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}.vv-cb button:hover{border-color:var(--pri)}.vv-cb button.ok{background:#22c55e;border-color:#22c55e;color:#04210f}
 .vv-gb .rb.ck{background:color-mix(in srgb,var(--c) 22%,transparent);border:1px solid var(--c);box-shadow:none;overflow:hidden}.vv-gb .rb.ck .fl{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--c),color-mix(in srgb,var(--c) 60%,#fff));border-radius:8px 0 0 8px}
+
+.vv-ac.pc{border-style:dashed;border-color:#f59e0b;background:#f59e0b14;color:var(--tx)}.vv-ac u{text-decoration:none;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:10px;background:var(--pri);color:#fff}
+.vv-qr{margin-bottom:16px;border-color:#f59e0b66}.vv-qr-r{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--bd);flex-wrap:wrap}.vv-qr-r small{display:block;color:var(--tx3);font-size:12px;margin-top:2px}.vv-nv{font-size:13px;margin-top:4px;color:var(--tx2)}
+.vv-qr-b{display:flex;gap:8px}.vv-qr-b button,.vv-btn{border:1px solid var(--bd2);background:var(--card);color:var(--tx);padding:6px 14px;border-radius:20px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}.vv-qr-b button.ok,.vv-btn.ok{background:#22c55e;border-color:#22c55e;color:#04210f}
+.vv-tl{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow:auto;margin-bottom:6px}.vv-tl label{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--bd);border-radius:10px;cursor:pointer;font-size:14px}.vv-tl input{width:18px;height:18px}
+.tq-act{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;font-size:13.5px}.tq-act small{display:block;font-size:12px}.tq-act.pc{opacity:.8}
 </style></head>
 <body>
 <div class="app" id="app"></div>
@@ -1349,7 +1355,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='5.2.4';
+const APP_VER='5.3.0';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -2113,7 +2119,7 @@ function capForm(tec){
  const bar=`<div class="savebar"><div class="sv-t"><span class="stat" style="--c:${miss.length?'#F59E0B':'#22C55E'}"></span><div><b>${miss.length?'Completa los campos obligatorios':'Listo para guardar'}</b><small>${miss.length?'Falta: '+miss.join(', '):esc(tec.nombre.split(' ')[0])+' · '+esc(c.modo==='proy'?c.tipo:c.modo==='aus'?'Ausencia':'Otro tiempo')+' · '+hh(h)+' HH'+(soft.length?' · retrabajo incompleto: '+soft.join(', '):'')}</small></div></div><button class="btn" data-act="capSave">${icon('check',18)} Guardar</button></div>`;
  const rec=live().filter(r=>r.tec===tec.codigo).sort((a,b)=>a.fecha<b.fecha?1:a.fecha>b.fecha?-1:a.ts<b.ts?1:-1).slice(0,8);
  const list=rec.length?sec('•','Últimos registros','Tus 8 movimientos más recientes',rec.map(r=>`<div style="display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--bd)"><span style="width:8px;height:8px;border-radius:50%;background:${CL[r.clase].c};flex:none"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">${r.proy?r.proy+' · ':''}${esc(r.macro||r.tipo)}${r.fecha===c.fecha?' <span class="bd i">este día</span>':''}</div><div class="sub mut3" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.act)} · ${dlabel(r.fecha)} · ${esc(CL[r.clase].n)}${r.estado==='Incompleto'?' · incompleto':''}</div></div>${badge(hh(r.horas)+' HH',r.clase==='retrabajo'?'wa':r.clase==='improd'?'er':'ok')}${can(['Gerencia','Supervisor'])?`<button class="ib" style="width:30px;height:30px" data-act="editReg" data-id="${r.id}" aria-label="Editar">${icon('edit',15)}</button>`:''}</div>`).join('')):'';
- return `<div class="cap">${head}${sec(1,'Tipo de registro','Elige de las listas, sin escribir',modes)}${sec(2,'Trabajo ejecutado','',s2)}${s3}${desc}${(typeof libTecCard==='function'?libTecCard():'')+(typeof dpTecCard==='function'?dpTecCard():'')}${list}${bar}</div>`;
+ return `<div class="cap">${head}${sec(1,'Tipo de registro','Elige de las listas, sin escribir',modes)}${sec(2,'Trabajo ejecutado','',s2)}${s3}${desc}${(typeof libTecCard==='function'?libTecCard():'')+(typeof actTecCard==='function'?actTecCard():'')+(typeof dpTecCard==='function'?dpTecCard():'')}${list}${bar}</div>`;
 }
 
 
@@ -3450,7 +3456,7 @@ async function nbCapEnter(r){
  try{NB.consent=null;NB.cred={code:r.codigo,ini:r.iniciales};
   S.tecnicos=[{codigo:r.codigo,ini:r.iniciales,nombre:r.nombre,area:r.area||'',esp:r.especialidad||'',turno:'K',rol:'Técnico',activo:true,registra:true}];
   U.c={...newC(),tec:r.codigo,fecha:today()};
-  await catFetch();await listasFetch();await nbCtx(U.c.fecha);await nbPersonas();await libMisLoad();
+  await catFetch();await listasFetch();await nbCtx(U.c.fecha);await nbPersonas();await libMisLoad();if(typeof actMisLoad==='function')await actMisLoad();
   renderAll();toast('Hola, '+r.nombre.split(' ')[0]+'. Ya puedes registrar tus horas.','ok')}
  catch(e){toast(nbMsg(e),'er')}}
 /* ---------- Consentimiento de datos (una sola vez, desde el QR) ---------- */
@@ -5830,7 +5836,7 @@ const VV_ET=['Corte láser','Soldador automático','Plegado','Rolado','Armado','
 const VV_SH={'Soldador automático':'Sold. automático','Limpieza mecánica':'Limp. mecánica','Lavado jabonoso y químico':'Lavado'};
 const vvSh=e=>VV_SH[e]||e;
 function vvLibEt(p,e){const L=(S.lib||[]).filter(l=>l.proy===p.num&&l.etapa===e&&l.estado!=='Anulada');if(!L.length)return null;L.sort((a,b)=>(a.creado||'')<(b.creado||'')?1:-1);return L.find(l=>l.estado==='Liberada')||L[0]}
-var VV_CHK=[];function vvCalc(p){
+var VV_CHK=[],VV_ASG=[],VV_NOV=[];function vvCalc(p){
  const rn=live().filter(r=>r.proy===p.num);const ex=p.exp||{total:0,et:{},cerradas:[]};const t0=today();
  const rows=VV_ET.map((e,i)=>{
   const exp=+(ex.et&&ex.et[e])||0;const rr=rn.filter(r=>r.macro===e&&isProd(r));const real=sum(rr);
@@ -5850,6 +5856,8 @@ var VV_CHK=[];function vvCalc(p){
  const total=ent?1:av*.97;
  // alertas de congruencia (solo avisan)
  const al=[];
+ VV_NOV.filter(n=>n.proy===p.num&&n.estado==='Abierta').forEach(n=>al.push({n:'wa',t:`Novedad abierta: ${n.tipo}${n.etapa?' · '+vvSh(n.etapa):''}`,s:`${n.tec}: ${n.detalle}`}));
+ {const pcn=new Set(VV_ASG.filter(a=>a.proy===p.num&&a.estado==='Por confirmar').map(a=>a.act)).size;if(pcn)al.push({n:'wa',t:`${pcn} actividad(es) por confirmar`,s:'Los técnicos las marcaron como terminadas desde el QR. Confírmalas en «Desde el taller».'})}
  rows.forEach((r,i)=>{
   if(r.inf&&!r.lib)al.push({n:'wa',t:`${r.e}: dada por terminada por avance posterior`,s:`${vvSh(r.infBy)} ya tiene horas, pero ${vvSh(r.e)} no tiene liberación. Solicítala o revisa las horas.`});
   if(r.chk.use&&r.chk.done>0&&r.real===0)al.push({n:'wa',t:`${r.e}: ${r.chk.done} actividad(es) cerradas sin horas registradas`,s:'Revisa si faltan horas por registrar en esta etapa.'});
@@ -5944,12 +5952,12 @@ function vvGantt(p,c){
 const vvCan=()=>can(['Gerencia','Supervisor']);
 function vvActs(p,r,hs,con,n){
  const ck=r.chk,cn=vvCan();const st=c=>(VV_CHK||[]).find(x=>x.proy===p.num&&String(x.act)===String(c));
- return `<div class="vv-dt">Actividades · ${ck.done} cerradas de ${ck.tot}${ck.na?' ('+ck.na+' no aplican)':''} · ${con} con horas</div><div class="vv-acs">${hs.map(x=>{const s=st(x.a[0]);const cl=s?(s.estado==='Cerrada'?'ch':'na'):'';return `<span class="vv-ac ${cl} ${x.h>0?'on':''}" ${cn?`data-act="chkTog" data-a="${esc(String(x.a[0]))}" data-e="${esc(r.e)}" role="button" tabindex="0"`:''} title="${esc(x.a[0]+' · '+x.a[1]+(s?' · '+s.estado+' por '+s.por:''))}"><em>${s&&s.estado==='Cerrada'?'✓':esc(String(x.a[0]))}</em>${esc(x.a[1])}${x.h>0?`<i>${nf(x.h,1)} h</i>`:''}</span>`}).join('')}</div>
- ${cn?`<div class="vv-cb" data-e="${esc(r.e)}"><span class="cnt">0 seleccionadas</span><button data-act="chkSelP">Seleccionar pendientes</button><button data-act="chkPrint">🖨 Imprimir hoja</button><button class="ok" data-act="chkDo" data-m="Cerrada">✓ Marcar cerradas</button><button data-act="chkDo" data-m="No aplica">No aplica</button><button data-act="chkDo" data-m="Pendiente">Reabrir</button></div>`:`<div class="mut3" style="font-size:12px;margin-top:6px">Solo Supervisor y Gerencia pueden cerrar actividades.</div>`}`}
+ return `<div class="vv-dt">Actividades · ${ck.done} cerradas de ${ck.tot}${ck.na?' ('+ck.na+' no aplican)':''} · ${con} con horas</div><div class="vv-acs">${hs.map(x=>{const s=st(x.a[0]);const as=VV_ASG.filter(z=>z.proy===p.num&&String(z.act)===String(x.a[0]));const pcf=as.some(z=>z.estado==='Por confirmar');const cl=s?(s.estado==='Cerrada'?'ch':'na'):(pcf?'pc':'');return `<span class="vv-ac ${cl} ${x.h>0?'on':''}" ${cn?`data-act="chkTog" data-a="${esc(String(x.a[0]))}" data-e="${esc(r.e)}" role="button" tabindex="0"`:''} title="${esc(x.a[0]+' · '+x.a[1]+(s?' · '+s.estado+' por '+s.por:''))}"><em>${s&&s.estado==='Cerrada'?'✓':esc(String(x.a[0]))}</em>${esc(x.a[1])}${as.length?`<u>${esc(as.map(z=>vvTecIni(z.tec)).join(' '))}${pcf?' ⏳':''}</u>`:''}${x.h>0?`<i>${nf(x.h,1)} h</i>`:''}</span>`}).join('')}</div>
+ ${cn?`<div class="vv-cb" data-e="${esc(r.e)}"><span class="cnt">0 seleccionadas</span><button data-act="chkSelP">Seleccionar pendientes</button><button data-act="chkAsig">👤 Asignar a…</button><button data-act="chkPrint">🖨 Imprimir hoja</button><button class="ok" data-act="chkDo" data-m="Cerrada">✓ Marcar cerradas</button><button data-act="chkDo" data-m="No aplica">No aplica</button><button data-act="chkDo" data-m="Pendiente">Reabrir</button></div>`:`<div class="mut3" style="font-size:12px;margin-top:6px">Solo Supervisor y Gerencia pueden cerrar actividades.</div>`}`}
 const chkSel=t=>[...t.closest('.vv-db').querySelectorAll('.vv-ac.sel')].map(x=>x.dataset.a);
 const chkCnt=t=>{const db=t.closest('.vv-db');const n=db.querySelectorAll('.vv-ac.sel').length;db.querySelector('.vv-cb .cnt').textContent=n+' seleccionada'+(n===1?'':'s')};
 let VV_CHKT=0;
-async function nbReloadChk(quiet){try{const r=await nbSel('actividad_checks','select=actividad_codigo,etapa,estado,por,rol,en,proyectos(numero)&order=en.asc');VV_CHK=r.map(x=>({proy:(x.proyectos||{}).numero||'',act:String(x.actividad_codigo),etapa:x.etapa,estado:x.estado,por:x.por||'',rol:x.rol||'',en:x.en||''}));VV_CHKT=Date.now();return true}catch(e){if(!quiet)toast('No pude leer las actividades cerradas: '+((e&&e.message)||e),'er');return false}}
+async function nbReloadChk(quiet){try{const r=await nbSel('actividad_checks','select=actividad_codigo,etapa,estado,por,rol,en,proyectos(numero)&order=en.asc');VV_CHK=r.map(x=>({proy:(x.proyectos||{}).numero||'',act:String(x.actividad_codigo),etapa:x.etapa,estado:x.estado,por:x.por||'',rol:x.rol||'',en:x.en||''}));VV_CHKT=Date.now();await nbReloadAsg();return true}catch(e){if(!quiet)toast('No pude leer las actividades cerradas: '+((e&&e.message)||e),'er');return false}}
 function chkLocal(p,e,codes,m){codes.forEach(c=>{const i=VV_CHK.findIndex(x=>x.proy===p&&String(x.act)===String(c));if(m==='Pendiente'){if(i>=0)VV_CHK.splice(i,1)}else{const o={proy:p,act:String(c),etapa:e,estado:m,por:U.name||U.role||'',rol:U.role||'',en:new Date().toISOString()};if(i>=0)VV_CHK[i]=o;else VV_CHK.push(o)}})}
 async function chkApply(e,codes,m){
  const p=U.vivoP;const k=VV_ET.indexOf(e);const msg={Cerrada:'Actividades cerradas',['No aplica']:'Marcadas como no aplica',Pendiente:'Actividades reabiertas'}[m];
@@ -5964,7 +5972,7 @@ function chkPrint(e,codes){
  if(!L.length){toast('No hay actividades pendientes para imprimir.','wa');return}
  const ps=document.getElementById('printSheet');ps.className='cons';
  ps.innerHTML=`<img src="${LOGO}" alt="" style="height:60px;width:auto"><h1>Hoja de trabajo · ${esc(e)}</h1><p><b>Proyecto ${esc(p.num)}</b> · Tanque ${nf(p.cap,0)} gal · ${esc(p.cliente||'')}</p><p>Fecha: ${vvD(today())} · Emitida por ${esc(U.name||U.role||'')}</p>
- <table class="ct"><tr><th style="width:24px">✓</th><th style="width:44px">Cód.</th><th>Actividad</th><th style="width:110px">Técnico</th><th style="width:150px">Observaciones</th></tr>${L.map(a=>`<tr><td style="height:30px"></td><td>${esc(String(a[0]))}</td><td>${esc(a[1])}</td><td></td><td></td></tr>`).join('')}</table>
+ <table class="ct"><tr><th style="width:24px">✓</th><th style="width:44px">Cód.</th><th>Actividad</th><th style="width:110px">Técnico</th><th style="width:150px">Observaciones</th></tr>${L.map(a=>`<tr><td style="height:30px"></td><td>${esc(String(a[0]))}</td><td>${esc(a[1])}</td><td>${esc(vvAsgNames(p.num,a[0]))}</td><td></td></tr>`).join('')}</table>
  <p style="margin-top:34px!important">Supervisor: ________________________ &nbsp; Firma: ________________ &nbsp; Hora de cierre: ________</p><p class="cn">Al terminar, el supervisor cierra estas actividades en Latamks HH → Proyecto en vivo → Detalle por etapa.</p>`;
  const th=document.documentElement.getAttribute('data-theme');document.documentElement.setAttribute('data-theme','light');
  const limp=()=>{window.removeEventListener('afterprint',limp);setTimeout(()=>{ps.className='';ps.innerHTML='';if(th)document.documentElement.setAttribute('data-theme',th);else document.documentElement.removeAttribute('data-theme')},300)};window.addEventListener('afterprint',limp);
@@ -5994,6 +6002,7 @@ function pVivo(){
  <div class="vv-liq" id="vvliqp" hidden><div class="vv-pt" style="margin-top:6px">Nivel <b id="vvlvv">55%</b></div><input type="range" id="vvlv" min="10" max="95" value="55"><div class="vv-btns"><button id="vvsh">Frenar / acelerar 🌊</button></div></div>
  <label><input type="checkbox" id="vvod"> Solo lo entregado</label><label><input type="checkbox" id="vvau" checked> Girar solo</label>
  <div class="vv-pt" style="margin-top:12px">Secciones <span class="mut3">(toca para resaltar)</span></div><div class="vv-secs" id="vvsecs"></div></div></div></section>
+ ${vvQr(p)}
  <div class="vv-2"><section class="card"><div class="ch"><div><h3>Detalle por etapa</h3><p>Toca una etapa: actividades con horas, liberaciones y solicitud</p></div></div>${vvDetail(c,p)}</section>
  <section class="card"><div class="ch"><div><h3>Alertas de congruencia</h3><p>Solo avisan: nunca bloquean el registro de horas</p></div></div>${als}</section></div>
  <p class="mut3" style="font-size:12.5px;margin-top:10px">El tamaño de cada tramo del círculo es proporcional a las horas esperadas de esa etapa. Avance de la etapa = actividades cerradas ÷ aplicables (si el supervisor usa el checklist) o, si no, horas reales ÷ esperadas; máximo 95% hasta que Calidad la libera, y al liberarla pasa a 100%.</p></div>`}
@@ -6033,6 +6042,80 @@ function vvMount(){
   chkPrint:t=>chkPrint(t.closest('.vv-cb').dataset.e,chkSel(t)),chkDo:t=>{const c=chkSel(t);if(!c.length){toast('Selecciona al menos una actividad.','wa');return}chkApply(t.closest('.vv-cb').dataset.e,c,t.dataset.m)}});
 Object.assign(A,{vivoT:t=>{U.vivoT=t.dataset.v;renderPage(true)},vivoG:t=>{U.vivoG=t.dataset.v;renderPage(true)},vivoK:t=>{U.vivoK=+t.dataset.k;U.vivoT='av';renderPage(true)},vivoSel:t=>{U.vivoP=t.dataset.p;U.vivoK=null;renderPage(true)}});
 PAGES.vivo=pVivo;
+
+
+/* ===== v5.3.0 · Actividades asignadas, QR del taller y novedades ===== */
+const vvTec=c=>(S.tecnicos||[]).find(t=>String(t.codigo)===String(c));
+const vvTecIni=c=>{const t=vvTec(c);return t?(t.ini||t.codigo):c};
+const vvTecNom=c=>{const t=vvTec(c);return t?t.nombre:c};
+const vvActNom=c=>{const a=(typeof ACT!=='undefined'?ACT:[]).find(x=>String(x[0])===String(c));return a?a[1]:''};
+const vvAgo=iso=>{if(!iso)return '';const m=Math.max(0,Math.round((Date.now()-new Date(iso).getTime())/60000));return m<60?'hace '+m+' min':m<1440?'hace '+Math.round(m/60)+' h':'hace '+Math.round(m/1440)+' d'};
+const vvAsgNames=(p,a)=>VV_ASG.filter(x=>x.proy===p&&String(x.act)===String(a)).map(x=>vvTecNom(x.tec)).join(', ');
+const NOV_T=['Falta material','Falta herramienta o equipo','Parada de máquina','Duda de plano o proceso'];
+async function nbReloadAsg(){
+ try{const a=await nbSel('actividad_asignaciones','select=actividad_codigo,etapa,tecnico_codigo,estado,asignado_por,asignado_en,terminado_en,nota,proyectos(numero)');
+  VV_ASG=a.map(x=>({proy:(x.proyectos||{}).numero||'',act:String(x.actividad_codigo),etapa:x.etapa,tec:x.tecnico_codigo,estado:x.estado,por:x.asignado_por||'',en:x.asignado_en||'',term:x.terminado_en||'',nota:x.nota||''}));
+  const n=await nbSel('novedades_taller','select=id,etapa,tipo,detalle,tecnico_codigo,tecnico_nombre,creado_en,estado,atendida_por,atendida_en,nota,proyectos(numero)&order=creado_en.desc');
+  VV_NOV=n.map(x=>({id:x.id,proy:(x.proyectos||{}).numero||'',etapa:x.etapa||'',tipo:x.tipo,detalle:x.detalle,tec:x.tecnico_nombre||x.tecnico_codigo,en:x.creado_en,estado:x.estado,por:x.atendida_por||'',nota:x.nota||''}))}
+ catch(e){}}
+async function asgRpc(fn,args,okMsg,local){
+ const k=VV_ET.indexOf((args&&args._e)||'');
+ if(S.demo){local();renderPage(true);toast(okMsg,'ok');return}
+ if(NB.cbusy)return;NB.cbusy=true;const a={...args};delete a._e;
+ try{await nbRpc(fn,a);await nbReloadChk();U.vivoK=k>=0?k:U.vivoK;renderPage(true);toast(okMsg,'ok')}
+ catch(x){toast(nbMsg(x),'er')}finally{NB.cbusy=false}}
+function asgLocal(p,e,codes,tecs){codes.forEach(c=>{VV_ASG=VV_ASG.filter(x=>!(x.proy===p&&String(x.act)===String(c)));tecs.forEach(t=>VV_ASG.push({proy:p,act:String(c),etapa:e,tec:t,estado:'Asignada',por:U.name||'',en:new Date().toISOString(),term:'',nota:''}))})}
+function vvQr(p){
+ const pc=VV_ASG.filter(x=>x.proy===p.num&&x.estado==='Por confirmar');const nv=VV_NOV.filter(n=>n.proy===p.num&&n.estado==='Abierta');
+ if(!pc.length&&!nv.length)return '';const cn=vvCan();
+ const g={};pc.forEach(x=>{const k=x.act;(g[k]=g[k]||{act:k,etapa:x.etapa,t:[],term:x.term}).t.push(vvTecNom(x.tec))});
+ const rows=Object.values(g).map(x=>`<div class="vv-qr-r"><div><b>${esc(x.act)}</b> ${esc(vvActNom(x.act))}<small>${esc(vvSh(x.etapa))} · terminó ${esc(x.t.join(', '))} · ${esc(vvAgo(x.term))}</small></div>${cn?`<div class="vv-qr-b"><button class="ok" data-act="qrConf" data-a="${esc(x.act)}" data-e="${esc(x.etapa)}">✓ Confirmar</button><button data-act="qrDev" data-a="${esc(x.act)}" data-e="${esc(x.etapa)}">Devolver</button></div>`:''}</div>`).join('');
+ const nrows=nv.map(n=>`<div class="vv-qr-r"><div>${badge(esc(n.tipo),'wa')} <b>${esc(n.tec)}</b><small>${n.etapa?esc(vvSh(n.etapa))+' · ':''}${esc(vvAgo(n.en))}</small><div class="vv-nv">${esc(n.detalle)}</div></div>${cn?`<div class="vv-qr-b"><button data-act="novAt" data-i="${esc(String(n.id))}">Atender</button></div>`:''}</div>`).join('');
+ return `<section class="card vv-qr"><div class="ch"><div><h3>Desde el taller (QR)</h3><p>Lo que reportaron los técnicos desde su celular</p></div>${pc.length&&cn?`<div class="acts"><button class="vv-btn ok" data-act="qrConfAll">✓ Confirmar todas (${Object.keys(g).length})</button></div>`:''}</div>
+ ${pc.length?`<div class="vv-dt">Actividades por confirmar · ${Object.keys(g).length}</div>${rows}`:''}${nv.length?`<div class="vv-dt">Novedades abiertas · ${nv.length}</div>${nrows}`:''}</section>`}
+function qrConfirm(p,items,aprobar,nota){
+ const msg=aprobar?'Actividades confirmadas ('+items.length+')':'Actividades devueltas al técnico ('+items.length+')';
+ const byE={};items.forEach(i=>(byE[i.e]=byE[i.e]||[]).push(i.a));
+ const local=()=>{items.forEach(i=>{const rs=VV_ASG.filter(x=>x.proy===p&&String(x.act)===String(i.a));if(aprobar){VV_ASG=VV_ASG.filter(x=>!(x.proy===p&&String(x.act)===String(i.a)));chkLocal(p,i.e,[i.a],'Cerrada')}else rs.forEach(x=>{x.estado='Asignada';x.term='';x.nota=nota||''})})};
+ asgRpc('actividad_confirmar',{p_proyecto:p,p_actividades:items.map(i=>String(i.a)),p_aprobar:aprobar,p_nota:nota||null,_e:items[0].e},msg,local)}
+Object.assign(A,{
+ chkAsig:t=>{const codes=chkSel(t);if(!codes.length){toast('Selecciona al menos una actividad.','wa');return}
+  const e=t.closest('.vv-cb').dataset.e;const T=(S.tecnicos||[]).filter(x=>x.registra&&x.activo!==false&&!x.demo).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre)));
+  M={type:'asig',e,codes};
+  openModal(mh('Asignar actividades')+`<p class="mut" style="margin-bottom:10px">${codes.length} actividad(es) de ${esc(vvSh(e))} · proyecto ${esc(U.vivoP)}. Cada técnico las verá en su celular al entrar por el QR.</p><div class="vv-tl">${T.map(x=>`<label><input type="checkbox" class="vv-tk" value="${esc(x.codigo)}"><b>${esc(x.codigo)}</b> ${esc(x.nombre)}</label>`).join('')||'<p class="mut3">No hay técnicos activos.</p>'}</div>`+mf('Asignar','asgSave',btn('Quitar asignación','asgQuit','','ghost')),'s')},
+ asgSave:()=>{const tk=[...document.querySelectorAll('.vv-tk:checked')].map(x=>x.value);if(!tk.length){toast('Elige al menos un técnico.','wa');return}
+  const {e,codes}=M;closeModal();asgRpc('actividad_asignar',{p_proyecto:U.vivoP,p_etapa:e,p_actividades:codes.map(String),p_tecnicos:tk,_e:e},'Asignadas a '+tk.length+' técnico(s)',()=>asgLocal(U.vivoP,e,codes,tk))},
+ asgQuit:()=>{const {e,codes}=M;closeModal();asgRpc('actividad_asignar',{p_proyecto:U.vivoP,p_etapa:e,p_actividades:codes.map(String),p_tecnicos:[],_e:e},'Asignación quitada',()=>asgLocal(U.vivoP,e,codes,[]))},
+ qrConf:t=>qrConfirm(U.vivoP,[{a:t.dataset.a,e:t.dataset.e}],true),
+ qrConfAll:()=>{const s=new Map();VV_ASG.filter(x=>x.proy===U.vivoP&&x.estado==='Por confirmar').forEach(x=>s.set(x.act,{a:x.act,e:x.etapa}));qrConfirm(U.vivoP,[...s.values()],true)},
+ qrDev:t=>{M={type:'qrdev',a:t.dataset.a,e:t.dataset.e};openModal(mh('Devolver al técnico')+`<p class="mut" style="margin-bottom:10px">${esc(t.dataset.a)} · ${esc(vvActNom(t.dataset.a))}</p>`+fld('¿Qué falta o qué está mal?',`<textarea class="inp" id="qd_n" rows="3" style="height:auto;padding:10px"></textarea>`)+mf('Devolver','qrDevOk'),'s')},
+ qrDevOk:()=>{const n=(val('qd_n')||'').trim();const {a,e}=M;closeModal();qrConfirm(U.vivoP,[{a,e}],false,n||'Revisar')},
+ novAt:t=>{M={type:'novat',i:t.dataset.i};openModal(mh('Atender novedad')+fld('Nota (opcional)',`<textarea class="inp" id="na_n" rows="3" style="height:auto;padding:10px" placeholder="Qué se hizo o se decidió"></textarea>`)+mf('Marcar como atendida','novAtOk'),'s')},
+ novAtOk:()=>{const i=M.i,n=(val('na_n')||'').trim();closeModal();asgRpc('novedad_atender',{p_id:+i,p_nota:n||null},'Novedad atendida',()=>{VV_NOV.forEach(x=>{if(String(x.id)===String(i)){x.estado='Atendida';x.nota=n}})})}
+});
+/* ---------- Técnico por QR: mis actividades y novedades ---------- */
+NB.actMis={actividades:[],novedades:[]};NB.actOk=false;
+async function actMisLoad(){
+ if(!NB.kiosk||!NB.cred)return;
+ try{const r=await nbRpc('mis_actividades',{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini},false);NB.actMis={actividades:(r&&r.actividades)||[],novedades:(r&&r.novedades)||[]};NB.actOk=true}catch(e){NB.actOk=false}}
+function actTecCard(){
+ if(!NB.kiosk||!NB.actOk)return '';
+ const L=NB.actMis.actividades||[],N=(NB.actMis.novedades||[]).slice(0,4);
+ const by={};L.forEach(x=>{const k=x.proyecto+'|'+x.etapa;(by[k]=by[k]||{p:x.proyecto,e:x.etapa,a:[]}).a.push(x)});
+ const grp=Object.values(by).map(g=>`<div style="padding:10px 0;border-top:1px solid var(--bd)"><div style="font-weight:700;font-size:13.5px;margin-bottom:6px">${esc(g.p)} · ${esc(g.e)}</div>${g.a.map(x=>`<div class="tq-act ${x.estado==='Por confirmar'?'pc':''}"><div><b>${esc(x.actividad)}</b> ${esc(vvActNom(x.actividad))}${x.nota&&x.estado==='Asignada'?`<small class="dn">Devuelta: ${esc(x.nota)}</small>`:''}</div>${x.estado==='Por confirmar'?badge('Esperando confirmación','wa'):btn('Terminé','tqDone',`data-p="${esc(g.p)}" data-a="${esc(x.actividad)}"`,'sm')}</div>`).join('')}</div>`).join('');
+ const nr=N.map(n=>`<div style="padding:8px 0;border-top:1px solid var(--bd);display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="font-size:13px">${esc(n.tipo)}</b>${badge(n.estado==='Atendida'?'Atendida':'Abierta',n.estado==='Atendida'?'ok':'wa')}<span class="mut3" style="font-size:12px;margin-left:auto">${esc(n.proyecto||'Taller')} · ${esc(vvAgo(n.creado_en))}</span>${n.nota?`<div class="mut" style="font-size:12.5px;width:100%">${esc(n.nota)}</div>`:''}</div>`).join('');
+ return `<div class="card flat" style="margin-top:16px"><div class="ch"><div><h3>Mis actividades</h3><p>Las que tu supervisor te asignó. Al terminar, toca «Terminé».</p></div></div>${grp||'<p class="mut3" style="font-size:13px">No tienes actividades asignadas por ahora.</p>'}</div>
+ <div class="card flat" style="margin-top:16px"><div class="ch"><div><h3>Novedades del taller</h3><p>Avisa a tu supervisor si algo te impide avanzar</p></div><div class="acts">${btn(icon('plus',16)+' Reportar','tqNov','','sm')}</div></div>${nr||'<p class="mut3" style="font-size:13px">No has reportado novedades.</p>'}</div>`}
+Object.assign(A,{
+ tqDone:t=>{const p=t.dataset.p,a=t.dataset.a;confirmM('Terminé','¿Terminaste la actividad '+esc(a)+' ('+esc(vvActNom(a))+')? Tu supervisor la confirmará.','Sí, terminé',async()=>{closeModal();
+  try{const r=await nbRpc('actividad_terminar_tec',{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_proyecto:p,p_actividades:[a]},false);if(r&&r.error)throw new Error(r.error);await actMisLoad();renderPage(true);toast('Enviado: tu supervisor la confirmará','ok')}catch(e){toast(nbMsg(e),'er')}})},
+ tqNov:()=>{const act=S.proyectos.filter(p=>p.estado==='Activo');M={type:'tqnov'};
+  openModal(mh('Reportar novedad')+fld('Proyecto',selM('nv_p',[['','Taller en general'],...act.map(p=>[p.num,p.num+' · '+nf(p.cap,0)+' gal'])],(U.c&&U.c.proy)||''))+fld('Etapa (opcional)',selM('nv_e',etapasOn(),'','Sin etapa'))+fld('Tipo *',selM('nv_t',NOV_T,'','Elegir…'))+fld('¿Qué pasa? *',`<textarea class="inp" id="nv_d" rows="3" style="height:auto;padding:10px" placeholder="Describe el problema en pocas palabras"></textarea>`)+mf('Enviar al supervisor','tqNovOk'),'s')},
+ tqNovOk:async()=>{const a={p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_proyecto:val('nv_p')||null,p_etapa:val('nv_e')||null,p_tipo:val('nv_t'),p_detalle:(val('nv_d')||'').trim()};
+  if(!a.p_tipo||a.p_detalle.length<5){toast('Elige el tipo y describe el problema.','wa');return}
+  if(NB.nbusy)return;NB.nbusy=true;
+  try{const r=await nbRpc('novedad_registrar_tec',a,false);if(r&&r.error)throw new Error(r.error);await actMisLoad();closeModal();renderPage(true);toast('Novedad enviada a tu supervisor','ok')}catch(e){toast(nbMsg(e),'er')}finally{NB.nbusy=false}}
+});
 
 nubeBoot();
 
