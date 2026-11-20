@@ -442,6 +442,11 @@ a.btn{text-decoration:none}
 .vv-qr{margin-bottom:16px;border-color:#f59e0b66}.vv-qr-r{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--bd);flex-wrap:wrap}.vv-qr-r small{display:block;color:var(--tx3);font-size:12px;margin-top:2px}.vv-nv{font-size:13px;margin-top:4px;color:var(--tx2)}
 .vv-qr-b{display:flex;gap:8px}.vv-qr-b button,.vv-btn{border:1px solid var(--bd2);background:var(--card);color:var(--tx);padding:6px 14px;border-radius:20px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}.vv-qr-b button.ok,.vv-btn.ok{background:#22c55e;border-color:#22c55e;color:#04210f}
 .vv-tl{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow:auto;margin-bottom:6px}.vv-tl label{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--bd);border-radius:10px;cursor:pointer;font-size:14px}.vv-tl input{width:18px;height:18px}
+
+.tq-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tq-tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:18px 16px 16px;border:1px solid var(--bd);border-radius:18px;background:var(--card);color:var(--tx);font:inherit;cursor:pointer;min-height:132px;transition:.2s}.tq-tile:hover,.tq-tile:active{border-color:var(--pri);transform:translateY(-2px)}
+.tq-tile b{font-size:15.5px;margin-top:6px}.tq-tile small{color:var(--tx3);font-size:12.5px;line-height:1.3}.tq-ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#22d3ee,#6366f1);color:#fff}.tq-bd{position:absolute;top:12px;right:12px;background:#f59e0b;color:#1c1100;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px}
+.tq-back{border:1px solid var(--bd2);background:var(--card);color:var(--tx);padding:8px 16px;border-radius:20px;font:inherit;font-weight:700;font-size:13.5px;cursor:pointer;margin:0 0 10px}
+@media(max-width:420px){.tq-tile{min-height:120px;padding:14px 12px}}
 .tq-act{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;font-size:13.5px}.tq-act small{display:block;font-size:12px}.tq-act.pc{opacity:.8}
 </style></head>
 <body>
@@ -1049,7 +1054,7 @@ function capForm(tec){
  const list=mine.length?`<div class="card flat" style="margin-top:16px"><div class="ch"><div><h3>Registros del ${dlabel(c.fecha)}</h3><p>${mine.length} registro${mine.length>1?'s':''} · ${hh(j.g)} HH</p></div></div>${mine.map(r=>`<div style="display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--bd)"><span style="width:8px;height:8px;border-radius:50%;background:${CL[r.clase].c};flex:none"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">${r.proy?r.proy+' · ':''}${esc(r.act||r.tipo)}</div><div class="mut3" style="font-size:12px">${esc(r.macro||r.tipo)} · ${esc(CL[r.clase].n)}${r.estado==='Incompleto'?' · incompleto':''}</div></div><b>${hh(r.horas)}</b>${can(['Gerencia','Supervisor'])?`<button class="ib" style="width:30px;height:30px" data-act="editReg" data-id="${r.id}" aria-label="Editar">${icon('edit',15)}</button>`:''}</div>`).join('')}</div>`:'';
  return `<div class="cap">${head}<div class="card flat" style="margin-top:16px"><div class="lb" style="margin-bottom:10px">¿Qué vas a registrar?</div>${modes}${body}${desc}${btn(icon('check',20)+' Guardar registro','capSave','','big')}</div>${list}</div>`;
 }
-function pCaptura(){const tec=S.tecnicos.find(t=>t.codigo===U.c.tec);return tec?capForm(tec):capId()}
+function pCaptura(){const tec=S.tecnicos.find(t=>t.codigo===U.c.tec);if(tec&&NB.kiosk&&NB.cred&&typeof tqScreen==='function'){if(NB.tqView!=='horas')return tqScreen(tec);return `<div class="cap"><button class="tq-back" data-act="tqGo" data-v="menu">← Menú</button></div>`+capForm(tec)}return tec?capForm(tec):capId()}
 function capLogin(){if(NB.kiosk)return nbCapLogin();
  const code=($('#cid').value||'').trim().toUpperCase(),ini=($('#cini').value||'').trim().toUpperCase();
  const t=S.tecnicos.find(x=>x.codigo.toUpperCase()===code&&x.registra);
@@ -1355,7 +1360,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='5.3.0';
+const APP_VER='5.3.1';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -2119,7 +2124,7 @@ function capForm(tec){
  const bar=`<div class="savebar"><div class="sv-t"><span class="stat" style="--c:${miss.length?'#F59E0B':'#22C55E'}"></span><div><b>${miss.length?'Completa los campos obligatorios':'Listo para guardar'}</b><small>${miss.length?'Falta: '+miss.join(', '):esc(tec.nombre.split(' ')[0])+' · '+esc(c.modo==='proy'?c.tipo:c.modo==='aus'?'Ausencia':'Otro tiempo')+' · '+hh(h)+' HH'+(soft.length?' · retrabajo incompleto: '+soft.join(', '):'')}</small></div></div><button class="btn" data-act="capSave">${icon('check',18)} Guardar</button></div>`;
  const rec=live().filter(r=>r.tec===tec.codigo).sort((a,b)=>a.fecha<b.fecha?1:a.fecha>b.fecha?-1:a.ts<b.ts?1:-1).slice(0,8);
  const list=rec.length?sec('•','Últimos registros','Tus 8 movimientos más recientes',rec.map(r=>`<div style="display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--bd)"><span style="width:8px;height:8px;border-radius:50%;background:${CL[r.clase].c};flex:none"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">${r.proy?r.proy+' · ':''}${esc(r.macro||r.tipo)}${r.fecha===c.fecha?' <span class="bd i">este día</span>':''}</div><div class="sub mut3" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.act)} · ${dlabel(r.fecha)} · ${esc(CL[r.clase].n)}${r.estado==='Incompleto'?' · incompleto':''}</div></div>${badge(hh(r.horas)+' HH',r.clase==='retrabajo'?'wa':r.clase==='improd'?'er':'ok')}${can(['Gerencia','Supervisor'])?`<button class="ib" style="width:30px;height:30px" data-act="editReg" data-id="${r.id}" aria-label="Editar">${icon('edit',15)}</button>`:''}</div>`).join('')):'';
- return `<div class="cap">${head}${sec(1,'Tipo de registro','Elige de las listas, sin escribir',modes)}${sec(2,'Trabajo ejecutado','',s2)}${s3}${desc}${(typeof libTecCard==='function'?libTecCard():'')+(typeof actTecCard==='function'?actTecCard():'')+(typeof dpTecCard==='function'?dpTecCard():'')}${list}${bar}</div>`;
+ return `<div class="cap">${head}${sec(1,'Tipo de registro','Elige de las listas, sin escribir',modes)}${sec(2,'Trabajo ejecutado','',s2)}${s3}${desc}${(typeof libTecCard==='function'?libTecCard():'')+(typeof dpTecCard==='function'?dpTecCard():'')}${list}${bar}</div>`;
 }
 
 
@@ -3453,7 +3458,7 @@ async function nbCapLogin(){
   await nbCapEnter(r)}
  catch(e){toast(nbMsg(e),'er')}}
 async function nbCapEnter(r){
- try{NB.consent=null;NB.cred={code:r.codigo,ini:r.iniciales};
+ try{NB.consent=null;NB.tqView='menu';NB.cred={code:r.codigo,ini:r.iniciales};
   S.tecnicos=[{codigo:r.codigo,ini:r.iniciales,nombre:r.nombre,area:r.area||'',esp:r.especialidad||'',turno:'K',rol:'Técnico',activo:true,registra:true}];
   U.c={...newC(),tec:r.codigo,fecha:today()};
   await catFetch();await listasFetch();await nbCtx(U.c.fecha);await nbPersonas();await libMisLoad();if(typeof actMisLoad==='function')await actMisLoad();
@@ -6098,14 +6103,19 @@ NB.actMis={actividades:[],novedades:[]};NB.actOk=false;
 async function actMisLoad(){
  if(!NB.kiosk||!NB.cred)return;
  try{const r=await nbRpc('mis_actividades',{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini},false);NB.actMis={actividades:(r&&r.actividades)||[],novedades:(r&&r.novedades)||[]};NB.actOk=true}catch(e){NB.actOk=false}}
-function actTecCard(){
+function actCard(){
  if(!NB.kiosk||!NB.actOk)return '';
  const L=NB.actMis.actividades||[],N=(NB.actMis.novedades||[]).slice(0,4);
  const by={};L.forEach(x=>{const k=x.proyecto+'|'+x.etapa;(by[k]=by[k]||{p:x.proyecto,e:x.etapa,a:[]}).a.push(x)});
  const grp=Object.values(by).map(g=>`<div style="padding:10px 0;border-top:1px solid var(--bd)"><div style="font-weight:700;font-size:13.5px;margin-bottom:6px">${esc(g.p)} · ${esc(g.e)}</div>${g.a.map(x=>`<div class="tq-act ${x.estado==='Por confirmar'?'pc':''}"><div><b>${esc(x.actividad)}</b> ${esc(vvActNom(x.actividad))}${x.nota&&x.estado==='Asignada'?`<small class="dn">Devuelta: ${esc(x.nota)}</small>`:''}</div>${x.estado==='Por confirmar'?badge('Esperando confirmación','wa'):btn('Terminé','tqDone',`data-p="${esc(g.p)}" data-a="${esc(x.actividad)}"`,'sm')}</div>`).join('')}</div>`).join('');
  const nr=N.map(n=>`<div style="padding:8px 0;border-top:1px solid var(--bd);display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="font-size:13px">${esc(n.tipo)}</b>${badge(n.estado==='Atendida'?'Atendida':'Abierta',n.estado==='Atendida'?'ok':'wa')}<span class="mut3" style="font-size:12px;margin-left:auto">${esc(n.proyecto||'Taller')} · ${esc(vvAgo(n.creado_en))}</span>${n.nota?`<div class="mut" style="font-size:12.5px;width:100%">${esc(n.nota)}</div>`:''}</div>`).join('');
- return `<div class="card flat" style="margin-top:16px"><div class="ch"><div><h3>Mis actividades</h3><p>Las que tu supervisor te asignó. Al terminar, toca «Terminé».</p></div></div>${grp||'<p class="mut3" style="font-size:13px">No tienes actividades asignadas por ahora.</p>'}</div>
- <div class="card flat" style="margin-top:16px"><div class="ch"><div><h3>Novedades del taller</h3><p>Avisa a tu supervisor si algo te impide avanzar</p></div><div class="acts">${btn(icon('plus',16)+' Reportar','tqNov','','sm')}</div></div>${nr||'<p class="mut3" style="font-size:13px">No has reportado novedades.</p>'}</div>`}
+ return `<div class="card flat" style="margin-top:16px"><div class="ch"><div><h3>Mis actividades</h3><p>Las que tu supervisor te asignó. Al terminar, toca «Terminé».</p></div></div>${grp||'<p class="mut3" style="font-size:13px">No tienes actividades asignadas por ahora.</p>'}</div>`}
+function novCard(){
+ if(!NB.kiosk||!NB.actOk)return '';
+ const N=(NB.actMis.novedades||[]).slice(0,4);
+ const nr=N.map(n=>`<div style="padding:8px 0;border-top:1px solid var(--bd);display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="font-size:13px">${esc(n.tipo)}</b>${badge(n.estado==='Atendida'?'Atendida':'Abierta',n.estado==='Atendida'?'ok':'wa')}<span class="mut3" style="font-size:12px;margin-left:auto">${esc(n.proyecto||'Taller')} · ${esc(vvAgo(n.creado_en))}</span>${n.nota?`<div class="mut" style="font-size:12.5px;width:100%">${esc(n.nota)}</div>`:''}</div>`).join('');
+ return `<div class="card flat" style="margin-top:16px"><div class="ch"><div><h3>Novedades del taller</h3><p>Avisa a tu supervisor si algo te impide avanzar</p></div><div class="acts">${btn(icon('plus',16)+' Reportar','tqNov','','sm')}</div></div>${nr||'<p class="mut3" style="font-size:13px">No has reportado novedades.</p>'}</div>`}
+function actTecCard(){return actCard()+novCard()}
 Object.assign(A,{
  tqDone:t=>{const p=t.dataset.p,a=t.dataset.a;confirmM('Terminé','¿Terminaste la actividad '+esc(a)+' ('+esc(vvActNom(a))+')? Tu supervisor la confirmará.','Sí, terminé',async()=>{closeModal();
   try{const r=await nbRpc('actividad_terminar_tec',{p_codigo:NB.cred.code,p_iniciales:NB.cred.ini,p_proyecto:p,p_actividades:[a]},false);if(r&&r.error)throw new Error(r.error);await actMisLoad();renderPage(true);toast('Enviado: tu supervisor la confirmará','ok')}catch(e){toast(nbMsg(e),'er')}})},
@@ -6116,6 +6126,25 @@ Object.assign(A,{
   if(NB.nbusy)return;NB.nbusy=true;
   try{const r=await nbRpc('novedad_registrar_tec',a,false);if(r&&r.error)throw new Error(r.error);await actMisLoad();closeModal();renderPage(true);toast('Novedad enviada a tu supervisor','ok')}catch(e){toast(nbMsg(e),'er')}finally{NB.nbusy=false}}
 });
+
+/* ---------- Pantalla de inicio del técnico por QR (menú de opciones) ---------- */
+NB.tqView='menu';
+function tqScreen(tec){
+ const v=NB.tqView;const A_=(NB.actMis.actividades||[]);const pend=A_.filter(x=>x.estado==='Asignada').length,pc=A_.filter(x=>x.estado==='Por confirmar').length;
+ const lib=(NB.libMis||[]).filter(x=>['Solicitada','Asignada'].includes(x.estado)).length,nov=(NB.actMis.novedades||[]).filter(n=>n.estado==='Abierta').length;
+ const hd=`<div class="card flat"><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div class="av lg" style="width:46px;height:46px;font-size:15px">${esc(tec.ini)}</div><div><b style="font-size:16px">${esc(tec.nombre)}</b><div class="mut" style="font-size:12.5px">${esc(tec.codigo)} · ${esc(tec.area||'')}</div></div><div style="margin-left:auto">${btn('Salir','capLogout','','sm ghost')}</div></div></div>`;
+ if(v==='menu'){
+  const T=(k,ic,t,s,b)=>`<button class="tq-tile" data-act="tqGo" data-v="${k}"><span class="tq-ic">${icon(ic,26)}</span><b>${t}</b><small>${s}</small>${b?`<span class="tq-bd">${b}</span>`:''}</button>`;
+  return `<div class="cap">${hd}<p class="mut" style="margin:16px 4px 10px;font-size:14px">¿Qué necesitas hacer?</p><div class="tq-grid">
+  ${T('horas','clock','Registrar horas','Cuánto trabajaste hoy','')}
+  ${T('acts','check','Mis actividades','Lo que te asignó tu supervisor',(NB.actOk&&(pend||pc))?(pend?pend+' por hacer':pc+' por confirmar'):'')}
+  ${T('lib','flag','Pedir liberación','Etapa terminada para Calidad',lib?lib+' en trámite':'')}
+  ${T('nov','warn','Reportar novedad','Falta material, equipo o duda',nov?nov+' abierta(s)':'')}
+  ${typeof dpTecCard==='function'?T('dp','trend','Mi desempeño','Tu avance y resultados',''):''}</div></div>`}
+ const back=`<button class="tq-back" data-act="tqGo" data-v="menu">← Menú</button>`;
+ const body=v==='acts'?actCard():v==='nov'?novCard():v==='lib'?libTecCard():v==='dp'?dpTecCard():'';
+ return `<div class="cap">${hd}<div style="margin-top:12px">${back}</div>${body}</div>`}
+Object.assign(A,{tqGo:t=>{NB.tqView=t.dataset.v;renderPage(true);window.scrollTo(0,0)}});
 
 nubeBoot();
 
