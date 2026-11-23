@@ -1231,7 +1231,7 @@ function pDashboardBase(){
  const pc=(a,b)=>b?a/b*100:0;
  const s14=f=>dailySeries(rs,14,f);
  const kp=`<div class="g12">
- ${hero('HH totales registradas','clock',nf(K.tot,0),'HH',`${arrow(dT.p)}<span>vs. 7 días previos</span>`,'#38BDF8',s14(r=>r.clase!=='aus'),'tot')}
+ ${hero('HH trabajadas (sin ausencias)','clock',nf(K.tot,0),'HH',`${arrow(dT.p)}<span>vs. 7 días previos</span><span style="display:block;width:100%;font-size:12px;margin-top:3px">${nf(K.tot,0)} + ${hh(K.aus)} de ausencias = <b>${nf(K.tot+K.aus,0)} registradas</b></span>`,'#38BDF8',s14(r=>r.clase!=='aus'),'tot')}
  ${hero('% de retrabajo sobre HH totales','redo',nf(K.pctRet,1),'%',`<span>${nf(K.ret,0)} HH de retrabajo</span> ${arrow(dR.p)}`,'#F59E0B',s14(r=>r.clase==='retrabajo'),'pret')}
  ${hero('Desviación global vs. expectativa','trend',(dv>0?'+':'')+nf(dv,0),'HH',`${badge(nf(dvp,1)+'% de la expectativa',dvc)}<span>etapas terminadas o excedidas</span>`,dv>0?'#EF4444':'#22C55E',s14(r=>isProd(r)),'dev')}
  ${hero('Proyectos activos','factory',K.activos,'',`<span>${K.P.length} en el filtro actual</span>`,'#8B5CF6',s14(r=>!!r.proy),'proy')}
@@ -1366,7 +1366,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='5.5.0';
+const APP_VER='5.5.1';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -1575,7 +1575,7 @@ function kvRecX(c){const K=kpis(),all=K.rs.filter(c.pick).sort((a,b)=>a.fecha<b.
  {name:'Por tipo',cols:[{h:'Tipo',w:34},{h:'Horas',w:11,t:'n'},{h:'% del total',w:12,t:'n'}],rows:kvGrp(all,c.tipo).map(x=>[x.k,x.v,r2(tot?x.v/tot*100:0)])},
  {name:'Por persona',cols:[{h:'Persona',w:30},{h:'Horas',w:11,t:'n'},{h:'% del total',w:12,t:'n'}],rows:kvGrp(all,r=>r.nombre||'Sin nombre').map(x=>[x.k,x.v,r2(tot?x.v/tot*100:0)])}]}
 const kvLarga=(all,lim)=>{const l=kvLong(all,lim);return kvCtl(!l.length,l.length?`${l.length} jornada${l.length>1?'s':''} con más de ${lim} HH registradas en un día`:`Ninguna jornada supera ${lim} HH`,l.length?l.slice(0,5).map(x=>`${esc(x.n)} · ${dlabel(x.f)} · ${hh(x.h)} HH`).join('<br>'):'')};
-KVC.tot={key:'tot',title:'HH totales registradas',col:'#38BDF8',pick:r=>r.clase!=='aus',tipo:r=>(CL[r.clase]||{n:r.clase}).n,tipoT:'Por clase de trabajo',noPct:true,extra:[['Por etapa','Dónde se fue el tiempo',r=>r.macro||'Sin etapa (no ligado a proyecto)'],['Por proyecto','',r=>r.proy||'Sin proyecto']],
+KVC.tot={key:'tot',title:'HH trabajadas (sin ausencias)',col:'#38BDF8',pick:r=>r.clase!=='aus',tipo:r=>(CL[r.clase]||{n:r.clase}).n,tipoT:'Por clase de trabajo',noPct:true,extra:[['Por etapa','Dónde se fue el tiempo',r=>r.macro||'Sin etapa (no ligado a proyecto)'],['Por proyecto','',r=>r.proy||'Sin proyecto']],
  ctl:(all)=>{const inc=all.filter(r=>r.estado==='Incompleto');return kvCtl(!inc.length,inc.length?`${inc.length} registro${inc.length>1?'s':''} incompleto${inc.length>1?'s':''} (${hh(sum(inc))} HH)`:'Todos los registros están completos',inc.length?'Falta causa u origen en retrabajos. Se completan desde Alertas.':'')+kvLarga(all,10)}};
 KVC.ret={key:'ret',title:'HH de retrabajo',col:'#F59E0B',pick:r=>r.clase==='retrabajo',tipo:r=>r.causa||'Sin causa',tipoT:'Por causa',extra:[['Por origen','¿Dónde se originó?',r=>r.origen||'Sin origen'],['Por etapa','',r=>r.macro||'Sin etapa'],['Por proyecto','',r=>r.proy||'Sin proyecto']],
  read:(all,tot,K,t,p)=>{const e=kvGrp(all,r=>r.macro||'Sin etapa')[0];return e&&all.length>2?[`La etapa con más retrabajo es <b>${esc(e.k)}</b> (${kvPct(e.v,tot)}).`]:[]},
@@ -1815,7 +1815,7 @@ const fcRed=()=>{try{return window.matchMedia&&matchMedia('(prefers-reduced-moti
 /* Embudo en anillos (estilo "Flujo del material") */
 function fcFunnel(D){
  const mode=U.fcMode==='pct'?'pct':'hh',T=D.T||1,imp=sum(D.ot.filter(r=>r.clase==='improd'));
- const L=[['Horas registradas','todo el personal del filtro',D.T,'#38BDF8','fc:all:*'],['En proyectos','producción y apoyo en proyecto',D.hp,'#22D3EE','fc:proy:*'],['Fuera de proyectos','otro tiempo + ausencia',D.fu,'#2DD4BF','fc:fu:*'],['Otro tiempo','apoyo, capacitación, mantenimiento…',D.ho,'#34D399','fc:otro:*'],['Ausencia','permisos, vacaciones, licencias…',D.ha,'#94A3B8','fc:aus:*'],['Improductivas','esperas, clima, fallas',imp,'#F87171','improd']];
+ const L=[['Horas registradas (con ausencias)','sin ausencias: '+hh(D.T-D.ha)+' HH trabajadas',D.T,'#38BDF8','fc:all:*'],['En proyectos','producción y apoyo en proyecto',D.hp,'#22D3EE','fc:proy:*'],['Fuera de proyectos','otro tiempo + ausencia',D.fu,'#2DD4BF','fc:fu:*'],['Otro tiempo','apoyo, capacitación, mantenimiento…',D.ho,'#34D399','fc:otro:*'],['Ausencia','permisos, vacaciones, licencias…',D.ha,'#94A3B8','fc:aus:*'],['Improductivas','esperas, clima, fallas',imp,'#F87171','improd']];
  const W=760,H=430,cx=392,top=52,gap=64,mxr=210,mnr=44;let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img" aria-label="Embudo de horas"><defs><linearGradient id="fcg" x1="0" x2="1"><stop offset="0" stop-color="#2DD4BF" stop-opacity=".02"/><stop offset=".5" stop-color="#2DD4BF" stop-opacity=".14"/><stop offset="1" stop-color="#2DD4BF" stop-opacity=".02"/></linearGradient></defs>`;
  const E=L.map((l,i)=>{const rx=Math.max(mnr,mxr*Math.sqrt(l[2]/T)),cy=top+i*gap;return{rx,ry:rx*.2+2,cy,l}});
  for(let i=0;i<E.length-1;i++){const a=E[i],b=E[i+1];s+=`<path d="M${cx-a.rx},${a.cy}L${cx-b.rx},${b.cy}A${b.rx},${b.ry} 0 0 0 ${cx+b.rx},${b.cy}L${cx+a.rx},${a.cy}Z" fill="url(#fcg)"/>`}
@@ -1877,7 +1877,7 @@ function fcPersonas(D){
 function fcKpis(D,aud){
  const K=D.K,t=(c,l,v,s,k,dark)=>`<div class="fck${dark?' dk':''} kvc" ${k?`data-act="kpiOpen" data-k="${k}" role="button" tabindex="0" data-tip="Clic para ver el análisis"`:''}><div class="fckl">${l}</div><div class="fckv">${v}</div><div class="fcks">${s}</div></div>`;
  const imp=sum(D.ot.filter(r=>r.clase==='improd'));
- return `<div class="fckg">${t('',aud?'HH registradas':'Horas registradas',`${hh(D.T)}<small> HH</small>`,'Todo el personal del filtro','fc:all:*',1)}
+ return `<div class="fckg">${t('',aud?'HH registradas (con ausencias)':'Horas registradas (con ausencias)',`${hh(D.T)}<small> HH</small>`,'Sin ausencias: '+hh(D.T-D.ha)+' HH trabajadas','fc:all:*',1)}
  ${t('','En proyectos',`${hh(D.hp)}<small> HH</small>`,fcP(D.hp,D.T)+' del total','fc:proy:*')}
  ${t('','Fuera de proyectos',`${hh(D.fu)}<small> HH</small>`,fcP(D.fu,D.T)+' del total','fc:fu:*')}
  ${t('','Otro tiempo',`${hh(D.ho)}<small> HH</small>`,fcP(D.ho,D.T)+' del total','fc:otro:*')}
