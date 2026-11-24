@@ -1366,7 +1366,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='5.6.0';
+const APP_VER='5.6.1';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -4408,7 +4408,7 @@ function lAct(k,code){
  const ins=lInsp();
  const T={
   asignar:['Asignar inspector de Calidad',(ins.length?fld('Inspector que liberará',selM('la_tec',ins.map(t=>[t.codigo,t.ini+' · '+t.nombre]),l.asigCod||'')):`<p class="mut">No hay personas con rol Calidad activas en Técnicos.</p>`)+fld('Indicación (opcional)',hTxt('la_txt','Ej.: revisar cordones internos antes de liberar')),'Asignar'],
-  liberar:['Liberar la etapa',`<p class="mut" style="margin-bottom:8px">Al liberar, declaras que <b style="color:var(--tx)">${esc(l.etapa)}</b> del proyecto <b style="color:var(--tx)">${esc(l.proy)}</b> cumple los criterios y Producción puede avanzar a la siguiente etapa. Quedan registrados tu nombre, la fecha y la hora.</p>`+fmtRemind(l.etapa)+fld('Observación (opcional)',hTxt('la_txt','Ej.: cordones conformes, ensayo visual OK')),'Liberar'],
+  liberar:['Liberar la etapa',`<p class="mut" style="margin-bottom:8px">Al liberar, declaras que <b style="color:var(--tx)">${esc(l.etapa)}</b> del proyecto <b style="color:var(--tx)">${esc(l.proy)}</b> cumple los criterios y Producción puede avanzar a la siguiente etapa. Quedan registrados tu nombre, la fecha y la hora.</p>`+lPendAviso(l.proy,l.etapa)+fmtRemind(l.etapa)+fld('Observación (opcional)',hTxt('la_txt','Ej.: cordones conformes, ensayo visual OK')),'Liberar'],
   rechazar:['No liberar la etapa',`<p class="mut" style="margin-bottom:8px">Producción no debe avanzar hasta corregir. Explica qué falta; después podrá solicitar la liberación de nuevo.</p>`+fld('Motivo *',hTxt('la_txt','Qué no cumple y dónde',4))+fld('Hallazgo relacionado (opcional)',selM('la_h',S.hallazgos.filter(h=>h.proy===l.proy&&!['Cerrado','Anulado'].includes(h.estado)).map(h=>[h.codigo,h.codigo+' · '+(h.desc||'').slice(0,40)]),'','Sin hallazgo')),'No liberar'],
   reintentar:['Solicitar de nuevo',`<p class="mut">Se crea una nueva solicitud con la misma etapa y descripción, enlazada a ${esc(code)} (intento ${l.intento+1}).</p>`,'Solicitar'],
   anular:['Anular solicitud',fld('Motivo *',hTxt('la_txt','Ej.: duplicada / se pidió por error')),'Anular']}[k];
@@ -4434,6 +4434,7 @@ function lPreInfo(p,e){const AC=(typeof ACT!=='undefined'?ACT:[]).filter(a=>a[2]
 function lPre(p,e){if(!p||!e)return '';const I=lPreInfo(p,e);if(!I.AC.length)return '';
  if(I.pend.length)return `<div style="margin:8px 0 12px;padding:10px 12px;border:1px solid #f59e0b;background:#f59e0b14;border-radius:10px;font-size:13px"><b>⚠ Faltan ${I.pend.length} de ${I.AC.length} actividades por cerrar</b><div class="mut" style="margin:4px 0 8px">${I.pend.slice(0,6).map(a=>esc(String(a[0]))+' '+esc(a[1])).join('<br>')}${I.pend.length>6?'<br>…y '+(I.pend.length-6)+' más':''}</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="lPreCerrar" data-p="${esc(p)}" data-e="${esc(e)}" data-m="Cerrada">✓ Marcarlas como cerradas</button><button class="btn ghost sm" data-act="lPreCerrar" data-p="${esc(p)}" data-e="${esc(e)}" data-m="No aplica">No aplica</button><button class="btn ghost sm" data-act="lPreVer" data-p="${esc(p)}" data-e="${esc(e)}">Ver en el detalle</button></div><div class="mut3" style="font-size:11.5px;margin-top:6px">Puedes enviar la solicitud igual: los pendientes quedan escritos en ella.</div></div>`;
  return `<div style="margin:8px 0 12px;padding:10px 12px;border:1px solid #22c55e88;background:#22c55e10;border-radius:10px;font-size:13px;display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap"><span><b>✓ Las ${I.AC.length} actividades de la etapa están cerradas</b></span><button class="btn ghost sm" data-act="lPreReabrir" data-p="${esc(p)}" data-e="${esc(e)}">Reabrir actividades</button></div>`}
+function lPendAviso(p,e){const I=lPreInfo(p,e);const use=(VV_CHK||[]).some(x=>x.proy===p&&x.etapa===e);if(!I.AC.length||!use||!I.pend.length)return '';return `<div style="margin:6px 0 10px;padding:10px 12px;border:1px solid #f59e0b;background:#f59e0b14;border-radius:10px;font-size:13px"><b>⚠ El seguimiento tiene ${I.pend.length} de ${I.AC.length} actividades sin cerrar</b><div class="mut" style="margin-top:3px">${I.pend.slice(0,5).map(a=>esc(String(a[0]))+' '+esc(a[1])).join('<br>')}${I.pend.length>5?'<br>…y '+(I.pend.length-5)+' más':''}</div><div class="mut3" style="font-size:11.5px;margin-top:4px">Puedes liberar igual; revisa en planta que estén hechas. Supervisión las cierra después.</div></div>`}
 function lDesc(p,e){const I=lPreInfo(p,e);if(!I.AC.length)return '';return `Etapa ${e}: ${I.cer} de ${I.AC.length} actividades cerradas.`+(I.pend.length?` Pendientes: ${I.pend.map(a=>a[0]).join(', ')}.`:'')}
 function lForm(pre){
  pre=pre||{};const act=S.proyectos.filter(p=>p.estado==='Activo');
@@ -5891,6 +5892,7 @@ var VV_CHK=[],VV_ASG=[],VV_NOV=[];function vvCalc(p){
   if(r.inf&&!r.lib)al.push({n:'wa',t:`${r.e}: dada por terminada por avance posterior`,s:`${vvSh(r.infBy)} ya tiene horas, pero ${vvSh(r.e)} no tiene liberación. Solicítala o revisa las horas.`});
   if(r.chk.use&&r.chk.done>0&&r.real===0)al.push({n:'wa',t:`${r.e}: ${r.chk.done} actividad(es) cerradas sin horas registradas`,s:'Revisa si faltan horas por registrar en esta etapa.'});
   if(r.chk.use&&r.chk.done>=r.chk.tot&&!r.lib&&!r.cerr)al.push({n:'wa',t:`${r.e}: todas las actividades están cerradas`,s:'Solicita la liberación a Calidad para certificar la etapa.'});
+  if(r.chk.use&&(r.ok||r.cerr)&&r.chk.done<r.chk.tot)al.push({n:'wa',t:`${r.e}: liberada con ${r.chk.tot-r.chk.done} de ${r.chk.tot} actividades sin cerrar`,s:'Ciérralas o márcalas «No aplica» en el detalle de la etapa para que el seguimiento coincida con la liberación.'});
   const pendLib=r.lib&&(r.lib.estado==='Solicitada'||r.lib.estado==='Asignada');
   if(r.real>0&&!r.lib&&!r.cerr&&r.exp&&r.real>=r.exp*.8)al.push({n:'wa',t:`${r.e}: ${nf(r.real,0)} h de ${nf(r.exp,0)} esperadas y sin liberación`,s:'Las horas ya alcanzan lo esperado y nadie ha solicitado la liberación.'});
   if(r.ok&&r.lib.decEn){const d=String(r.lib.decEn).slice(0,10);const post=r.rr.filter(x=>x.fecha>d);const h=sum(post);if(h>=2)al.push({n:'er',t:`${r.e}: ${nf(h,0)} h registradas después de liberada`,s:'Se cargaron horas a una etapa ya liberada (¿retrabajo o error de registro?).'})}
