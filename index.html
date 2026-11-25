@@ -435,7 +435,8 @@ a.btn{text-decoration:none}
 .vv-ac.ch{border-style:solid;border-color:#22c55e;background:#22c55e22;color:var(--tx)}.vv-ac.ch em{color:#22c55e;font-size:13px}
 .vv-ac.na{opacity:.5;text-decoration:line-through;border-style:dotted}
 .vv-cb{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding:10px;border:1px dashed var(--bd2);border-radius:12px}.vv-cb .cnt{font-size:12.5px;color:var(--tx2);font-weight:600;margin-right:auto}
-.vv-cb button{border:1px solid var(--bd2);background:var(--card);color:var(--tx);padding:6px 12px;border-radius:20px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}.vv-cb button:hover{border-color:var(--pri)}.vv-cb button.ok{background:#22c55e;border-color:#22c55e;color:#04210f}
+.vv-cb button{border:1px solid var(--bd2);background:var(--card);color:var(--tx);padding:6px 12px;border-radius:20px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}.vv-cb button:disabled{opacity:.4;cursor:not-allowed}.vv-cb button.rv{background:#fff7ed;border-color:#fb923c;color:#9a3412}.vv-cb .hint{width:100%;font-size:12px;color:var(--tx3)}.vv-man{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}.vv-man button{border:1px solid var(--bd2);background:var(--card);color:var(--tx);padding:4px 11px;border-radius:20px;font:inherit;font-size:12.5px;cursor:pointer}.vv-man button.on{background:var(--pri);color:#fff;border-color:var(--pri)}.vv-man button:disabled{opacity:.5}
+.vv-cb button:hover{border-color:var(--pri)}.vv-cb button.ok{background:#22c55e;border-color:#22c55e;color:#04210f}
 .vv-gb .rb.ck{background:color-mix(in srgb,var(--c) 22%,transparent);border:1px solid var(--c);box-shadow:none;overflow:hidden}.vv-gb .rb.ck .fl{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--c),color-mix(in srgb,var(--c) 60%,#fff));border-radius:8px 0 0 8px}
 
 .vv-ac.pc{border-style:dashed;border-color:#f59e0b;background:#f59e0b14;color:var(--tx)}.vv-ac u{text-decoration:none;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:10px;background:var(--pri);color:#fff}
@@ -1366,7 +1367,7 @@ function doGet(){
   var sh=SpreadsheetApp.getActiveSpreadsheet().getSheetByName('REGISTROS_HH');
   return ContentService.createTextOutput(JSON.stringify(sh.getDataRange().getValues())).setMimeType(ContentService.MimeType.JSON);
 }`;
-const APP_VER='5.6.1';
+const APP_VER='5.6.2';
 const DEFAULT_URL=location.href.split('#')[0];
 function qrUrl(){return ((S.settings.url||'').trim()||DEFAULT_URL).split('#')[0]+'#captura'}
 /* ---------- Medidor de uso de la base de datos (solo Gerencia) ---------- */
@@ -5872,17 +5873,16 @@ var VV_CHK=[],VV_ASG=[],VV_NOV=[];function vvCalc(p){
   const lib=vvLibEt(p,e);const cerr=(ex.cerradas||[]).includes(e);const ok=lib&&lib.estado==='Liberada';
   const AC=(typeof ACT!=='undefined'?ACT:[]).filter(a=>a[2]===e&&a[4]!==false);const codes=AC.map(a=>String(a[0]));
   const ck=(VV_CHK||[]).filter(c=>c.proy===p.num&&c.etapa===e&&codes.includes(String(c.act)));const nap=ck.filter(c=>c.estado==='No aplica').length;const dn=ck.filter(c=>c.estado==='Cerrada').length;const tot=Math.max(0,AC.length-nap);
-  const chk={tot,done:dn,na:nap,use:ck.length>0&&tot>0};
-  const ph=chk.use?Math.min(1,dn/tot):(exp?Math.min(1,real/exp):(real>0?.5:0));
-  const pct=(ok||cerr)?1:Math.min(.95,ph);
+  const chk={tot,done:dn,na:nap,use:ck.length>0&&tot>0,auto:AC.length>0&&tot>0};const mn=(ex.man||{})[e];
+  const ph=chk.auto?Math.min(1,dn/tot):(mn!=null?Math.min(1,mn/100):0);
+  const pct=cerr?1:ph;
   const last=rr.reduce((m,r)=>r.fecha>m?r.fecha:m,'');
-  return{e,i,exp,real,lib,ok,cerr,pct,last,ph,rr,chk}});
- /* v5.2.1: etapa dada por terminada por avance posterior (Armado en adelante ya tiene horas) */
- rows.forEach((r,i)=>{if(!r.ok&&!r.cerr&&r.pct<1){const j=rows.findIndex((q,k)=>k>i&&k>=4&&q.exp&&q.real>=q.exp*.1);if(j>=0){r.inf=true;r.infBy=rows[j].e;r.pct=1}}});
+  return{e,i,exp,real,lib,ok,cerr,pct,last,ph,rr,chk,man:mn}});
+ /* v5.6.2: avance = actividades cerradas / aplicables (o manual si la etapa no tiene actividades); liberaciones y horas ya no lo mueven */
  const wsum=rows.reduce((a,r)=>a+r.exp,0);
  const ent=p.estado&&p.estado!=='Activo'?1:0;
  const av=wsum?rows.reduce((a,r)=>a+r.pct*r.exp,0)/wsum:rows.reduce((a,r)=>a+r.pct,0)/rows.length;
- const total=ent?1:av*.97;
+ const total=ent?1:av;
  // alertas de congruencia (solo avisan)
  const al=[];
  VV_NOV.filter(n=>n.proy===p.num&&n.estado==='Abierta').forEach(n=>al.push({n:'wa',t:`Novedad abierta: ${n.tipo}${n.etapa?' · '+vvSh(n.etapa):''}`,s:`${n.tec}: ${n.detalle}`}));
@@ -5942,9 +5942,9 @@ function vvDetail(c,p){
   const libs=(S.lib||[]).filter(l=>l.proy===p.num&&l.etapa===r.e).sort((a,b)=>(a.creado||'')<(b.creado||'')?-1:1);
   const lb=r.cerr&&!r.lib?badge('Cerrada por Gerencia','ok'):r.inf&&!r.lib?badge('Por avance posterior','wa'):r.lib?badge(L_NOM[r.lib.estado]||r.lib.estado,L_BADGE[r.lib.estado]||'n'):badge('Sin solicitar','n');
   const cl=r.pct>=1?'ok':(r.e===c.cur&&!c.ent?'cur':'');const pc=Math.round(r.pct*100);
-  const act=(!r.lib||r.lib.estado==='Rechazada'||r.lib.estado==='Anulada')&&!r.cerr&&lSup()?btn('Solicitar liberación de '+vvSh(r.e),'lNewFor',`data-p="${esc(p.num)}" data-e="${esc(r.e)}"`,'sm'):'';
+  const act=!r.cerr&&lSup()?btn((r.lib&&r.lib.estado==='Liberada'?'Nueva solicitud de liberación de ':'Solicitar liberación de ')+vvSh(r.e),'lNewFor',`data-p="${esc(p.num)}" data-e="${esc(r.e)}"`,r.chk.auto&&r.chk.done>=r.chk.tot?'':'sm'):'';
   return `<details class="vv-d ${cl}" ${U.vivoK===k?'open':''}><summary><svg viewBox="0 0 28 28" width="30" height="30"><circle cx="14" cy="14" r="11" class="t"/><circle cx="14" cy="14" r="11" class="f" style="stroke:${VV_COL[k]};stroke-dasharray:${(C*r.pct).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 14 14)"/><text x="14" y="17" text-anchor="middle">${pc}</text></svg><b>${k+1}. ${esc(vvSh(r.e))}</b><span class="vv-dh">${nf(r.real,0)}${r.exp?' / '+nf(r.exp,0):''} h</span>${lb}</summary>
-  <div class="vv-db">${acts.length?vvActs(p,r,hs,con,acts.length):''}
+  <div class="vv-db">${!r.chk.auto&&!r.cerr?`<div class="vv-man"><span class="mut3">Avance de la etapa (manual):</span>${[0,10,25,50,75,90,100].map(v=>`<button class="${(r.man||0)===v?'on':''}" data-act="vvMan" data-e="${esc(r.e)}" data-v="${v}"${vvCan()?'':' disabled'}>${v}%</button>`).join('')}</div>`:`<div class="mut3" style="font-size:12.5px;margin-bottom:6px">Avance automático${r.cerr?'':': '+r.chk.done+' de '+r.chk.tot+' actividades cerradas'}. Las liberaciones y las horas no lo mueven.</div>`}${acts.length?vvActs(p,r,hs,con,acts.length):''}
   <div class="vv-dt">Liberaciones de la etapa</div>${libs.length?`<div class="vv-lbs">${libs.map(l=>`<a href="#" data-act="ldet" data-c="${esc(l.codigo)}">${badge(esc(l.codigo),'v')} ${badge(esc(L_NOM[l.estado]||l.estado),L_BADGE[l.estado]||'n')}<span>${l.creado?vvD(String(l.creado).slice(0,10)):''}</span></a>`).join('')}</div>`:'<div class="mut3" style="font-size:12.5px">Aún no se ha solicitado ninguna.</div>'}
   ${r.inf&&!r.lib?`<div class="vv-al wa" style="margin-top:8px"><b>Dada por terminada por avance posterior</b><span>${esc(vvSh(r.infBy))} ya tiene horas. Falta la liberación de esta etapa.</span></div>`:''}${act?`<div style="margin-top:10px">${act}</div>`:''}</div></details>`}).join('')+`</div>`}
 function vvGantt(p,c){
@@ -5983,10 +5983,18 @@ function vvGantt(p,c){
 const vvCan=()=>can(['Gerencia','Supervisor']);
 function vvActs(p,r,hs,con,n){
  const ck=r.chk,cn=vvCan();const st=c=>(VV_CHK||[]).find(x=>x.proy===p.num&&String(x.act)===String(c));
- return `<div class="vv-dt">Actividades · ${ck.done} cerradas de ${ck.tot}${ck.na?' ('+ck.na+' no aplican)':''} · ${con} con horas</div><div class="vv-acs">${hs.map(x=>{const s=st(x.a[0]);const as=VV_ASG.filter(z=>z.proy===p.num&&String(z.act)===String(x.a[0]));const pcf=as.some(z=>z.estado==='Por confirmar');const cl=s?(s.estado==='Cerrada'?'ch':'na'):(pcf?'pc':'');return `<span class="vv-ac ${cl} ${x.h>0?'on':''}${vvOpen(p.num).some(o=>String(o.act)===String(x.a[0]))?' op':''}" ${cn?`data-act="chkTog" data-a="${esc(String(x.a[0]))}" data-e="${esc(r.e)}" role="button" tabindex="0"`:''} title="${esc(x.a[0]+' · '+x.a[1]+(s?' · '+s.estado+' por '+s.por:''))}"><em>${s&&s.estado==='Cerrada'?'✓':esc(String(x.a[0]))}</em>${esc(x.a[1])}${as.length?`<u>${esc(as.map(z=>vvTecIni(z.tec)).join(' '))}${pcf?' ⏳':''}</u>`:''}${x.h>0?`<i>${nf(x.h,1)} h</i>`:''}</span>`}).join('')}</div>
- ${cn?`<div class="vv-cb" data-e="${esc(r.e)}"><span class="cnt">0 seleccionadas</span><button data-act="chkSelP">Seleccionar pendientes</button><button data-act="chkAsig">👤 Asignar a…</button><button data-act="chkAbrir" data-m="1">✋ Abrir para tomar</button><button data-act="chkAbrir" data-m="0">Cerrar apertura</button><button data-act="chkPrint">🖨 Imprimir hoja</button><button class="ok" data-act="chkDo" data-m="Cerrada">✓ Marcar cerradas</button><button data-act="chkDo" data-m="No aplica">No aplica</button><button data-act="chkDo" data-m="Pendiente">Reabrir</button></div>`:`<div class="mut3" style="font-size:12px;margin-top:6px">Solo Supervisor y Gerencia pueden cerrar actividades.</div>`}`}
+ return `<div class="vv-dt">Actividades · ${ck.done} cerradas de ${ck.tot}${ck.na?' ('+ck.na+' no aplican)':''} · ${con} con horas</div><div class="vv-acs">${hs.map(x=>{const s=st(x.a[0]);const as=VV_ASG.filter(z=>z.proy===p.num&&String(z.act)===String(x.a[0]));const pcf=as.some(z=>z.estado==='Por confirmar');const cl=s?(s.estado==='Cerrada'?'ch':'na'):(pcf?'pc':'');return `<span class="vv-ac ${cl} ${x.h>0?'on':''}${vvSelNow(p,r.e).includes(String(x.a[0]))?' sel':''}${vvOpen(p.num).some(o=>String(o.act)===String(x.a[0]))?' op':''}" ${cn?`data-act="chkTog" data-a="${esc(String(x.a[0]))}" data-e="${esc(r.e)}" role="button" tabindex="0"`:''} title="${esc(x.a[0]+' · '+x.a[1]+(s?' · '+s.estado+' por '+s.por:''))}"><em>${s&&s.estado==='Cerrada'?'✓':esc(String(x.a[0]))}</em>${esc(x.a[1])}${as.length?`<u>${esc(as.map(z=>vvTecIni(z.tec)).join(' '))}${pcf?' ⏳':''}</u>`:''}${x.h>0?`<i>${nf(x.h,1)} h</i>`:''}</span>`}).join('')}</div>
+ ${cn?(()=>{const sc=vvSelNow(p,r.e);const bs=vvBtnSt(p,sc),n=sc.length,d=n?'':' disabled';return `<div class="vv-cb" data-e="${esc(r.e)}"><span class="cnt">${n} seleccionada${n===1?'':'s'}</span><button data-act="chkSelP">Seleccionar pendientes</button><button data-act="chkSelAll">Seleccionar todas</button><button data-act="chkSelNone"${d}>Quitar selección</button><button data-act="chkAsig"${d}>👤 Asignar a…</button><button data-act="chkAbrir" data-k="ab" data-m="${bs.ab?0:1}"${d}>${bs.ab?'↩ Cerrar apertura':'✋ Abrir para tomar'}</button><button data-act="chkPrint"${d}>🖨 Imprimir hoja</button><button class="${bs.ce?'rv':'ok'}" data-act="chkDo" data-k="ce" data-m="${bs.ce?'Pendiente':'Cerrada'}"${d}>${bs.ce?'↩ Reabrir cerradas':'✓ Marcar cerradas'}</button><button class="${bs.na?'rv':''}" data-act="chkDo" data-k="na" data-m="${bs.na?'Pendiente':'No aplica'}"${d}>${bs.na?'↩ Reactivar (quitar No aplica)':'No aplica'}</button>${n?'':'<span class="hint">Toca primero las actividades que quieres cambiar.</span>'}</div>`})():`<div class="mut3" style="font-size:12px;margin-top:6px">Solo Supervisor y Gerencia pueden cerrar actividades.</div>`}`}
 const chkSel=t=>[...t.closest('.vv-db').querySelectorAll('.vv-ac.sel')].map(x=>x.dataset.a);
-const chkCnt=t=>{const db=t.closest('.vv-db');const n=db.querySelectorAll('.vv-ac.sel').length;db.querySelector('.vv-cb .cnt').textContent=n+' seleccionada'+(n===1?'':'s')};
+const vvSelNow=(p,e)=>(U.vivoSel&&U.vivoSel.p===p.num&&U.vivoSel.e===e)?U.vivoSel.c:[];
+function vvBtnSt(p,codes){const L=codes.map(c=>{const s=(VV_CHK||[]).find(x=>x.proy===p.num&&String(x.act)===String(c));return{na:!!s&&s.estado==='No aplica',ce:!!s&&s.estado==='Cerrada',ab:vvOpen(p.num).some(o=>String(o.act)===String(c))}});const all=k=>L.length>0&&L.every(x=>x[k]);return{na:all('na'),ce:all('ce'),ab:all('ab')}}
+const chkCnt=t=>{const db=t.closest('.vv-db');const cb=db.querySelector('.vv-cb');const c=chkSel(t);const p=S.proyectos.find(x=>x.num===U.vivoP)||{num:U.vivoP};U.vivoSel={p:p.num,e:cb.dataset.e,c};const n=c.length,bs=vvBtnSt(p,c);
+ cb.querySelector('.cnt').textContent=n+' seleccionada'+(n===1?'':'s');
+ cb.querySelectorAll('button').forEach(b=>{const a=b.dataset.act;if(['chkSelNone','chkAsig','chkAbrir','chkPrint','chkDo'].includes(a))b.disabled=!n;
+  if(a==='chkAbrir'){b.dataset.m=bs.ab?'0':'1';b.textContent=bs.ab?'↩ Cerrar apertura':'✋ Abrir para tomar'}
+  if(a==='chkDo'&&b.dataset.k==='ce'){b.dataset.m=bs.ce?'Pendiente':'Cerrada';b.textContent=bs.ce?'↩ Reabrir cerradas':'✓ Marcar cerradas';b.className=bs.ce?'rv':'ok'}
+  if(a==='chkDo'&&b.dataset.k==='na'){b.dataset.m=bs.na?'Pendiente':'No aplica';b.textContent=bs.na?'↩ Reactivar (quitar No aplica)':'No aplica';b.className=bs.na?'rv':''}});
+ const h=cb.querySelector('.hint');if(h)h.style.display=n?'none':''};
 let VV_CHKT=0;
 var VV_DIAG={fuente:'',t:0};
 async function nbReloadChk(quiet){try{let R=null;try{R=await nbRpc('taller_leer',{})}catch(x){R=null}VV_DIAG={fuente:R&&R.checks?'función':'tablas',t:Date.now()};const r=(R&&R.checks)?R.checks:await nbSel('actividad_checks','select=actividad_codigo,etapa,estado,por,rol,en,proyectos(numero)&order=en.asc');VV_CHK=r.map(x=>({proy:(x.proyectos||{}).numero||'',act:String(x.actividad_codigo),etapa:x.etapa,estado:x.estado,por:x.por||'',rol:x.rol||'',en:x.en||''}));VV_CHKT=Date.now();await nbReloadAsg(R);return true}catch(e){if(!quiet)toast('No pude leer las actividades cerradas: '+((e&&e.message)||e),'er');return false}}
@@ -6072,7 +6080,7 @@ function vvMount(){
  $('vvod').onchange=e=>T.st.onlyDone=e.target.checked;
  $('vvau').onchange=e=>T.st.auto=e.target.checked;T.onUser=()=>{$('vvau').checked=false};
  if(U.vivoK!=null){const m=VV_MAP[U.vivoK]||[-1,-1];const nB=T.sections.filter(s=>s.id<10).length;T.st.sel=m[0]===0?[0,nB-1]:m;syncSecs()}}
-  Object.assign(A,{chkTog:t=>{t.classList.toggle('sel');chkCnt(t)},chkSelP:t=>{t.closest('.vv-db').querySelectorAll('.vv-ac:not(.ch):not(.na)').forEach(x=>x.classList.add('sel'));chkCnt(t)},
+  Object.assign(A,{chkTog:t=>{t.classList.toggle('sel');chkCnt(t)},chkSelP:t=>{t.closest('.vv-db').querySelectorAll('.vv-ac:not(.ch):not(.na)').forEach(x=>x.classList.add('sel'));chkCnt(t)},chkSelAll:t=>{t.closest('.vv-db').querySelectorAll('.vv-ac').forEach(x=>x.classList.add('sel'));chkCnt(t)},chkSelNone:t=>{t.closest('.vv-db').querySelectorAll('.vv-ac.sel').forEach(x=>x.classList.remove('sel'));chkCnt(t)},vvMan:t=>{const p=S.proyectos.find(x=>x.num===U.vivoP);if(!p||!vvCan())return;p.exp=p.exp||{total:0,et:{},cerradas:[]};p.exp.man=p.exp.man||{};const e=t.dataset.e,v=+t.dataset.v;logH('Avance manual '+e,p.exp.man[e]==null?'':p.exp.man[e],v,p.num);p.exp.man[e]=v;p.exp.mod={ts:new Date().toISOString(),por:U.name+' ('+U.role+')'};save();U.vivoK=VV_ET.indexOf(e);renderPage(true);toast(e+': avance '+v+'%','ok')},
   chkPrint:t=>chkPrint(t.closest('.vv-cb').dataset.e,chkSel(t)),chkDo:t=>{const c=chkSel(t);if(!c.length){toast('Selecciona al menos una actividad.','wa');return}chkApply(t.closest('.vv-cb').dataset.e,c,t.dataset.m)}});
 Object.assign(A,{vivoT:t=>{U.vivoT=t.dataset.v;renderPage(true)},vivoG:t=>{U.vivoG=t.dataset.v;renderPage(true)},vivoK:t=>{U.vivoK=+t.dataset.k;U.vivoT='av';renderPage(true)},vivoSel:t=>{U.vivoP=t.dataset.p;U.vivoK=null;renderPage(true)}});
 PAGES.vivo=pVivo;
